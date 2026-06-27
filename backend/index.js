@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Teste de conexão
+//conexão
 const pool = require('./models/db');
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
@@ -20,6 +20,10 @@ pool.query('SELECT NOW()', (err, res) => {
 const PORT = process.env.PORT || 3000;
 const produtoresRoutes = require('./routes/produtores');
 app.use('/produtores', produtoresRoutes);
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
+const produtosRoutes = require('./routes/produtos');
+app.use('/produtos', produtosRoutes);
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
