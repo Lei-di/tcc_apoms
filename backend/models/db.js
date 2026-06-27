@@ -9,4 +9,12 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('Erro ao conectar no banco de dados:', err);
+  } else {
+    console.log('Banco de dados conectado com sucesso!');
+  }
+});
+
 module.exports = pool;
