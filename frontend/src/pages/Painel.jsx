@@ -34,6 +34,7 @@ function Painel() {
       </div>
 
       <h3>Meus Produtos</h3>
+      <button onClick={() => navigate('/cadastro')}>Cadastrar novo produto</button>
 
       {produtos.length === 0 ? (
         <p>Nenhum produto cadastrado ainda.</p>
