@@ -105,7 +105,7 @@ tr:last-child td {
   gap: 1rem;
 }
 
-input {
+input, select {
   padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -116,6 +116,13 @@ input {
 input:focus {
   outline: none;
   border-color: #2e7d32;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 4px;
 }
 
 button {

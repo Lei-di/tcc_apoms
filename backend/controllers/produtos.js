@@ -47,4 +47,13 @@ const deletarProduto = async (req, res) => {
   }
 };
 
-module.exports = { listarProdutos, cadastrarProduto, deletarProduto };
+const listarProdutosDisponiveis = async (req, res) => {
+  try {
+    const resultado = await pool.query('SELECT * FROM lista_produtos ORDER BY nome');
+    res.json(resultado.rows);
+  } catch (erro) {
+    res.status(500).json({ mensagem: 'Erro ao buscar lista de produtos', erro });
+  }
+};
+
+module.exports = { listarProdutos, cadastrarProduto, deletarProduto, listarProdutosDisponiveis };

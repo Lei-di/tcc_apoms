@@ -29,7 +29,7 @@ function Painel() {
   return (
     <div className="painel-container">
       <div className="painel-header">
-        <h2>Bem-vinda, {nome}!</h2>
+        <h2>Olá, {nome}!</h2>
         <button onClick={sair}>Sair</button>
       </div>
 
