@@ -14,9 +14,18 @@ function Login() {
       const resposta = await api.post('/auth/login', { cpf, senha })
       localStorage.setItem('token', resposta.data.token)
       localStorage.setItem('nome', resposta.data.nome)
-      navigate('/painel')
+      localStorage.setItem('tipo', resposta.data.tipo)
+      if (resposta.data.tipo === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/painel')
+      }
     } catch (err) {
-      setErro('CPF ou senha inválidos.')
+      if (err.response?.status === 403) {
+        navigate('/primeiro-acesso', { state: { cpf } })
+      } else {
+        setErro('CPF ou senha inválidos.')
+      }
     }
   }
 

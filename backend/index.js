@@ -24,6 +24,8 @@ const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 const produtosRoutes = require('./routes/produtos');
 app.use('/produtos', produtosRoutes);
+const adminRoutes = require('./routes/admin');
+app.use('/admin', adminRoutes);
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });

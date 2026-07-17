@@ -16,6 +16,11 @@ const login = async (req, res) => {
     }
 
     const produtor = resultado.rows[0];
+
+    if (!produtor.ativo) {
+      return res.status(403).json({ mensagem: 'Conta não ativada. Faça seu primeiro acesso.' });
+    }
+
     const senhaCorreta = await bcrypt.compare(senha, produtor.senha);
 
     if (!senhaCorreta) {
@@ -23,12 +28,12 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { cpf: produtor.cpf, nome: produtor.nome },
+      { cpf: produtor.cpf, nome: produtor.nome, tipo: produtor.tipo },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 
-    res.json({ token, nome: produtor.nome });
+    res.json({ token, nome: produtor.nome, tipo: produtor.tipo });
 
   } catch (erro) {
     res.status(500).json({ mensagem: 'Erro no servidor', erro });

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const verificarToken = require('../middlewares/auth');
+const { verificarToken } = require('../middlewares/auth');
 const { listarProdutos, cadastrarProduto, deletarProduto, listarProdutosDisponiveis } = require('../controllers/produtos');
 
 router.get('/disponiveis', listarProdutosDisponiveis);
