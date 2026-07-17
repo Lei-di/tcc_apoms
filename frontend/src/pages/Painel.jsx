@@ -20,6 +20,16 @@ function Painel() {
     }
   }
 
+  const excluirProduto = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este produto?')) return
+    try {
+      await api.delete(`/produtos/${id}`)
+      buscarProdutos()
+    } catch (err) {
+      alert('Erro ao excluir produto.')
+    }
+  }
+
   const sair = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('nome')
@@ -46,6 +56,7 @@ function Painel() {
               <th>Quantidade</th>
               <th>Validade</th>
               <th>Preço</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -55,6 +66,14 @@ function Painel() {
                 <td>{p.quantidade}</td>
                 <td>{new Date(p.data_validade).toLocaleDateString('pt-BR')}</td>
                 <td>R$ {parseFloat(p.preco).toFixed(2)}</td>
+                <td>
+                  <button
+                    onClick={() => excluirProduto(p.id)}
+                    className="btn-excluir"
+                  >
+                    Excluir
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

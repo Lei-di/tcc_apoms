@@ -167,3 +167,13 @@ button:hover {
     padding: 1.5rem;
   }
 }
+
+.btn-excluir {
+  background-color: #c62828;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.btn-excluir:hover {
+  background-color: #b71c1c;
+}
