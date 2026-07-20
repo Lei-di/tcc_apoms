@@ -40,4 +40,30 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login };
+const primeiroAcesso = async (req, res) => {
+  const { cpf, senha } = req.body;
+
+  try {
+    const resultado = await pool.query(
+      'SELECT * FROM produtores WHERE cpf = $1 AND ativo = FALSE', [cpf]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ mensagem: 'CPF não encontrado ou conta já ativada.' });
+    }
+
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
+    await pool.query(
+      'UPDATE produtores SET senha = $1, ativo = TRUE WHERE cpf = $2',
+      [senhaCriptografada, cpf]
+    );
+
+    res.json({ mensagem: 'Conta ativada com sucesso! Faça o login.' });
+
+  } catch (erro) {
+    res.status(500).json({ mensagem: 'Erro no servidor', erro });
+  }
+};
+
+module.exports = { login, primeiroAcesso };
