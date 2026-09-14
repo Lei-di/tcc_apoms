@@ -20,17 +20,6 @@ function Painel() {
     }
   }
 
-  const excluirProduto = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este produto?')) return
-
-    try {
-      await api.delete(`/produtos/${id}`)
-      buscarProdutos()
-    } catch (err) {
-      alert('Erro ao excluir produto.')
-    }
-  }
-
   const sair = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('nome')
@@ -39,9 +28,13 @@ function Painel() {
 
   return (
     <div className="painel-container">
+
       <div className="painel-header">
         <h2>Olá, {nome}!</h2>
-        <button onClick={sair}>Sair</button>
+
+        <button onClick={sair}>
+          Sair
+        </button>
       </div>
 
       <h3>Meus Produtos</h3>
@@ -61,42 +54,44 @@ function Painel() {
         <p>Nenhum produto cadastrado ainda.</p>
       ) : (
         <table>
+
           <thead>
             <tr>
               <th>Produto</th>
               <th>Quantidade</th>
-              <th>Validade</th>
+              <th>Disponibilidade</th>
               <th>Preço</th>
-              <th>Ações</th>
             </tr>
           </thead>
 
           <tbody>
             {produtos.map((p) => (
               <tr key={p.id}>
-                <td>{p.nome_produto}</td>
-
-                <td>{p.quantidade}</td>
 
                 <td>
-                  {new Date(p.data_validade).toLocaleDateString('pt-BR')}
+                  {p.nome_produto}
+                </td>
+
+                <td>
+                  {p.quantidade}
+                </td>
+
+                <td>
+                  {p.data_disponibilidade
+                    ? new Date(
+                        p.data_disponibilidade
+                      ).toLocaleDateString('pt-BR')
+                    : '-'}
                 </td>
 
                 <td>
                   R$ {parseFloat(p.preco).toFixed(2)}
                 </td>
 
-                <td>
-                  <button
-                    onClick={() => excluirProduto(p.id)}
-                    className="btn-excluir"
-                  >
-                    Excluir
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
+
         </table>
       )}
     </div>
