@@ -22,6 +22,7 @@ function Painel() {
 
   const excluirProduto = async (id) => {
     if (!window.confirm('Tem certeza que deseja excluir este produto?')) return
+
     try {
       await api.delete(`/produtos/${id}`)
       buscarProdutos()
@@ -44,7 +45,17 @@ function Painel() {
       </div>
 
       <h3>Meus Produtos</h3>
-      <button onClick={() => navigate('/cadastro')}>Cadastrar novo produto</button>
+
+      <button onClick={() => navigate('/cadastro')}>
+        Cadastrar novo produto
+      </button>
+
+      <button
+        onClick={() => navigate('/solicitacoes')}
+        style={{ marginLeft: '10px' }}
+      >
+        Minhas solicitações
+      </button>
 
       {produtos.length === 0 ? (
         <p>Nenhum produto cadastrado ainda.</p>
@@ -59,13 +70,22 @@ function Painel() {
               <th>Ações</th>
             </tr>
           </thead>
+
           <tbody>
             {produtos.map((p) => (
               <tr key={p.id}>
                 <td>{p.nome_produto}</td>
+
                 <td>{p.quantidade}</td>
-                <td>{new Date(p.data_validade).toLocaleDateString('pt-BR')}</td>
-                <td>R$ {parseFloat(p.preco).toFixed(2)}</td>
+
+                <td>
+                  {new Date(p.data_validade).toLocaleDateString('pt-BR')}
+                </td>
+
+                <td>
+                  R$ {parseFloat(p.preco).toFixed(2)}
+                </td>
+
                 <td>
                   <button
                     onClick={() => excluirProduto(p.id)}
