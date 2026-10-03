@@ -9,7 +9,9 @@ function CadastroProduto() {
   const [unidade, setUnidade] = useState('')
   const [dataDisponibilidade, setDataDisponibilidade] = useState('')
   const [preco, setPreco] = useState('')
+  const [observacao, setObservacao] = useState('')
   const [mensagem, setMensagem] = useState('')
+  const [cadastroSucesso, setCadastroSucesso] = useState(false)
   const [listaProdutos, setListaProdutos] = useState([])
 
   const navigate = useNavigate()
@@ -31,22 +33,27 @@ function CadastroProduto() {
     e.preventDefault()
 
     try {
-      await api.post('/produtos', {
+      await api.post('/solicitacoes', {
         nome_produto: nomeProduto,
         quantidade: `${quantidade} ${unidade}`,
         data_disponibilidade: dataDisponibilidade,
-        preco: parseFloat(preco)
+        preco: parseFloat(preco),
+        observacao_produtor: observacao
       })
 
       setMensagem('Produto cadastrado com sucesso!')
+      setCadastroSucesso(true)
+
       setNomeProduto('')
       setQuantidade('')
       setUnidade('')
       setDataDisponibilidade('')
       setPreco('')
+      setObservacao('')
     } catch (err) {
       console.error('Erro ao cadastrar produto:', err)
       setMensagem('Erro ao cadastrar produto. Tente novamente.')
+      setCadastroSucesso(false)
     }
   }
 
@@ -61,6 +68,7 @@ function CadastroProduto() {
         <div className="page-header">
           <div>
             <h2>Nova oferta</h2>
+
             <p>
               Preencha os dados abaixo para cadastrar um produto.
             </p>
@@ -77,7 +85,11 @@ function CadastroProduto() {
 
               <select
                 value={nomeProduto}
-                onChange={(e) => setNomeProduto(e.target.value)}
+                onChange={(e) => {
+                  setNomeProduto(e.target.value)
+                  setMensagem('')
+                  setCadastroSucesso(false)
+                }}
                 required
               >
                 <option value="">Selecione o produto</option>
@@ -144,19 +156,50 @@ function CadastroProduto() {
                 value={preco}
                 onChange={(e) => setPreco(e.target.value)}
                 step="0.01"
-                min="0"
+                min="0.01"
                 required
+              />
+            </div>
+
+            <div className="campo campo-grande">
+              <label>Observação</label>
+
+              <textarea
+                placeholder="Ex: produto disponível para retirada no período da manhã."
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                rows="4"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d7ddd9',
+                  borderRadius: '6px',
+                  fontSize: '1rem',
+                  resize: 'vertical'
+                }}
               />
             </div>
 
             {mensagem && (
               <p
                 className={`mensagem-form ${
-                  mensagem.includes('sucesso') ? 'sucesso' : 'erro'
+                  cadastroSucesso ? 'sucesso' : 'erro'
                 }`}
               >
                 {mensagem}
               </p>
+            )}
+
+            {cadastroSucesso && (
+              <div className="campo-grande">
+                <button
+                  className="btn-secundario"
+                  type="button"
+                  onClick={() => navigate('/solicitacoes')}
+                >
+                  Visualizar solicitações
+                </button>
+              </div>
             )}
 
             <div className="acoes-form campo-grande">

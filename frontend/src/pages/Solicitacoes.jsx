@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import LayoutSistema from '../LayoutSistema'
 
 function Solicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState([])
   const [listaProdutos, setListaProdutos] = useState([])
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [mensagem, setMensagem] = useState('')
   const [editando, setEditando] = useState(null)
 
@@ -14,7 +14,8 @@ function Solicitacoes() {
     quantidade: '',
     unidade: '',
     data_disponibilidade: '',
-    preco: ''
+    preco: '',
+    observacao_produtor: ''
   })
 
   const navigate = useNavigate()
@@ -29,6 +30,7 @@ function Solicitacoes() {
       const resposta = await api.get('/solicitacoes/minhas')
       setSolicitacoes(resposta.data)
     } catch (err) {
+      console.error('Erro ao buscar solicitações:', err)
       navigate('/')
     }
   }
@@ -38,7 +40,7 @@ function Solicitacoes() {
       const resposta = await api.get('/produtos/disponiveis')
       setListaProdutos(resposta.data)
     } catch (err) {
-      console.error('Erro ao buscar lista de produtos', err)
+      console.error('Erro ao buscar lista de produtos:', err)
     }
   }
 
@@ -49,48 +51,52 @@ function Solicitacoes() {
       nome_produto: form.nome_produto,
       quantidade: `${form.quantidade} ${form.unidade}`,
       data_disponibilidade: form.data_disponibilidade,
-      preco: parseFloat(form.preco)
+      preco: parseFloat(form.preco),
+      observacao_produtor: form.observacao_produtor
     }
 
     try {
-      if (editando) {
-        await api.put(`/solicitacoes/${editando}`, dados)
-        setMensagem('Solicitação atualizada com sucesso!')
-      } else {
-        await api.post('/solicitacoes', dados)
-        setMensagem('Solicitação enviada com sucesso!')
-      }
+      await api.put(`/solicitacoes/${editando}`, dados)
 
-      setForm({
-        nome_produto: '',
-        quantidade: '',
-        unidade: '',
-        data_disponibilidade: '',
-        preco: ''
-      })
+      setMensagem('Solicitação atualizada com sucesso!')
 
-      setMostrarFormulario(false)
-      setEditando(null)
-
+      cancelarEdicao()
       buscarSolicitacoes()
     } catch (err) {
-      setMensagem('Erro ao salvar solicitação.')
+      console.error('Erro ao atualizar solicitação:', err)
+      setMensagem('Erro ao atualizar solicitação.')
     }
   }
 
-  const iniciarEdicao = (s) => {
-    const partes = s.quantidade.split(' ')
+  const iniciarEdicao = (solicitacao) => {
+    const partes = solicitacao.quantidade.split(' ')
 
     setForm({
-      nome_produto: s.nome_produto,
+      nome_produto: solicitacao.nome_produto,
       quantidade: partes[0],
       unidade: partes.slice(1).join(' '),
-      data_disponibilidade: s.data_disponibilidade.split('T')[0],
-      preco: s.preco
+      data_disponibilidade: solicitacao.data_disponibilidade
+        ? solicitacao.data_disponibilidade.split('T')[0]
+        : '',
+      preco: solicitacao.preco,
+      observacao_produtor: solicitacao.observacao_produtor || ''
     })
 
-    setEditando(s.id)
-    setMostrarFormulario(true)
+    setMensagem('')
+    setEditando(solicitacao.id)
+  }
+
+  const cancelarEdicao = () => {
+    setEditando(null)
+
+    setForm({
+      nome_produto: '',
+      quantidade: '',
+      unidade: '',
+      data_disponibilidade: '',
+      preco: '',
+      observacao_produtor: ''
+    })
   }
 
   const excluir = async (id) => {
@@ -100,256 +106,383 @@ function Solicitacoes() {
 
     try {
       await api.delete(`/solicitacoes/${id}`)
+
+      setMensagem('Solicitação excluída com sucesso!')
       buscarSolicitacoes()
     } catch (err) {
       alert('Erro ao excluir. A solicitação pode já ter sido avaliada.')
     }
   }
 
-  const statusCor = (status) => {
+  const formatarData = (data) => {
+    if (!data) {
+      return '-'
+    }
+
+    const somenteData = data.split('T')[0]
+    const [ano, mes, dia] = somenteData.split('-')
+
+    return `${dia}/${mes}/${ano}`
+  }
+
+  const formatarPreco = (preco) => {
+    return Number(preco).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    })
+  }
+
+  const formatarStatus = (status) => {
     if (status === 'aprovado') {
-      return {
-        color: '#2e7d32',
-        fontWeight: 'bold'
-      }
+      return 'Aprovada'
     }
 
     if (status === 'rejeitado') {
-      return {
-        color: '#c62828',
-        fontWeight: 'bold'
-      }
+      return 'Rejeitada'
     }
 
-    return {
-      color: '#e65100',
-      fontWeight: 'bold'
-    }
+    return 'Pendente'
   }
 
   return (
-    <div className="painel-container">
+    <LayoutSistema
+      titulo="Minhas Solicitações"
+      subtitulo="Acompanhe as ofertas enviadas para avaliação."
+      paginaAtiva="solicitacoes"
+    >
+      <section className="dashboard-content">
 
-      <div className="painel-header">
-        <h2>Minhas Solicitações</h2>
-
-        <button onClick={() => navigate('/painel')}>
-          Voltar ao painel
-        </button>
-      </div>
-
-      <button
-        onClick={() => {
-          setMostrarFormulario(!mostrarFormulario)
-          setEditando(null)
-
-          setForm({
-            nome_produto: '',
-            quantidade: '',
-            unidade: '',
-            data_disponibilidade: '',
-            preco: ''
-          })
-        }}
-      >
-        {mostrarFormulario ? 'Cancelar' : 'Nova solicitação'}
-      </button>
-
-      {mensagem && (
-        <p className={mensagem.includes('sucesso') ? 'sucesso' : 'erro'}>
-          {mensagem}
-        </p>
-      )}
-
-      {mostrarFormulario && (
-        <form onSubmit={handleSubmit} className="form-inline">
-
-          <select
-            value={form.nome_produto}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                nome_produto: e.target.value
-              })
-            }
-            required
-          >
-            <option value="">
-              Selecione o produto
-            </option>
-
-            {listaProdutos.map((p) => (
-              <option key={p.id} value={p.nome}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="number"
-            placeholder="Quantidade"
-            value={form.quantidade}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                quantidade: e.target.value
-              })
-            }
-            min="1"
-            required
-          />
-
-          <select
-            value={form.unidade}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                unidade: e.target.value
-              })
-            }
-            required
-          >
-            <option value="">
-              Selecione a unidade
-            </option>
-
-            <option value="kg">kg</option>
-            <option value="unidade">unidade</option>
-            <option value="maço">maço</option>
-            <option value="caixa">caixa</option>
-            <option value="litro">litro</option>
-            <option value="dúzia">dúzia</option>
-          </select>
-
+        <div className="page-header">
           <div>
-            <label>
-              Data de disponibilidade
-            </label>
+            <h2>Solicitações enviadas</h2>
 
-            <input
-              type="date"
-              value={form.data_disponibilidade}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  data_disponibilidade: e.target.value
-                })
-              }
-              required
-            />
+            <p>
+              Consulte o status das ofertas enviadas para a APOMS.
+            </p>
           </div>
 
-          <input
-            type="number"
-            placeholder="Preço (ex: 3.50)"
-            value={form.preco}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                preco: e.target.value
-              })
-            }
-            step="0.01"
-            min="0"
-            required
-          />
-
-          <button type="submit">
-            {editando
-              ? 'Atualizar'
-              : 'Enviar solicitação'}
+          <button
+            className="btn-principal"
+            type="button"
+            onClick={() => navigate('/cadastro')}
+          >
+            <span className="btn-icone">+</span>
+            Nova oferta
           </button>
+        </div>
 
-        </form>
-      )}
+        {mensagem && (
+          <p
+            className={`mensagem-pagina ${
+              mensagem.includes('sucesso') ? 'sucesso' : 'erro'
+            }`}
+          >
+            {mensagem}
+          </p>
+        )}
 
-      {solicitacoes.length === 0 ? (
-        <p>Nenhuma solicitação encontrada.</p>
-      ) : (
-        <table>
+        {editando && (
+          <div className="edicao-card">
 
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th>Quantidade</th>
-              <th>Disponibilidade</th>
-              <th>Preço</th>
-              <th>Status</th>
-              <th>Observação</th>
-              <th>Data de envio</th>
-              <th style={{ textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
+            <div className="edicao-titulo">
+              <h3>Editar solicitação</h3>
 
-          <tbody>
-            {solicitacoes.map((s) => (
-              <tr key={s.id}>
+              <p>
+                Altere os dados necessários e envie novamente para avaliação.
+              </p>
+            </div>
 
-                <td>
-                  {s.nome_produto}
-                </td>
+            <form
+              className="cadastro-produto-form"
+              onSubmit={handleSubmit}
+            >
 
-                <td>
-                  {s.quantidade}
-                </td>
+              <div className="campo campo-grande">
+                <label>Produto</label>
 
-                <td>
-                  {s.data_disponibilidade
-                    ? new Date(
-                        s.data_disponibilidade
-                      ).toLocaleDateString('pt-BR')
-                    : '-'}
-                </td>
+                <select
+                  value={form.nome_produto}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      nome_produto: e.target.value
+                    })
+                  }
+                  required
+                >
+                  <option value="">Selecione o produto</option>
 
-                <td>
-                  R$ {parseFloat(s.preco).toFixed(2)}
-                </td>
+                  {listaProdutos.map((produto) => (
+                    <option
+                      key={produto.id}
+                      value={produto.nome}
+                    >
+                      {produto.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <td style={statusCor(s.status)}>
-                  {s.status}
-                </td>
+              <div className="campo">
+                <label>Quantidade</label>
 
-                <td>
-                  {s.observacao || '-'}
-                </td>
+                <input
+                  type="number"
+                  value={form.quantidade}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      quantidade: e.target.value
+                    })
+                  }
+                  min="1"
+                  required
+                />
+              </div>
 
-                <td>
-                  {s.data_solicitacao
-                    ? new Date(
-                        s.data_solicitacao
-                      ).toLocaleDateString('pt-BR')
-                    : '-'}
-                </td>
+              <div className="campo">
+                <label>Unidade de medida</label>
 
-                <td style={{ textAlign: 'center' }}>
-                  {s.status === 'pendente' ? (
-                    <>
-                      <button
-                        onClick={() => iniciarEdicao(s)}
-                        style={{ marginRight: '6px' }}
-                      >
-                        Editar
-                      </button>
+                <select
+                  value={form.unidade}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      unidade: e.target.value
+                    })
+                  }
+                  required
+                >
+                  <option value="">Selecione a unidade</option>
+                  <option value="kg">kg</option>
+                  <option value="unidade">unidade</option>
+                  <option value="maço">maço</option>
+                  <option value="caixa">caixa</option>
+                  <option value="litro">litro</option>
+                  <option value="dúzia">dúzia</option>
+                </select>
+              </div>
 
-                      <button
-                        onClick={() => excluir(s.id)}
-                        className="btn-excluir"
-                      >
-                        Excluir
-                      </button>
-                    </>
-                  ) : (
-                    <span>-</span>
-                  )}
-                </td>
+              <div className="campo">
+                <label>Disponibilidade</label>
 
-              </tr>
-            ))}
-          </tbody>
+                <input
+                  type="date"
+                  value={form.data_disponibilidade}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      data_disponibilidade: e.target.value
+                    })
+                  }
+                  required
+                />
+              </div>
 
-        </table>
-      )}
-    </div>
+              <div className="campo">
+                <label>Preço (R$)</label>
+
+                <input
+                  type="number"
+                  value={form.preco}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      preco: e.target.value
+                    })
+                  }
+                  step="0.01"
+                  min="0.01"
+                  required
+                />
+              </div>
+
+              <div className="campo campo-grande">
+                <label>Observação</label>
+
+                <textarea
+                  placeholder="Adicione alguma informação importante sobre a oferta."
+                  value={form.observacao_produtor}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      observacao_produtor: e.target.value
+                    })
+                  }
+                  rows="4"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #d7ddd9',
+                    borderRadius: '6px',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    backgroundColor: 'transparent',
+                    color: 'inherit'
+                  }}
+                />
+              </div>
+
+              <div className="acoes-form campo-grande">
+                <button
+                  className="btn-voltar"
+                  type="button"
+                  onClick={cancelarEdicao}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn-principal"
+                  type="submit"
+                >
+                  Salvar alterações
+                </button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+        <div className="table-card">
+
+          {solicitacoes.length === 0 ? (
+            <div className="estado-vazio">
+
+              <div className="estado-vazio-icone">
+                +
+              </div>
+
+              <h3>Nenhuma solicitação encontrada</h3>
+
+              <p>
+                Você ainda não enviou nenhuma oferta para avaliação.
+              </p>
+
+              <button
+                className="btn-secundario"
+                type="button"
+                onClick={() => navigate('/cadastro')}
+              >
+                Cadastrar produto
+              </button>
+
+            </div>
+          ) : (
+            <div className="table-responsive">
+
+              <table className="dashboard-table solicitacoes-table">
+
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Disponibilidade</th>
+                    <th>Preço</th>
+                    <th>Status</th>
+                    <th>Observação</th>
+                    <th>Retorno</th>
+                    <th>Data de envio</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {solicitacoes.map((solicitacao) => (
+                    <tr key={solicitacao.id}>
+
+                      <td>
+                        <strong className="produto-nome">
+                          {solicitacao.nome_produto}
+                        </strong>
+                      </td>
+
+                      <td>
+                        {solicitacao.quantidade}
+                      </td>
+
+                      <td>
+                        {formatarData(
+                          solicitacao.data_disponibilidade
+                        )}
+                      </td>
+
+                      <td className="produto-preco">
+                        {formatarPreco(solicitacao.preco)}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status-badge status-${solicitacao.status}`}
+                        >
+                          {formatarStatus(solicitacao.status)}
+                        </span>
+                      </td>
+
+                      <td>
+                        {solicitacao.observacao_produtor || '-'}
+                      </td>
+
+                      <td>
+                        {solicitacao.observacao || '-'}
+                      </td>
+
+                      <td>
+                        {formatarData(
+                          solicitacao.data_solicitacao
+                        )}
+                      </td>
+
+                      <td>
+                        <div className="acoes-tabela">
+
+                          {(solicitacao.status === 'pendente' ||
+                            solicitacao.status === 'rejeitado') && (
+                            <button
+                              className="btn-editar"
+                              type="button"
+                              onClick={() =>
+                                iniciarEdicao(solicitacao)
+                              }
+                            >
+                              Editar
+                            </button>
+                          )}
+
+                          {solicitacao.status === 'pendente' && (
+                            <button
+                              className="btn-excluir"
+                              type="button"
+                              onClick={() =>
+                                excluir(solicitacao.id)
+                              }
+                            >
+                              Excluir
+                            </button>
+                          )}
+
+                          {solicitacao.status === 'aprovado' && (
+                            <span className="sem-acao">
+                              -
+                            </span>
+                          )}
+
+                        </div>
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+      </section>
+    </LayoutSistema>
   )
 }
 

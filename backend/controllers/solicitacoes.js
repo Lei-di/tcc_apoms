@@ -1,10 +1,7 @@
 const pool = require('../models/db')
 
-// ==========================================
-// PRODUTOR
-// ==========================================
+// Produtor
 
-// Listar solicitações do produtor logado
 const listarSolicitacoesProdutor = async (req, res) => {
   try {
     const resultado = await pool.query(
@@ -24,13 +21,13 @@ const listarSolicitacoesProdutor = async (req, res) => {
   }
 }
 
-// Criar nova solicitação
 const criarSolicitacao = async (req, res) => {
   const {
     nome_produto,
     quantidade,
     data_disponibilidade,
-    preco
+    preco,
+    observacao_produtor
   } = req.body
 
   const cpf_produtor = req.produtor.cpf
@@ -43,21 +40,25 @@ const criarSolicitacao = async (req, res) => {
           nome_produto,
           quantidade,
           data_disponibilidade,
-          preco
+          preco,
+          observacao_produtor
         )
-       VALUES ($1, $2, $3, $4, $5)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [
         cpf_produtor,
         nome_produto,
         quantidade,
         data_disponibilidade,
-        preco
+        preco,
+        observacao_produtor || null
       ]
     )
 
     res.status(201).json(resultado.rows[0])
   } catch (erro) {
+    console.error('Erro ao criar solicitação:', erro)
+
     res.status(500).json({
       mensagem: 'Erro ao criar solicitação',
       erro
@@ -65,10 +66,6 @@ const criarSolicitacao = async (req, res) => {
   }
 }
 
-// Editar solicitação
-// Permite editar solicitações pendentes ou rejeitadas.
-// Se uma solicitação rejeitada for corrigida,
-// ela volta automaticamente para pendente.
 const editarSolicitacao = async (req, res) => {
   const { id } = req.params
 
@@ -76,7 +73,8 @@ const editarSolicitacao = async (req, res) => {
     nome_produto,
     quantidade,
     data_disponibilidade,
-    preco
+    preco,
+    observacao_produtor
   } = req.body
 
   const cpf_produtor = req.produtor.cpf
@@ -89,11 +87,12 @@ const editarSolicitacao = async (req, res) => {
          quantidade = $2,
          data_disponibilidade = $3,
          preco = $4,
+         observacao_produtor = $5,
          status = 'pendente',
          observacao = NULL,
          data_avaliacao = NULL
-       WHERE id = $5
-         AND cpf_produtor = $6
+       WHERE id = $6
+         AND cpf_produtor = $7
          AND status IN ('pendente', 'rejeitado')
        RETURNING *`,
       [
@@ -101,6 +100,7 @@ const editarSolicitacao = async (req, res) => {
         quantidade,
         data_disponibilidade,
         preco,
+        observacao_produtor || null,
         id,
         cpf_produtor
       ]
@@ -122,8 +122,6 @@ const editarSolicitacao = async (req, res) => {
   }
 }
 
-// Excluir solicitação
-// Somente solicitações pendentes podem ser excluídas
 const excluirSolicitacao = async (req, res) => {
   const { id } = req.params
   const cpf_produtor = req.produtor.cpf
@@ -156,11 +154,9 @@ const excluirSolicitacao = async (req, res) => {
   }
 }
 
-// ==========================================
-// ADMINISTRADOR
-// ==========================================
 
-// Listar todas as solicitações
+// Administrador
+
 const listarTodasSolicitacoes = async (req, res) => {
   try {
     const resultado = await pool.query(
@@ -182,7 +178,6 @@ const listarTodasSolicitacoes = async (req, res) => {
   }
 }
 
-// Aprovar ou rejeitar uma solicitação
 const avaliarSolicitacao = async (req, res) => {
   const { id } = req.params
   const { status, observacao } = req.body
