@@ -34,6 +34,7 @@ textarea {
   font-family: inherit;
 }
 
+
 /* Login */
 
 .login-container {
@@ -61,9 +62,9 @@ textarea {
   padding: 2rem;
   background: white;
   border-radius: 8px;
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
 
 /* Formulários */
 
@@ -81,8 +82,7 @@ input:focus,
 select:focus {
   outline: none;
   border-color: #2e7d32;
-  box-shadow:
-    0 0 0 2px rgba(137, 218, 8, 0.08);
+  box-shadow: 0 0 0 2px rgba(137, 218, 8, 0.08);
 }
 
 label {
@@ -91,6 +91,7 @@ label {
   font-size: 0.9rem;
   color: #555;
 }
+
 
 /* Botões */
 
@@ -125,7 +126,8 @@ button:active {
   font-size: 0.9rem;
 }
 
-/* Cadastro */
+
+/* Cadastro antigo */
 
 .cadastro-container {
   width: 100%;
@@ -146,8 +148,7 @@ button:active {
   padding: 2rem;
   background: white;
   border-radius: 8px;
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .form-inline {
@@ -160,8 +161,7 @@ button:active {
   padding: 1.5rem;
   background: white;
   border-radius: 8px;
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .btn-excluir {
@@ -184,6 +184,7 @@ button:active {
   background-color: #1b5e20;
 }
 
+
 /* Layout do sistema */
 
 .app-layout {
@@ -192,6 +193,7 @@ button:active {
   min-height: 100vh;
   background-color: #f5f7f6;
 }
+
 
 /* Menu lateral */
 
@@ -211,8 +213,7 @@ button:active {
   align-items: center;
   gap: 12px;
   padding: 20px 22px;
-  border-bottom:
-    1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .logo-apoms {
@@ -242,8 +243,7 @@ button:active {
 
 .logo-texto span {
   margin-top: 2px;
-  color:
-    rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.65);
   font-size: 11px;
 }
 
@@ -263,8 +263,7 @@ button:active {
   gap: 12px;
   padding: 11px 14px;
   background: transparent;
-  color:
-    rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.78);
   border: none;
   border-radius: 7px;
   font-size: 14px;
@@ -277,8 +276,7 @@ button:active {
 }
 
 .sidebar-item:hover {
-  background-color:
-    rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
@@ -287,8 +285,7 @@ button:active {
 }
 
 .sidebar-item.ativo {
-  background-color:
-    rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.15);
   color: white;
   font-weight: 600;
 }
@@ -304,14 +301,15 @@ button:active {
 
 .sidebar-rodape {
   padding: 16px 14px 22px;
-  border-top:
-    1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sidebar-sair {
-  color:
-    rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.75);
 }
+
+
+/* Área principal */
 
 .main-content {
   width: calc(100% - 250px);
@@ -321,6 +319,7 @@ button:active {
   flex-direction: column;
   background-color: #f5f7f6;
 }
+
 
 /* Cabeçalho */
 
@@ -390,7 +389,8 @@ button:active {
   white-space: nowrap;
 }
 
-/* Conteúdo do painel */
+
+/* Conteúdo */
 
 .dashboard-content {
   width: 100%;
@@ -426,7 +426,7 @@ button:active {
   gap: 8px;
   flex-shrink: 0;
   padding: 11px 17px;
-  background-color: #1b5e20;;
+  background-color: #1b5e20;
   color: white;
   border: none;
   border-radius: 7px;
@@ -436,7 +436,7 @@ button:active {
 }
 
 .btn-principal:hover {
-  background-color: #1b6240;
+  background-color: #174f1b;
 }
 
 .btn-icone {
@@ -445,22 +445,107 @@ button:active {
   line-height: 14px;
 }
 
+
+/* Cadastro de produto */
+
+.cadastro-produto-content {
+  max-width: 1100px;
+}
+
+.cadastro-card {
+  width: 100%;
+  max-width: 900px;
+  padding: 28px;
+  background: white;
+  border: 1px solid #e4e9e6;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.cadastro-produto-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+}
+
+.campo-grande {
+  grid-column: 1 / -1;
+}
+
+.campo label {
+  margin-bottom: 7px;
+  color: #4e5752;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  min-height: 44px;
+  border-color: #d7ddd9;
+}
+
+.mensagem-form {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 6px;
+}
+
+.mensagem-form.sucesso {
+  background-color: #edf7f0;
+}
+
+.mensagem-form.erro {
+  background-color: #fceeee;
+}
+
+.acoes-form {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 5px;
+}
+
+.acoes-form .btn-principal {
+  min-width: 160px;
+}
+
+.btn-voltar {
+  min-width: 100px;
+  background: white;
+  color: #4e5752;
+  border: 1px solid #d7ddd9;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn-voltar:hover {
+  background-color: #f5f7f6;
+  color: #26332b;
+}
+
+
+/* Tabela */
+
 .table-card {
   width: 100%;
   overflow: hidden;
   background: white;
   border: 1px solid #e4e9e6;
   border-radius: 10px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .table-responsive {
   width: 100%;
   overflow-x: auto;
 }
-
-/* Tabela */
 
 .dashboard-table {
   width: 100%;
@@ -496,8 +581,7 @@ button:active {
 }
 
 .dashboard-table tbody tr {
-  transition:
-    background-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .dashboard-table tbody tr:hover {
@@ -517,6 +601,9 @@ button:active {
   color: #23764e;
   font-weight: 600;
 }
+
+
+/* Estado vazio */
 
 .estado-vazio {
   min-height: 320px;
@@ -567,6 +654,7 @@ button:active {
   background-color: #f0f7f3;
 }
 
+
 /* Compatibilidade com telas antigas */
 
 .painel-container {
@@ -598,8 +686,7 @@ table {
   overflow: hidden;
   background: white;
   border-radius: 8px;
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 th {
@@ -641,6 +728,7 @@ tr:last-child td {
   color: #23764e;
 }
 
+
 /* Tablet */
 
 @media (max-width: 1000px) {
@@ -658,11 +746,10 @@ tr:last-child td {
   }
 
   .dashboard-content {
-    padding:
-      28px 24px 40px;
+    padding: 28px 24px 40px;
   }
-
 }
+
 
 /* Celular */
 
@@ -742,6 +829,27 @@ tr:last-child td {
     width: 100%;
   }
 
+  .cadastro-card {
+    padding: 20px;
+  }
+
+  .cadastro-produto-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .campo-grande {
+    grid-column: auto;
+  }
+
+  .acoes-form {
+    flex-direction: column-reverse;
+  }
+
+  .acoes-form button {
+    width: 100%;
+  }
+
   .dashboard-table {
     min-width: 650px;
   }
@@ -762,5 +870,4 @@ tr:last-child td {
   .cadastro-container form {
     padding: 1.5rem;
   }
-
 }

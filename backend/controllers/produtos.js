@@ -6,24 +6,49 @@ const listarProdutos = async (req, res) => {
       'SELECT * FROM produtos WHERE cpf_produtor = $1',
       [req.produtor.cpf]
     );
+
     res.json(resultado.rows);
   } catch (erro) {
-    res.status(500).json({ mensagem: 'Erro ao buscar produtos', erro });
+    res.status(500).json({
+      mensagem: 'Erro ao buscar produtos',
+      erro
+    });
   }
 };
 
 const cadastrarProduto = async (req, res) => {
-  const { nome_produto, quantidade, data_validade, preco } = req.body;
+  const {
+    nome_produto,
+    quantidade,
+    data_disponibilidade,
+    preco
+  } = req.body;
+
   const cpf_produtor = req.produtor.cpf;
 
   try {
     const resultado = await pool.query(
-      'INSERT INTO produtos (cpf_produtor, nome_produto, quantidade, data_validade, preco) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [cpf_produtor, nome_produto, quantidade, data_validade, preco]
+      `INSERT INTO produtos
+      (cpf_produtor, nome_produto, quantidade, data_disponibilidade, preco)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *`,
+      [
+        cpf_produtor,
+        nome_produto,
+        quantidade,
+        data_disponibilidade,
+        preco
+      ]
     );
+
     res.status(201).json(resultado.rows[0]);
   } catch (erro) {
-    res.status(500).json({ mensagem: 'Erro ao cadastrar produto', erro });
+    console.error('Erro ao cadastrar produto:', erro);
+
+    res.status(500).json({
+      mensagem: 'Erro ao cadastrar produto',
+      erro
+    });
   }
 };
 
@@ -38,22 +63,40 @@ const deletarProduto = async (req, res) => {
     );
 
     if (resultado.rows.length === 0) {
-      return res.status(404).json({ mensagem: 'Produto não encontrado.' });
+      return res.status(404).json({
+        mensagem: 'Produto não encontrado.'
+      });
     }
 
-    res.json({ mensagem: 'Produto removido com sucesso.' });
+    res.json({
+      mensagem: 'Produto removido com sucesso.'
+    });
   } catch (erro) {
-    res.status(500).json({ mensagem: 'Erro ao deletar produto', erro });
+    res.status(500).json({
+      mensagem: 'Erro ao deletar produto',
+      erro
+    });
   }
 };
 
 const listarProdutosDisponiveis = async (req, res) => {
   try {
-    const resultado = await pool.query('SELECT * FROM lista_produtos ORDER BY nome');
+    const resultado = await pool.query(
+      'SELECT * FROM lista_produtos ORDER BY nome'
+    );
+
     res.json(resultado.rows);
   } catch (erro) {
-    res.status(500).json({ mensagem: 'Erro ao buscar lista de produtos', erro });
+    res.status(500).json({
+      mensagem: 'Erro ao buscar lista de produtos',
+      erro
+    });
   }
 };
 
-module.exports = { listarProdutos, cadastrarProduto, deletarProduto, listarProdutosDisponiveis };
+module.exports = {
+  listarProdutos,
+  cadastrarProduto,
+  deletarProduto,
+  listarProdutosDisponiveis
+};
