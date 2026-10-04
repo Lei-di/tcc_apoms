@@ -27,10 +27,6 @@ function LayoutSistema({
       <aside className="sidebar">
 
         <div className="sidebar-logo">
-          <div className="logo-apoms">
-            A
-          </div>
-
           <div className="logo-texto">
             <strong>APOMS</strong>
             <span>Sistema de Gestão</span>
