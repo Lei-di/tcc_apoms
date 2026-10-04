@@ -188,8 +188,12 @@ const avaliarSolicitacao = async (req, res) => {
     })
   }
 
+  const cliente = await pool.connect()
+
   try {
-    const resultado = await pool.query(
+    await cliente.query('BEGIN')
+
+    const resultado = await cliente.query(
       `UPDATE solicitacoes
        SET
          status = $1,
@@ -206,18 +210,51 @@ const avaliarSolicitacao = async (req, res) => {
     )
 
     if (resultado.rows.length === 0) {
+      await cliente.query('ROLLBACK')
+
       return res.status(404).json({
         mensagem:
           'Solicitação não encontrada ou já avaliada.'
       })
     }
 
-    res.json(resultado.rows[0])
+    const solicitacao = resultado.rows[0]
+
+    if (status === 'aprovado') {
+      await cliente.query(
+        `INSERT INTO produtos
+        (
+          cpf_produtor,
+          nome_produto,
+          quantidade,
+          data_disponibilidade,
+          preco
+        )
+        VALUES ($1, $2, $3, $4, $5)`,
+        [
+          solicitacao.cpf_produtor,
+          solicitacao.nome_produto,
+          solicitacao.quantidade,
+          solicitacao.data_disponibilidade,
+          solicitacao.preco
+        ]
+      )
+    }
+
+    await cliente.query('COMMIT')
+
+    res.json(solicitacao)
   } catch (erro) {
+    await cliente.query('ROLLBACK')
+
+    console.error('Erro ao avaliar solicitação:', erro)
+
     res.status(500).json({
       mensagem: 'Erro ao avaliar solicitação',
       erro
     })
+  } finally {
+    cliente.release()
   }
 }
 

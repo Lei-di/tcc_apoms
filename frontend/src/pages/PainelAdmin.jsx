@@ -1,121 +1,333 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import LayoutSistema from '../LayoutSistema'
 
 function PainelAdmin() {
-  const [produtores, setProdutores] = useState([])
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [solicitacoes, setSolicitacoes] = useState([])
   const [mensagem, setMensagem] = useState('')
-  const [novoProdutor, setNovoProdutor] = useState({
-    cpf: '', nome: '', telefone: '', email: '', cidade: '', endereco: ''
-  })
-  const navigate = useNavigate()
-  const nome = localStorage.getItem('nome')
+
+  const [avaliando, setAvaliando] = useState(null)
+  const [statusAvaliacao, setStatusAvaliacao] = useState('')
+  const [retorno, setRetorno] = useState('')
 
   useEffect(() => {
-    buscarProdutores()
+    buscarSolicitacoes()
   }, [])
 
-  const buscarProdutores = async () => {
+  const buscarSolicitacoes = async () => {
     try {
-      const resposta = await api.get('/admin/produtores')
-      setProdutores(resposta.data)
+      const resposta = await api.get('/solicitacoes/todas')
+      setSolicitacoes(resposta.data)
     } catch (err) {
-      navigate('/')
+      console.error('Erro ao buscar solicitações:', err)
     }
   }
 
-  const handleCadastro = async (e) => {
-    e.preventDefault()
+  const iniciarAvaliacao = (solicitacao, status) => {
+    setAvaliando(solicitacao)
+    setStatusAvaliacao(status)
+    setRetorno('')
+    setMensagem('')
+  }
+
+  const cancelarAvaliacao = () => {
+    setAvaliando(null)
+    setStatusAvaliacao('')
+    setRetorno('')
+  }
+
+  const confirmarAvaliacao = async () => {
+    if (
+      statusAvaliacao === 'rejeitado' &&
+      retorno.trim() === ''
+    ) {
+      setMensagem('Informe o motivo da rejeição.')
+      return
+    }
+
     try {
-      await api.post('/admin/produtores', novoProdutor)
-      setMensagem('Produtor cadastrado com sucesso!')
-      setNovoProdutor({ cpf: '', nome: '', telefone: '', email: '', cidade: '', endereco: '' })
-      setMostrarFormulario(false)
-      buscarProdutores()
-    } catch (err) {
-      if (err.response?.status === 409) {
-        setMensagem('CPF já cadastrado.')
+      await api.patch(
+        `/solicitacoes/${avaliando.id}/avaliar`,
+        {
+          status: statusAvaliacao,
+          observacao: retorno.trim() || null
+        }
+      )
+
+      if (statusAvaliacao === 'aprovado') {
+        setMensagem('Solicitação aprovada com sucesso!')
       } else {
-        setMensagem('Erro ao cadastrar produtor.')
+        setMensagem('Solicitação rejeitada com sucesso!')
       }
-    }
-  }
 
-  const toggleAtivo = async (cpf) => {
-    try {
-      await api.patch(`/admin/produtores/${cpf}/toggle`)
-      buscarProdutores()
+      cancelarAvaliacao()
+      buscarSolicitacoes()
     } catch (err) {
-      alert('Erro ao atualizar status do produtor.')
+      console.error('Erro ao avaliar solicitação:', err)
+      setMensagem('Erro ao avaliar solicitação.')
     }
   }
 
-  const sair = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('nome')
-    localStorage.removeItem('tipo')
-    navigate('/')
+  const formatarData = (data) => {
+    if (!data) {
+      return '-'
+    }
+
+    const somenteData = data.split('T')[0]
+    const [ano, mes, dia] = somenteData.split('-')
+
+    return `${dia}/${mes}/${ano}`
+  }
+
+  const formatarPreco = (preco) => {
+    return Number(preco).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    })
+  }
+
+  const formatarStatus = (status) => {
+    if (status === 'aprovado') {
+      return 'Aprovada'
+    }
+
+    if (status === 'rejeitado') {
+      return 'Rejeitada'
+    }
+
+    return 'Pendente'
   }
 
   return (
-    <div className="painel-container">
-      <div className="painel-header">
-        <h2>Olá, {nome}!</h2>
-        <button onClick={sair}>Sair</button>
-      </div>
+    <LayoutSistema
+      titulo="Solicitações"
+      subtitulo="Analise as ofertas enviadas pelos produtores."
+      paginaAtiva="admin-solicitacoes"
+      tipoUsuario="admin"
+    >
+      <section className="dashboard-content">
 
-      <h3>Gerenciar Produtores</h3>
-      <button onClick={() => setMostrarFormulario(!mostrarFormulario)}>
-        {mostrarFormulario ? 'Cancelar' : 'Cadastrar novo produtor'}
-      </button>
+        <div className="page-header">
+          <div>
+            <h2>Solicitações de produtos</h2>
 
-      {mensagem && <p className={mensagem.includes('sucesso') ? 'sucesso' : 'erro'}>{mensagem}</p>}
+            <p>
+              Aprove ou rejeite as ofertas enviadas pelos produtores.
+            </p>
+          </div>
+        </div>
 
-      {mostrarFormulario && (
-        <form onSubmit={handleCadastro} className="form-inline">
-          <input type="text" placeholder="CPF (somente números)" value={novoProdutor.cpf} onChange={(e) => setNovoProdutor({ ...novoProdutor, cpf: e.target.value })} required />
-          <input type="text" placeholder="Nome completo" value={novoProdutor.nome} onChange={(e) => setNovoProdutor({ ...novoProdutor, nome: e.target.value })} required />
-          <input type="text" placeholder="Telefone" value={novoProdutor.telefone} onChange={(e) => setNovoProdutor({ ...novoProdutor, telefone: e.target.value })} />
-          <input type="email" placeholder="E-mail" value={novoProdutor.email} onChange={(e) => setNovoProdutor({ ...novoProdutor, email: e.target.value })} />
-          <input type="text" placeholder="Cidade" value={novoProdutor.cidade} onChange={(e) => setNovoProdutor({ ...novoProdutor, cidade: e.target.value })} />
-          <input type="text" placeholder="Endereço" value={novoProdutor.endereco} onChange={(e) => setNovoProdutor({ ...novoProdutor, endereco: e.target.value })} />
-          <button type="submit">Salvar</button>
-        </form>
-      )}
+        {mensagem && (
+          <p
+            className={`mensagem-pagina ${
+              mensagem.includes('Erro') ||
+              mensagem.includes('Informe')
+                ? 'erro'
+                : 'sucesso'
+            }`}
+          >
+            {mensagem}
+          </p>
+        )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>CPF</th>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>Cidade</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {produtores.map((p) => (
-            <tr key={p.cpf}>
-              <td>{p.cpf}</td>
-              <td>{p.nome}</td>
-              <td>{p.telefone}</td>
-              <td>{p.cidade}</td>
-              <td>{p.ativo ? 'Ativo' : 'Inativo'}</td>
-              <td>
-                <button
-                  onClick={() => toggleAtivo(p.cpf)}
-                  className={p.ativo ? 'btn-excluir' : 'btn-ativar'}
-                >
-                  {p.ativo ? 'Desativar' : 'Ativar'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        {avaliando && (
+          <div className="edicao-card">
+
+            <div className="edicao-titulo">
+              <h3>
+                {statusAvaliacao === 'aprovado'
+                  ? 'Aprovar solicitação'
+                  : 'Rejeitar solicitação'}
+              </h3>
+
+              <p>
+                {avaliando.nome_produtor} - {avaliando.nome_produto}
+              </p>
+            </div>
+
+            <div className="campo campo-grande">
+              <label>Retorno</label>
+
+              <textarea
+                value={retorno}
+                onChange={(e) => setRetorno(e.target.value)}
+                placeholder={
+                  statusAvaliacao === 'rejeitado'
+                    ? 'Informe o motivo da rejeição.'
+                    : 'Adicione uma informação para o produtor, se necessário.'
+                }
+                rows="4"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d7ddd9',
+                  borderRadius: '6px',
+                  fontSize: '1rem',
+                  resize: 'vertical',
+                  backgroundColor: 'transparent',
+                  color: 'inherit'
+                }}
+              />
+            </div>
+
+            <div
+              className="acoes-form"
+              style={{ marginTop: '20px' }}
+            >
+              <button
+                className="btn-voltar"
+                type="button"
+                onClick={cancelarAvaliacao}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className={
+                  statusAvaliacao === 'aprovado'
+                    ? 'btn-principal'
+                    : 'btn-excluir'
+                }
+                type="button"
+                onClick={confirmarAvaliacao}
+              >
+                {statusAvaliacao === 'aprovado'
+                  ? 'Confirmar aprovação'
+                  : 'Confirmar rejeição'}
+              </button>
+            </div>
+
+          </div>
+        )}
+
+        <div className="table-card">
+
+          {solicitacoes.length === 0 ? (
+            <div className="estado-vazio">
+
+              <h3>Nenhuma solicitação encontrada</h3>
+
+              <p>
+                Ainda não existem ofertas enviadas para avaliação.
+              </p>
+
+            </div>
+          ) : (
+            <div className="table-responsive">
+
+              <table className="dashboard-table solicitacoes-table">
+
+                <thead>
+                  <tr>
+                    <th>Produtor</th>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Disponibilidade</th>
+                    <th>Preço</th>
+                    <th>Observação</th>
+                    <th>Status</th>
+                    <th>Data de envio</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {solicitacoes.map((solicitacao) => (
+                    <tr key={solicitacao.id}>
+
+                      <td>
+                        <strong className="produto-nome">
+                          {solicitacao.nome_produtor}
+                        </strong>
+                      </td>
+
+                      <td>
+                        {solicitacao.nome_produto}
+                      </td>
+
+                      <td>
+                        {solicitacao.quantidade}
+                      </td>
+
+                      <td>
+                        {formatarData(
+                          solicitacao.data_disponibilidade
+                        )}
+                      </td>
+
+                      <td className="produto-preco">
+                        {formatarPreco(solicitacao.preco)}
+                      </td>
+
+                      <td>
+                        {solicitacao.observacao_produtor || '-'}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status-badge status-${solicitacao.status}`}
+                        >
+                          {formatarStatus(solicitacao.status)}
+                        </span>
+                      </td>
+
+                      <td>
+                        {formatarData(
+                          solicitacao.data_solicitacao
+                        )}
+                      </td>
+
+                      <td>
+                        {solicitacao.status === 'pendente' ? (
+                          <div className="acoes-tabela">
+
+                            <button
+                              className="btn-editar"
+                              type="button"
+                              onClick={() =>
+                                iniciarAvaliacao(
+                                  solicitacao,
+                                  'aprovado'
+                                )
+                              }
+                            >
+                              Aprovar
+                            </button>
+
+                            <button
+                              className="btn-excluir"
+                              type="button"
+                              onClick={() =>
+                                iniciarAvaliacao(
+                                  solicitacao,
+                                  'rejeitado'
+                                )
+                              }
+                            >
+                              Rejeitar
+                            </button>
+
+                          </div>
+                        ) : (
+                          <span className="sem-acao">
+                            -
+                          </span>
+                        )}
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+      </section>
+    </LayoutSistema>
   )
 }
 

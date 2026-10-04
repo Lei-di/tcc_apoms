@@ -3,6 +3,8 @@ import Login from './pages/Login'
 import Painel from './pages/Painel'
 import CadastroProduto from './pages/CadastroProduto'
 import PainelAdmin from './pages/PainelAdmin'
+import ProdutosAdmin from './pages/ProdutosAdmin'
+import ProdutoresAdmin from './pages/ProdutoresAdmin'
 import PrimeiroAcesso from './pages/PrimeiroAcesso'
 import Solicitacoes from './pages/Solicitacoes'
 
@@ -11,11 +13,19 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+
         <Route path="/painel" element={<Painel />} />
         <Route path="/cadastro" element={<CadastroProduto />} />
-        <Route path="/admin" element={<PainelAdmin />} />
-        <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} />
         <Route path="/solicitacoes" element={<Solicitacoes />} />
+
+        <Route path="/admin" element={<PainelAdmin />} />
+        <Route path="/admin/produtos" element={<ProdutosAdmin />} />
+        <Route path="/admin/produtores" element={<ProdutoresAdmin />} />
+
+        <Route
+          path="/primeiro-acesso"
+          element={<PrimeiroAcesso />}
+        />
       </Routes>
     </BrowserRouter>
   )
