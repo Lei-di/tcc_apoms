@@ -18,6 +18,7 @@ function RelatoriosAdmin() {
 
   const [filtros, setFiltros] = useState(filtrosVazios)
   const [filtrosAplicados, setFiltrosAplicados] = useState(filtrosVazios)
+  const [pesquisaRealizada, setPesquisaRealizada] = useState(false)
 
   useEffect(() => {
     buscarSolicitacoes()
@@ -109,10 +110,28 @@ function RelatoriosAdmin() {
     return true
   })
 
+  const temFiltroPreenchido = Object.values(
+    filtros
+  ).some((valor) => valor !== '')
+
+  const filtrosForamAlterados =
+    JSON.stringify(filtros) !==
+    JSON.stringify(filtrosAplicados)
+
+  const mostrarResultados =
+    pesquisaRealizada &&
+    !filtrosForamAlterados
+
   const pesquisar = () => {
+    if (!temFiltroPreenchido) {
+      return
+    }
+
     setFiltrosAplicados({
       ...filtros
     })
+
+    setPesquisaRealizada(true)
   }
 
   const limparFiltros = () => {
@@ -123,7 +142,13 @@ function RelatoriosAdmin() {
     setFiltrosAplicados({
       ...filtrosVazios
     })
+
+    setPesquisaRealizada(false)
   }
+
+  const podeExportar =
+    mostrarResultados &&
+    solicitacoesFiltradas.length > 0
 
   const totalSolicitacoes = solicitacoesFiltradas.length
 
@@ -188,7 +213,7 @@ function RelatoriosAdmin() {
   }
 
   const exportarCSV = () => {
-    if (solicitacoesFiltradas.length === 0) {
+    if (!podeExportar) {
       return
     }
 
@@ -279,25 +304,6 @@ function RelatoriosAdmin() {
       tipoUsuario="admin"
     >
       <section className="dashboard-content">
-
-        <div className="page-header">
-
-          <button
-            className="btn-principal"
-            type="button"
-            onClick={exportarCSV}
-            disabled={solicitacoesFiltradas.length === 0}
-            style={{
-              opacity:
-                solicitacoesFiltradas.length === 0
-                  ? 0.5
-                  : 1
-            }}
-          >
-            Exportar CSV
-          </button>
-
-        </div>
 
         {erro && (
           <p className="mensagem-pagina erro">
@@ -481,8 +487,30 @@ function RelatoriosAdmin() {
                 className="btn-principal"
                 type="button"
                 onClick={pesquisar}
+                disabled={!temFiltroPreenchido}
+                style={{
+                  opacity: temFiltroPreenchido ? 1 : 0.45,
+                  cursor: temFiltroPreenchido
+                    ? 'pointer'
+                    : 'not-allowed'
+                }}
               >
                 Pesquisar
+              </button>
+
+              <button
+                className="btn-principal"
+                type="button"
+                onClick={exportarCSV}
+                disabled={!podeExportar}
+                style={{
+                  opacity: podeExportar ? 1 : 0.45,
+                  cursor: podeExportar
+                    ? 'pointer'
+                    : 'not-allowed'
+                }}
+              >
+                Exportar CSV
               </button>
 
             </div>
@@ -491,180 +519,184 @@ function RelatoriosAdmin() {
 
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px',
-            marginBottom: '25px'
-          }}
-        >
+        {mostrarResultados && (
+          <>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '16px',
+                marginBottom: '25px'
+              }}
+            >
 
-          <div style={cardResumo}>
-            <span style={tituloResumo}>
-              Total de solicitações
-            </span>
+              <div style={cardResumo}>
+                <span style={tituloResumo}>
+                  Total de solicitações
+                </span>
 
-            <strong style={valorResumo}>
-              {totalSolicitacoes}
-            </strong>
-          </div>
+                <strong style={valorResumo}>
+                  {totalSolicitacoes}
+                </strong>
+              </div>
 
-          <div style={cardResumo}>
-            <span style={tituloResumo}>
-              Pendentes
-            </span>
+              <div style={cardResumo}>
+                <span style={tituloResumo}>
+                  Pendentes
+                </span>
 
-            <strong style={valorResumo}>
-              {totalPendentes}
-            </strong>
-          </div>
+                <strong style={valorResumo}>
+                  {totalPendentes}
+                </strong>
+              </div>
 
-          <div style={cardResumo}>
-            <span style={tituloResumo}>
-              Aprovadas
-            </span>
+              <div style={cardResumo}>
+                <span style={tituloResumo}>
+                  Aprovadas
+                </span>
 
-            <strong style={valorResumo}>
-              {totalAprovadas}
-            </strong>
-          </div>
+                <strong style={valorResumo}>
+                  {totalAprovadas}
+                </strong>
+              </div>
 
-          <div style={cardResumo}>
-            <span style={tituloResumo}>
-              Rejeitadas
-            </span>
+              <div style={cardResumo}>
+                <span style={tituloResumo}>
+                  Rejeitadas
+                </span>
 
-            <strong style={valorResumo}>
-              {totalRejeitadas}
-            </strong>
-          </div>
-
-        </div>
-
-        <div className="page-header">
-          <div>
-            <h2>Resultados</h2>
-
-            <p>
-              {solicitacoesFiltradas.length}{' '}
-              {solicitacoesFiltradas.length === 1
-                ? 'registro encontrado'
-                : 'registros encontrados'}
-            </p>
-          </div>
-        </div>
-
-        <div className="table-card">
-
-          {carregando ? (
-            <div className="estado-vazio">
-
-              <h3>Carregando relatório...</h3>
+                <strong style={valorResumo}>
+                  {totalRejeitadas}
+                </strong>
+              </div>
 
             </div>
-          ) : solicitacoesFiltradas.length === 0 ? (
-            <div className="estado-vazio">
 
-              <h3>Nenhum registro encontrado</h3>
+            <div className="page-header">
+              <div>
+                <h2>Resultados</h2>
 
-              <p>
-                Não existem solicitações correspondentes
-                aos filtros selecionados.
-              </p>
-
+                <p>
+                  {solicitacoesFiltradas.length}{' '}
+                  {solicitacoesFiltradas.length === 1
+                    ? 'registro encontrado'
+                    : 'registros encontrados'}
+                </p>
+              </div>
             </div>
-          ) : (
-            <div className="table-responsive">
 
-              <table className="dashboard-table solicitacoes-table">
+            <div className="table-card">
 
-                <thead>
-                  <tr>
-                    <th>Produtor</th>
-                    <th>Núcleo</th>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Disponibilidade</th>
-                    <th>Preço</th>
-                    <th>Status</th>
-                    <th>Data de envio</th>
-                    <th>Observação</th>
-                    <th>Retorno</th>
-                  </tr>
-                </thead>
+              {carregando ? (
+                <div className="estado-vazio">
 
-                <tbody>
-                  {solicitacoesFiltradas.map(
-                    (solicitacao) => (
-                      <tr key={solicitacao.id}>
+                  <h3>Carregando relatório...</h3>
 
-                        <td>
-                          <strong className="produto-nome">
-                            {solicitacao.nome_produtor}
-                          </strong>
-                        </td>
+                </div>
+              ) : solicitacoesFiltradas.length === 0 ? (
+                <div className="estado-vazio">
 
-                        <td>
-                          {solicitacao.nucleo_produtivo || '-'}
-                        </td>
+                  <h3>Nenhum registro encontrado</h3>
 
-                        <td>
-                          {solicitacao.nome_produto}
-                        </td>
+                  <p>
+                    Não existem solicitações correspondentes
+                    aos filtros selecionados.
+                  </p>
 
-                        <td>
-                          {solicitacao.quantidade}
-                        </td>
+                </div>
+              ) : (
+                <div className="table-responsive">
 
-                        <td>
-                          {formatarData(
-                            solicitacao.data_disponibilidade
-                          )}
-                        </td>
+                  <table className="dashboard-table solicitacoes-table">
 
-                        <td className="produto-preco">
-                          {formatarPreco(
-                            solicitacao.preco
-                          )}
-                        </td>
-
-                        <td>
-                          <span
-                            className={`status-badge status-${solicitacao.status}`}
-                          >
-                            {formatarStatus(
-                              solicitacao.status
-                            )}
-                          </span>
-                        </td>
-
-                        <td>
-                          {formatarData(
-                            solicitacao.data_solicitacao
-                          )}
-                        </td>
-
-                        <td>
-                          {solicitacao.observacao_produtor || '-'}
-                        </td>
-
-                        <td>
-                          {solicitacao.observacao || '-'}
-                        </td>
-
+                    <thead>
+                      <tr>
+                        <th>Produtor</th>
+                        <th>Núcleo</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Disponibilidade</th>
+                        <th>Preço</th>
+                        <th>Status</th>
+                        <th>Data de envio</th>
+                        <th>Observação</th>
+                        <th>Retorno</th>
                       </tr>
-                    )
-                  )}
-                </tbody>
+                    </thead>
 
-              </table>
+                    <tbody>
+                      {solicitacoesFiltradas.map(
+                        (solicitacao) => (
+                          <tr key={solicitacao.id}>
+
+                            <td>
+                              <strong className="produto-nome">
+                                {solicitacao.nome_produtor}
+                              </strong>
+                            </td>
+
+                            <td>
+                              {solicitacao.nucleo_produtivo || '-'}
+                            </td>
+
+                            <td>
+                              {solicitacao.nome_produto}
+                            </td>
+
+                            <td>
+                              {solicitacao.quantidade}
+                            </td>
+
+                            <td>
+                              {formatarData(
+                                solicitacao.data_disponibilidade
+                              )}
+                            </td>
+
+                            <td className="produto-preco">
+                              {formatarPreco(
+                                solicitacao.preco
+                              )}
+                            </td>
+
+                            <td>
+                              <span
+                                className={`status-badge status-${solicitacao.status}`}
+                              >
+                                {formatarStatus(
+                                  solicitacao.status
+                                )}
+                              </span>
+                            </td>
+
+                            <td>
+                              {formatarData(
+                                solicitacao.data_solicitacao
+                              )}
+                            </td>
+
+                            <td>
+                              {solicitacao.observacao_produtor || '-'}
+                            </td>
+
+                            <td>
+                              {solicitacao.observacao || '-'}
+                            </td>
+
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+
+                  </table>
+
+                </div>
+              )}
 
             </div>
-          )}
-
-        </div>
+          </>
+        )}
 
       </section>
     </LayoutSistema>

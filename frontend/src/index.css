@@ -180,6 +180,11 @@ button:active {
 .sidebar {
   width: 250px;
   min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -833,6 +838,10 @@ tr:last-child td {
   .sidebar {
     width: 100%;
     min-height: auto;
+    height: auto;
+    position: static;
+    align-self: auto;
+    overflow: visible;
   }
 
   .sidebar-logo {
