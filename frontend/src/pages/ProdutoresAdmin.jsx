@@ -79,14 +79,6 @@ function ProdutoresAdmin() {
 
         <div className="page-header">
 
-          <div>
-            <h2>Produtores cadastrados</h2>
-
-            <p>
-              Consulte, cadastre, ative ou desative produtores.
-            </p>
-          </div>
-
           <button
             className="btn-principal"
             type="button"

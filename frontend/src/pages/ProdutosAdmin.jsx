@@ -89,7 +89,7 @@ function ProdutosAdmin() {
 
   return (
     <LayoutSistema
-      titulo="Produtos"
+      titulo="Lista de produtos"
       subtitulo="Gerencie os produtos disponíveis para cadastro de ofertas."
       paginaAtiva="admin-produtos"
       tipoUsuario="admin"
@@ -97,14 +97,6 @@ function ProdutosAdmin() {
       <section className="dashboard-content">
 
         <div className="page-header">
-
-          <div>
-            <h2>Lista de produtos</h2>
-
-            <p>
-              Estes são os produtos que aparecem para o produtor ao cadastrar uma oferta.
-            </p>
-          </div>
 
           <button
             className="btn-principal"

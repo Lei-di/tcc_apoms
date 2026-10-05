@@ -100,22 +100,12 @@ function PainelAdmin() {
 
   return (
     <LayoutSistema
-      titulo="Solicitações"
+      titulo="Solicitações de Produto"
       subtitulo="Analise as ofertas enviadas pelos produtores."
       paginaAtiva="admin-solicitacoes"
       tipoUsuario="admin"
     >
       <section className="dashboard-content">
-
-        <div className="page-header">
-          <div>
-            <h2>Solicitações de produtos</h2>
-
-            <p>
-              Aprove ou rejeite as ofertas enviadas pelos produtores.
-            </p>
-          </div>
-        </div>
 
         {mensagem && (
           <p

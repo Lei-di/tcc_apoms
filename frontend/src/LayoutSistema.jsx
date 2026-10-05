@@ -107,6 +107,35 @@ function LayoutSistema({
 
                 <span>Produtores cadastrados</span>
               </button>
+
+              <button
+                className={`sidebar-item ${
+                  paginaAtiva === 'admin-relatorios' ? 'ativo' : ''
+                }`}
+                type="button"
+                onClick={() => navigate('/admin/relatorios')}
+              >
+                <span className="sidebar-icon">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 19V10" />
+                    <path d="M10 19V5" />
+                    <path d="M16 19v-7" />
+                    <path d="M22 19V8" />
+                    <path d="M2 19h22" />
+                  </svg>
+                </span>
+
+                <span>Relatórios</span>
+              </button>
             </>
           ) : (
             <>

@@ -162,7 +162,8 @@ const listarTodasSolicitacoes = async (req, res) => {
     const resultado = await pool.query(
       `SELECT
          s.*,
-         p.nome AS nome_produtor
+         p.nome AS nome_produtor,
+         p.cidade AS nucleo_produtivo
        FROM solicitacoes s
        JOIN produtores p
          ON s.cpf_produtor = p.cpf
