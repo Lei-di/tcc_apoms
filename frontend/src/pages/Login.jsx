@@ -30,13 +30,21 @@ function Login() {
       }
     } catch (err) {
       if (err.response?.status === 403) {
-        navigate('/primeiro-acesso', {
-          state: { cpf }
-        })
+        setErro(
+          'Conta ainda não ativada. Utilize a opção "Primeiro acesso".'
+        )
       } else {
         setErro('CPF ou senha inválidos.')
       }
     }
+  }
+
+  const irParaPrimeiroAcesso = () => {
+    setErro('')
+
+    navigate('/primeiro-acesso', {
+      state: { cpf }
+    })
   }
 
   return (
@@ -108,7 +116,7 @@ function Login() {
           }
 
           .login-box-header {
-            margin-bottom: 28px;
+            margin: 0 30px 28px;
           }
 
           .login-box-header h2 {
@@ -170,6 +178,7 @@ function Login() {
             color: #c62828;
             border-radius: 6px;
             font-size: 13px;
+            line-height: 1.5;
           }
 
           .login-btn {
@@ -187,6 +196,36 @@ function Login() {
 
           .login-btn:hover {
             background: #174f1b;
+          }
+
+          .primeiro-acesso-area {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e7ebe8;
+            text-align: center;
+          }
+
+          .primeiro-acesso-area p {
+            margin-bottom: 10px;
+            color: #7b8580;
+            font-size: 13px;
+          }
+
+          .primeiro-acesso-btn {
+            width: 100%;
+            min-height: 44px;
+            background: white;
+            color: #1b5e20;
+            border: 1px solid #1b5e20;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+
+          .primeiro-acesso-btn:hover {
+            background: #f0f7f1;
+            color: #174f1b;
           }
 
           .login-rodape {
@@ -229,6 +268,10 @@ function Login() {
             .login-form {
               padding: 24px;
             }
+
+            .login-box-header {
+              margin: 0 24px 28px;
+            }
           }
         `}
       </style>
@@ -258,14 +301,6 @@ function Login() {
 
           <div className="login-box">
 
-            <div className="login-box-header">
-              <h2>Acesso ao sistema</h2>
-
-              <p>
-                Informe suas credenciais para continuar.
-              </p>
-            </div>
-
             <form
               className="login-form"
               onSubmit={handleLogin}
@@ -278,7 +313,10 @@ function Login() {
                   type="text"
                   placeholder="Digite seu CPF"
                   value={cpf}
-                  onChange={(e) => setCpf(e.target.value)}
+                  maxLength="11"
+                  onChange={(e) =>
+                    setCpf(e.target.value.replace(/\D/g, ''))
+                  }
                   required
                 />
               </div>
@@ -307,6 +345,22 @@ function Login() {
               >
                 Entrar
               </button>
+
+              <div className="primeiro-acesso-area">
+
+                <p>
+                  Ainda não criou sua senha?
+                </p>
+
+                <button
+                  className="primeiro-acesso-btn"
+                  type="button"
+                  onClick={irParaPrimeiroAcesso}
+                >
+                  Primeiro acesso
+                </button>
+
+              </div>
 
             </form>
 
