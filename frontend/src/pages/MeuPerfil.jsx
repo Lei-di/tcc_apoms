@@ -10,8 +10,18 @@ function MeuPerfil() {
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const [cadastroCompleto, setCadastroCompleto] = useState(false)
+  const [modoEdicao, setModoEdicao] = useState(false)
 
   const [form, setForm] = useState({
+    cpf: '',
+    nome: '',
+    telefone: '',
+    email: '',
+    cidade: '',
+    endereco: ''
+  })
+
+  const [dadosOriginais, setDadosOriginais] = useState({
     cpf: '',
     nome: '',
     telefone: '',
@@ -39,24 +49,21 @@ function MeuPerfil() {
 
   const buscarPerfil = async () => {
     try {
-      const resposta =
-        await api.get('/produtores/me')
+      const resposta = await api.get('/produtores/me')
 
-      setForm({
+      const dados = {
         cpf: resposta.data.cpf || '',
         nome: resposta.data.nome || '',
-        telefone:
-          resposta.data.telefone || '',
-        email:
-          resposta.data.email || '',
-        cidade:
-          resposta.data.cidade || '',
-        endereco:
-          resposta.data.endereco || ''
-      })
+        telefone: resposta.data.telefone || '',
+        email: resposta.data.email || '',
+        cidade: resposta.data.cidade || '',
+        endereco: resposta.data.endereco || ''
+      }
 
-      const completo =
-        resposta.data.cadastro_completo
+      setForm(dados)
+      setDadosOriginais(dados)
+
+      const completo = resposta.data.cadastro_completo
 
       setCadastroCompleto(completo)
 
@@ -64,6 +71,10 @@ function MeuPerfil() {
         'cadastroCompleto',
         String(completo)
       )
+
+      if (!completo) {
+        setModoEdicao(true)
+      }
     } catch (err) {
       console.error(
         'Erro ao buscar perfil:',
@@ -78,6 +89,26 @@ function MeuPerfil() {
     }
   }
 
+  const iniciarEdicao = () => {
+    setDadosOriginais({
+      ...form
+    })
+
+    setMensagem('')
+    setErro('')
+    setModoEdicao(true)
+  }
+
+  const cancelarEdicao = () => {
+    setForm({
+      ...dadosOriginais
+    })
+
+    setMensagem('')
+    setErro('')
+    setModoEdicao(false)
+  }
+
   const salvarPerfil = async (e) => {
     e.preventDefault()
 
@@ -85,32 +116,31 @@ function MeuPerfil() {
     setErro('')
 
     try {
-      const resposta =
-        await api.put(
-          '/produtores/me',
-          {
-            nome: form.nome,
-            telefone: form.telefone,
-            email: form.email,
-            cidade: form.cidade,
-            endereco: form.endereco
-          }
-        )
+      const resposta = await api.put(
+        '/produtores/me',
+        {
+          nome: form.nome,
+          telefone: form.telefone,
+          email: form.email,
+          cidade: form.cidade,
+          endereco: form.endereco
+        }
+      )
 
-      setForm({
+      const dadosAtualizados = {
         cpf: resposta.data.cpf || '',
         nome: resposta.data.nome || '',
-        telefone:
-          resposta.data.telefone || '',
-        email:
-          resposta.data.email || '',
-        cidade:
-          resposta.data.cidade || '',
-        endereco:
-          resposta.data.endereco || ''
-      })
+        telefone: resposta.data.telefone || '',
+        email: resposta.data.email || '',
+        cidade: resposta.data.cidade || '',
+        endereco: resposta.data.endereco || ''
+      }
+
+      setForm(dadosAtualizados)
+      setDadosOriginais(dadosAtualizados)
 
       setCadastroCompleto(true)
+      setModoEdicao(false)
 
       localStorage.setItem(
         'cadastroCompleto',
@@ -142,6 +172,28 @@ function MeuPerfil() {
       /(\d{3})(\d{3})(\d{3})(\d{2})/,
       '$1.$2.$3-$4'
     )
+  }
+
+  const formatarTelefone = (telefone) => {
+    if (!telefone) {
+      return 'Não informado'
+    }
+
+    if (telefone.length === 11) {
+      return telefone.replace(
+        /(\d{2})(\d{5})(\d{4})/,
+        '($1) $2-$3'
+      )
+    }
+
+    if (telefone.length === 10) {
+      return telefone.replace(
+        /(\d{2})(\d{4})(\d{4})/,
+        '($1) $2-$3'
+      )
+    }
+
+    return telefone
   }
 
   if (carregando) {
@@ -179,8 +231,7 @@ function MeuPerfil() {
               padding: '15px 17px',
               background: '#fff4df',
               color: '#8a5a00',
-              border:
-                '1px solid #f0d8a8',
+              border: '1px solid #f0d8a8',
               borderRadius: '8px',
               fontSize: '13px',
               lineHeight: '1.5'
@@ -220,6 +271,24 @@ function MeuPerfil() {
           }}
         >
 
+          {!modoEdicao && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginBottom: '22px'
+              }}
+            >
+              <button
+                className="btn-principal"
+                type="button"
+                onClick={iniciarEdicao}
+              >
+                Editar
+              </button>
+            </div>
+          )}
+
           <form
             className="cadastro-produto-form"
             onSubmit={salvarPerfil}
@@ -228,121 +297,142 @@ function MeuPerfil() {
             <div className="campo">
               <label>CPF</label>
 
-              <input
-                type="text"
-                value={formatarCpf(
-                  form.cpf
-                )}
-                readOnly
-                style={{
-                  backgroundColor:
-                    '#f3f5f4',
-                  cursor:
-                    'not-allowed'
-                }}
-              />
+              {modoEdicao ? (
+                <input
+                  type="text"
+                  value={formatarCpf(form.cpf)}
+                  readOnly
+                  style={{
+                    backgroundColor: '#f3f5f4',
+                    cursor: 'not-allowed'
+                  }}
+                />
+              ) : (
+                <div style={campoInformacao}>
+                  {formatarCpf(form.cpf)}
+                </div>
+              )}
             </div>
 
             <div className="campo">
               <label>Nome completo</label>
 
-              <input
-                type="text"
-                placeholder="Informe seu nome completo"
-                value={form.nome}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    nome:
-                      e.target.value
-                  })
-                }
-                required
-              />
+              {modoEdicao ? (
+                <input
+                  type="text"
+                  placeholder="Informe seu nome completo"
+                  value={form.nome}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      nome: e.target.value
+                    })
+                  }
+                  required
+                />
+              ) : (
+                <div style={campoInformacao}>
+                  {form.nome || 'Não informado'}
+                </div>
+              )}
             </div>
 
             <div className="campo">
               <label>Telefone</label>
 
-              <input
-                type="text"
-                placeholder="Ex: 67999999999"
-                value={form.telefone}
-                maxLength="11"
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    telefone:
-                      e.target.value.replace(
-                        /\D/g,
-                        ''
-                      )
-                  })
-                }
-                required
-              />
+              {modoEdicao ? (
+                <input
+                  type="text"
+                  placeholder="Ex: 67999999999"
+                  value={form.telefone}
+                  maxLength="11"
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      telefone:
+                        e.target.value.replace(
+                          /\D/g,
+                          ''
+                        )
+                    })
+                  }
+                  required
+                />
+              ) : (
+                <div style={campoInformacao}>
+                  {formatarTelefone(form.telefone)}
+                </div>
+              )}
             </div>
 
             <div className="campo">
               <label>E-mail</label>
 
-              <input
-                type="email"
-                placeholder="Ex: produtor@email.com"
-                value={form.email}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    email:
-                      e.target.value
-                  })
-                }
-                required
-              />
+              {modoEdicao ? (
+                <input
+                  type="email"
+                  placeholder="Ex: produtor@email.com"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      email: e.target.value
+                    })
+                  }
+                  required
+                />
+              ) : (
+                <div style={campoInformacao}>
+                  {form.email || 'Não informado'}
+                </div>
+              )}
             </div>
 
             <div className="campo campo-grande">
               <label>
-                Cidade / Núcleo produtivo
+                Núcleo produtivo
               </label>
 
-              <select
-                value={form.cidade}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    cidade:
-                      e.target.value
-                  })
-                }
-                required
-              >
-                <option value="">
-                  Selecione seu núcleo produtivo
-                </option>
+              {modoEdicao ? (
+                <select
+                  value={form.cidade}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      cidade: e.target.value
+                    })
+                  }
+                  required
+                >
+                  <option value="">
+                    Selecione seu núcleo produtivo
+                  </option>
 
-                {form.cidade &&
-                  !nucleosProdutivos.includes(
-                    form.cidade
-                  ) && (
-                    <option
-                      value={form.cidade}
-                    >
-                      {form.cidade}
-                    </option>
+                  {form.cidade &&
+                    !nucleosProdutivos.includes(
+                      form.cidade
+                    ) && (
+                      <option value={form.cidade}>
+                        {form.cidade}
+                      </option>
+                    )}
+
+                  {nucleosProdutivos.map(
+                    (nucleo) => (
+                      <option
+                        key={nucleo}
+                        value={nucleo}
+                      >
+                        {nucleo}
+                      </option>
+                    )
                   )}
-
-                {nucleosProdutivos.map(
-                  (nucleo) => (
-                    <option
-                      key={nucleo}
-                      value={nucleo}
-                    >
-                      {nucleo}
-                    </option>
-                  )
-                )}
-              </select>
+                </select>
+              ) : (
+                <div style={campoInformacao}>
+                  {form.cidade || 'Não informado'}
+                </div>
+              )}
             </div>
 
             <div className="campo campo-grande">
@@ -350,73 +440,91 @@ function MeuPerfil() {
                 Endereço de retirada
               </label>
 
-              <input
-                type="text"
-                placeholder="Informe o endereço para retirada dos produtos"
-                value={form.endereco}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    endereco:
-                      e.target.value
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div className="acoes-form campo-grande">
-
-              {cadastroCompleto && (
-                <button
-                  className="btn-voltar"
-                  type="button"
-                  onClick={() =>
-                    navigate('/painel')
+              {modoEdicao ? (
+                <input
+                  type="text"
+                  placeholder="Informe o endereço para retirada dos produtos"
+                  value={form.endereco}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      endereco: e.target.value
+                    })
                   }
-                >
-                  Voltar ao painel
-                </button>
+                  required
+                />
+              ) : (
+                <div style={campoInformacao}>
+                  {form.endereco || 'Não informado'}
+                </div>
               )}
-
-              <button
-                className="btn-principal"
-                type="submit"
-              >
-                Salvar dados
-              </button>
-
             </div>
+
+            {modoEdicao && (
+              <div className="acoes-form campo-grande">
+
+                {cadastroCompleto && (
+                  <button
+                    className="btn-voltar"
+                    type="button"
+                    onClick={cancelarEdicao}
+                  >
+                    Cancelar
+                  </button>
+                )}
+
+                <button
+                  className="btn-principal"
+                  type="submit"
+                >
+                  {cadastroCompleto
+                    ? 'Salvar alterações'
+                    : 'Salvar dados'}
+                </button>
+
+              </div>
+            )}
 
           </form>
 
         </div>
 
-        {cadastroCompleto &&
-          mensagem && (
-            <div
-              style={{
-                maxWidth: '900px',
-                marginTop: '18px'
-              }}
+        {!modoEdicao && (
+          <div
+            style={{
+              maxWidth: '900px',
+              marginTop: '18px',
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <button
+              className="btn-voltar"
+              type="button"
+              onClick={() =>
+                navigate('/painel')
+              }
             >
-
-              <button
-                className="btn-secundario"
-                type="button"
-                onClick={() =>
-                  navigate('/cadastro')
-                }
-              >
-                Cadastrar uma oferta
-              </button>
-
-            </div>
-          )}
+              Voltar ao painel
+            </button>
+          </div>
+        )}
 
       </section>
     </LayoutSistema>
   )
+}
+
+const campoInformacao = {
+  minHeight: '44px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 12px',
+  background: '#f7f9f8',
+  color: '#4e5752',
+  border: '1px solid #e1e6e3',
+  borderRadius: '6px',
+  fontSize: '14px'
 }
 
 export default MeuPerfil
