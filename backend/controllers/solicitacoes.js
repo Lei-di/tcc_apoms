@@ -1,5 +1,10 @@
 const pool = require('../models/db')
 
+const {
+  criarNotificacao,
+  notificarAdministradores
+} = require('./notificacoes')
+
 // Produtor
 
 const cadastroProdutorCompleto = async (cpf) => {
@@ -20,7 +25,8 @@ const cadastroProdutorCompleto = async (cpf) => {
   if (resultado.rows.length === 0) {
     return {
       completo: false,
-      ativo: false
+      ativo: false,
+      nome: ''
     }
   }
 
@@ -36,7 +42,8 @@ const cadastroProdutorCompleto = async (cpf) => {
 
   return {
     completo,
-    ativo: produtor.ativo
+    ativo: produtor.ativo,
+    nome: produtor.nome
   }
 }
 
@@ -53,7 +60,8 @@ const listarSolicitacoesProdutor = async (req, res) => {
     res.json(resultado.rows)
   } catch (erro) {
     res.status(500).json({
-      mensagem: 'Erro ao buscar solicitações',
+      mensagem:
+        'Erro ao buscar solicitações',
       erro
     })
   }
@@ -114,7 +122,17 @@ const criarSolicitacao = async (req, res) => {
       ]
     )
 
-    res.status(201).json(resultado.rows[0])
+    await notificarAdministradores({
+      tipo: 'nova_solicitacao',
+      titulo: 'Nova solicitação',
+      mensagem:
+        `${situacaoProdutor.nome} enviou uma nova oferta de ${nome_produto}.`,
+      link: '/admin'
+    })
+
+    res.status(201).json(
+      resultado.rows[0]
+    )
   } catch (erro) {
     console.error(
       'Erro ao criar solicitação:',
@@ -122,7 +140,8 @@ const criarSolicitacao = async (req, res) => {
     )
 
     res.status(500).json({
-      mensagem: 'Erro ao criar solicitação',
+      mensagem:
+        'Erro ao criar solicitação',
       erro
     })
   }
@@ -139,7 +158,8 @@ const editarSolicitacao = async (req, res) => {
     observacao_produtor
   } = req.body
 
-  const cpf_produtor = req.produtor.cpf
+  const cpf_produtor =
+    req.produtor.cpf
 
   try {
     const resultado = await pool.query(
@@ -175,10 +195,30 @@ const editarSolicitacao = async (req, res) => {
       })
     }
 
+    const produtor = await pool.query(
+      `SELECT nome
+       FROM produtores
+       WHERE cpf = $1`,
+      [cpf_produtor]
+    )
+
+    const nomeProdutor =
+      produtor.rows[0]?.nome ||
+      'Um produtor'
+
+    await notificarAdministradores({
+      tipo: 'solicitacao_atualizada',
+      titulo: 'Solicitação atualizada',
+      mensagem:
+        `${nomeProdutor} atualizou a oferta de ${nome_produto} e a reenviou para avaliação.`,
+      link: '/admin'
+    })
+
     res.json(resultado.rows[0])
   } catch (erro) {
     res.status(500).json({
-      mensagem: 'Erro ao editar solicitação',
+      mensagem:
+        'Erro ao editar solicitação',
       erro
     })
   }
@@ -186,7 +226,8 @@ const editarSolicitacao = async (req, res) => {
 
 const excluirSolicitacao = async (req, res) => {
   const { id } = req.params
-  const cpf_produtor = req.produtor.cpf
+  const cpf_produtor =
+    req.produtor.cpf
 
   try {
     const resultado = await pool.query(
@@ -249,6 +290,7 @@ const listarTodasSolicitacoes = async (req, res) => {
 
 const avaliarSolicitacao = async (req, res) => {
   const { id } = req.params
+
   const {
     status,
     observacao
@@ -265,29 +307,35 @@ const avaliarSolicitacao = async (req, res) => {
     })
   }
 
-  const cliente = await pool.connect()
+  const cliente =
+    await pool.connect()
 
   try {
     await cliente.query('BEGIN')
 
-    const resultado = await cliente.query(
-      `UPDATE solicitacoes
-       SET
-         status = $1,
-         observacao = $2,
-         data_avaliacao = NOW()
-       WHERE id = $3
-         AND status = 'pendente'
-       RETURNING *`,
-      [
-        status,
-        observacao,
-        id
-      ]
-    )
+    const resultado =
+      await cliente.query(
+        `UPDATE solicitacoes
+         SET
+           status = $1,
+           observacao = $2,
+           data_avaliacao = NOW()
+         WHERE id = $3
+           AND status = 'pendente'
+         RETURNING *`,
+        [
+          status,
+          observacao,
+          id
+        ]
+      )
 
-    if (resultado.rows.length === 0) {
-      await cliente.query('ROLLBACK')
+    if (
+      resultado.rows.length === 0
+    ) {
+      await cliente.query(
+        'ROLLBACK'
+      )
 
       return res.status(404).json({
         mensagem:
@@ -321,9 +369,47 @@ const avaliarSolicitacao = async (req, res) => {
 
     await cliente.query('COMMIT')
 
+    if (status === 'aprovado') {
+      await criarNotificacao({
+        cpf_destinatario:
+          solicitacao.cpf_produtor,
+
+        tipo:
+          'solicitacao_aprovada',
+
+        titulo:
+          'Solicitação aprovada',
+
+        mensagem:
+          `Sua oferta de ${solicitacao.nome_produto} foi aprovada pela APOMS.`,
+
+        link:
+          '/solicitacoes'
+      })
+    } else {
+      await criarNotificacao({
+        cpf_destinatario:
+          solicitacao.cpf_produtor,
+
+        tipo:
+          'solicitacao_rejeitada',
+
+        titulo:
+          'Solicitação rejeitada',
+
+        mensagem:
+          `Sua oferta de ${solicitacao.nome_produto} foi rejeitada. Consulte o retorno da APOMS.`,
+
+        link:
+          '/solicitacoes'
+      })
+    }
+
     res.json(solicitacao)
   } catch (erro) {
-    await cliente.query('ROLLBACK')
+    await cliente.query(
+      'ROLLBACK'
+    )
 
     console.error(
       'Erro ao avaliar solicitação:',

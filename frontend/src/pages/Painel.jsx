@@ -63,7 +63,7 @@ function Painel() {
             onClick={() => navigate('/cadastro')}
           >
             <span className="btn-icone">+</span>
-            Cadastrar produto
+            Cadastrar oferta
           </button>
         </div>
 
@@ -73,7 +73,7 @@ function Painel() {
             <div className="estado-vazio">
 
               <p>
-                Você ainda não possui produtos cadastrados.
+                Você ainda não possui ofertas cadastradas.
               </p>
 
             </div>

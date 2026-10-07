@@ -7,27 +7,75 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//conexão
+// conexão
 const pool = require('./models/db');
+
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
-        console.error('Erro ao conectar ao banco:', err);
+        console.error(
+            'Erro ao conectar ao banco:',
+            err
+        );
     } else {
-        console.log('Banco de dados conectado em:', res.rows[0].now);
+        console.log(
+            'Banco de dados conectado em:',
+            res.rows[0].now
+        );
     }
 });
 
 const PORT = process.env.PORT || 3000;
-const produtoresRoutes = require('./routes/produtores');
-app.use('/produtores', produtoresRoutes);
-const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);
-const produtosRoutes = require('./routes/produtos');
-app.use('/produtos', produtosRoutes);
-const adminRoutes = require('./routes/admin');
-app.use('/admin', adminRoutes);
-const solicitacoesRoutes = require('./routes/solicitacoes');
-app.use('/solicitacoes', solicitacoesRoutes);
+
+const produtoresRoutes =
+    require('./routes/produtores');
+
+app.use(
+    '/produtores',
+    produtoresRoutes
+);
+
+const authRoutes =
+    require('./routes/auth');
+
+app.use(
+    '/auth',
+    authRoutes
+);
+
+const produtosRoutes =
+    require('./routes/produtos');
+
+app.use(
+    '/produtos',
+    produtosRoutes
+);
+
+const adminRoutes =
+    require('./routes/admin');
+
+app.use(
+    '/admin',
+    adminRoutes
+);
+
+const solicitacoesRoutes =
+    require('./routes/solicitacoes');
+
+app.use(
+    '/solicitacoes',
+    solicitacoesRoutes
+);
+
+const notificacoesRoutes =
+    require('./routes/notificacoes');
+
+app.use(
+    '/notificacoes',
+    notificacoesRoutes
+);
+
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(
+        `Servidor rodando na porta ${PORT}`
+    );
 });
