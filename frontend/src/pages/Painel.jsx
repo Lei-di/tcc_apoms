@@ -51,15 +51,12 @@ function Painel() {
     >
       <section className="dashboard-content">
 
-        <div className="page-header">
-          <div>
-            <h2>Meus Produtos</h2>
-
-            <p>
-              Visualize os produtos cadastrados e suas disponibilidades.
-            </p>
-          </div>
-
+        <div
+          className="page-header"
+          style={{
+            justifyContent: 'flex-end'
+          }}
+        >
           <button
             className="btn-principal"
             type="button"
@@ -70,32 +67,21 @@ function Painel() {
           </button>
         </div>
 
-        {/* Produtos */}
         <div className="table-card">
 
           {produtos.length === 0 ? (
             <div className="estado-vazio">
-              <div className="estado-vazio-icone">
-                +
-              </div>
-
-              <h3>Nenhum produto cadastrado</h3>
 
               <p>
                 Você ainda não possui produtos cadastrados.
               </p>
 
-              <button
-                className="btn-secundario"
-                type="button"
-                onClick={() => navigate('/cadastro')}
-              >
-                Cadastrar primeiro produto
-              </button>
             </div>
           ) : (
             <div className="table-responsive">
+
               <table className="dashboard-table">
+
                 <thead>
                   <tr>
                     <th>Produto</th>
@@ -108,6 +94,7 @@ function Painel() {
                 <tbody>
                   {produtos.map((produto) => (
                     <tr key={produto.id}>
+
                       <td>
                         <strong className="produto-nome">
                           {produto.nome_produto}
@@ -119,20 +106,26 @@ function Painel() {
                       </td>
 
                       <td>
-                        {formatarData(produto.data_disponibilidade)}
+                        {formatarData(
+                          produto.data_disponibilidade
+                        )}
                       </td>
 
                       <td className="produto-preco">
                         {formatarPreco(produto.preco)}
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
+
               </table>
+
             </div>
           )}
 
         </div>
+
       </section>
     </LayoutSistema>
   )

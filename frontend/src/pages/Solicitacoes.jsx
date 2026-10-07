@@ -27,20 +27,31 @@ function Solicitacoes() {
 
   const buscarSolicitacoes = async () => {
     try {
-      const resposta = await api.get('/solicitacoes/minhas')
+      const resposta =
+        await api.get('/solicitacoes/minhas')
+
       setSolicitacoes(resposta.data)
     } catch (err) {
-      console.error('Erro ao buscar solicitações:', err)
+      console.error(
+        'Erro ao buscar solicitações:',
+        err
+      )
+
       navigate('/')
     }
   }
 
   const buscarListaProdutos = async () => {
     try {
-      const resposta = await api.get('/produtos/disponiveis')
+      const resposta =
+        await api.get('/produtos/disponiveis')
+
       setListaProdutos(resposta.data)
     } catch (err) {
-      console.error('Erro ao buscar lista de produtos:', err)
+      console.error(
+        'Erro ao buscar lista de produtos:',
+        err
+      )
     }
   }
 
@@ -49,37 +60,58 @@ function Solicitacoes() {
 
     const dados = {
       nome_produto: form.nome_produto,
-      quantidade: `${form.quantidade} ${form.unidade}`,
-      data_disponibilidade: form.data_disponibilidade,
+      quantidade:
+        `${form.quantidade} ${form.unidade}`,
+      data_disponibilidade:
+        form.data_disponibilidade,
       preco: parseFloat(form.preco),
-      observacao_produtor: form.observacao_produtor
+      observacao_produtor:
+        form.observacao_produtor
     }
 
     try {
-      await api.put(`/solicitacoes/${editando}`, dados)
+      await api.put(
+        `/solicitacoes/${editando}`,
+        dados
+      )
 
-      setMensagem('Solicitação atualizada com sucesso!')
+      setMensagem(
+        'Solicitação atualizada com sucesso!'
+      )
 
       cancelarEdicao()
       buscarSolicitacoes()
     } catch (err) {
-      console.error('Erro ao atualizar solicitação:', err)
-      setMensagem('Erro ao atualizar solicitação.')
+      console.error(
+        'Erro ao atualizar solicitação:',
+        err
+      )
+
+      setMensagem(
+        'Erro ao atualizar solicitação.'
+      )
     }
   }
 
   const iniciarEdicao = (solicitacao) => {
-    const partes = solicitacao.quantidade.split(' ')
+    const partes =
+      solicitacao.quantidade.split(' ')
 
     setForm({
-      nome_produto: solicitacao.nome_produto,
-      quantidade: partes[0],
-      unidade: partes.slice(1).join(' '),
-      data_disponibilidade: solicitacao.data_disponibilidade
-        ? solicitacao.data_disponibilidade.split('T')[0]
-        : '',
-      preco: solicitacao.preco,
-      observacao_produtor: solicitacao.observacao_produtor || ''
+      nome_produto:
+        solicitacao.nome_produto,
+      quantidade:
+        partes[0],
+      unidade:
+        partes.slice(1).join(' '),
+      data_disponibilidade:
+        solicitacao.data_disponibilidade
+          ? solicitacao.data_disponibilidade.split('T')[0]
+          : '',
+      preco:
+        solicitacao.preco,
+      observacao_produtor:
+        solicitacao.observacao_produtor || ''
     })
 
     setMensagem('')
@@ -100,17 +132,28 @@ function Solicitacoes() {
   }
 
   const excluir = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta solicitação?')) {
+    if (
+      !window.confirm(
+        'Tem certeza que deseja excluir esta solicitação?'
+      )
+    ) {
       return
     }
 
     try {
-      await api.delete(`/solicitacoes/${id}`)
+      await api.delete(
+        `/solicitacoes/${id}`
+      )
 
-      setMensagem('Solicitação excluída com sucesso!')
+      setMensagem(
+        'Solicitação excluída com sucesso!'
+      )
+
       buscarSolicitacoes()
     } catch (err) {
-      alert('Erro ao excluir. A solicitação pode já ter sido avaliada.')
+      alert(
+        'Erro ao excluir. A solicitação pode já ter sido avaliada.'
+      )
     }
   }
 
@@ -119,17 +162,23 @@ function Solicitacoes() {
       return '-'
     }
 
-    const somenteData = data.split('T')[0]
-    const [ano, mes, dia] = somenteData.split('-')
+    const somenteData =
+      data.split('T')[0]
+
+    const [ano, mes, dia] =
+      somenteData.split('-')
 
     return `${dia}/${mes}/${ano}`
   }
 
   const formatarPreco = (preco) => {
-    return Number(preco).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    })
+    return Number(preco).toLocaleString(
+      'pt-BR',
+      {
+        style: 'currency',
+        currency: 'BRL'
+      }
+    )
   }
 
   const formatarStatus = (status) => {
@@ -152,21 +201,23 @@ function Solicitacoes() {
     >
       <section className="dashboard-content">
 
-        <div className="page-header">
-          <div>
-            <h2>Solicitações enviadas</h2>
-
-            <p>
-              Consulte o status das ofertas enviadas para a APOMS.
-            </p>
-          </div>
-
+        <div
+          className="page-header"
+          style={{
+            justifyContent: 'flex-end'
+          }}
+        >
           <button
             className="btn-principal"
             type="button"
-            onClick={() => navigate('/cadastro')}
+            onClick={() =>
+              navigate('/cadastro')
+            }
           >
-            <span className="btn-icone">+</span>
+            <span className="btn-icone">
+              +
+            </span>
+
             Nova oferta
           </button>
         </div>
@@ -174,7 +225,9 @@ function Solicitacoes() {
         {mensagem && (
           <p
             className={`mensagem-pagina ${
-              mensagem.includes('sucesso') ? 'sucesso' : 'erro'
+              mensagem.includes('sucesso')
+                ? 'sucesso'
+                : 'erro'
             }`}
           >
             {mensagem}
@@ -205,21 +258,26 @@ function Solicitacoes() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      nome_produto: e.target.value
+                      nome_produto:
+                        e.target.value
                     })
                   }
                   required
                 >
-                  <option value="">Selecione o produto</option>
+                  <option value="">
+                    Selecione o produto
+                  </option>
 
-                  {listaProdutos.map((produto) => (
-                    <option
-                      key={produto.id}
-                      value={produto.nome}
-                    >
-                      {produto.nome}
-                    </option>
-                  ))}
+                  {listaProdutos.map(
+                    (produto) => (
+                      <option
+                        key={produto.id}
+                        value={produto.nome}
+                      >
+                        {produto.nome}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
@@ -232,7 +290,8 @@ function Solicitacoes() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      quantidade: e.target.value
+                      quantidade:
+                        e.target.value
                     })
                   }
                   min="1"
@@ -241,38 +300,59 @@ function Solicitacoes() {
               </div>
 
               <div className="campo">
-                <label>Unidade de medida</label>
+                <label>
+                  Unidade de medida
+                </label>
 
                 <select
                   value={form.unidade}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      unidade: e.target.value
+                      unidade:
+                        e.target.value
                     })
                   }
                   required
                 >
-                  <option value="">Selecione a unidade</option>
+                  <option value="">
+                    Selecione a unidade
+                  </option>
+
                   <option value="kg">kg</option>
-                  <option value="unidade">unidade</option>
-                  <option value="maço">maço</option>
-                  <option value="caixa">caixa</option>
-                  <option value="litro">litro</option>
-                  <option value="dúzia">dúzia</option>
+                  <option value="unidade">
+                    unidade
+                  </option>
+                  <option value="maço">
+                    maço
+                  </option>
+                  <option value="caixa">
+                    caixa
+                  </option>
+                  <option value="litro">
+                    litro
+                  </option>
+                  <option value="dúzia">
+                    dúzia
+                  </option>
                 </select>
               </div>
 
               <div className="campo">
-                <label>Disponibilidade</label>
+                <label>
+                  Disponibilidade
+                </label>
 
                 <input
                   type="date"
-                  value={form.data_disponibilidade}
+                  value={
+                    form.data_disponibilidade
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      data_disponibilidade: e.target.value
+                      data_disponibilidade:
+                        e.target.value
                     })
                   }
                   required
@@ -288,7 +368,8 @@ function Solicitacoes() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      preco: e.target.value
+                      preco:
+                        e.target.value
                     })
                   }
                   step="0.01"
@@ -302,28 +383,34 @@ function Solicitacoes() {
 
                 <textarea
                   placeholder="Adicione alguma informação importante sobre a oferta."
-                  value={form.observacao_produtor}
+                  value={
+                    form.observacao_produtor
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      observacao_produtor: e.target.value
+                      observacao_produtor:
+                        e.target.value
                     })
                   }
                   rows="4"
                   style={{
                     width: '100%',
                     padding: '12px',
-                    border: '1px solid #d7ddd9',
+                    border:
+                      '1px solid #d7ddd9',
                     borderRadius: '6px',
                     fontSize: '1rem',
                     resize: 'vertical',
-                    backgroundColor: 'transparent',
+                    backgroundColor:
+                      'transparent',
                     color: 'inherit'
                   }}
                 />
               </div>
 
               <div className="acoes-form campo-grande">
+
                 <button
                   className="btn-voltar"
                   type="button"
@@ -338,9 +425,11 @@ function Solicitacoes() {
                 >
                   Salvar alterações
                 </button>
+
               </div>
 
             </form>
+
           </div>
         )}
 
@@ -353,7 +442,9 @@ function Solicitacoes() {
                 +
               </div>
 
-              <h3>Nenhuma solicitação encontrada</h3>
+              <h3>
+                Nenhuma solicitação encontrada
+              </h3>
 
               <p>
                 Você ainda não enviou nenhuma oferta para avaliação.
@@ -362,7 +453,9 @@ function Solicitacoes() {
               <button
                 className="btn-secundario"
                 type="button"
-                onClick={() => navigate('/cadastro')}
+                onClick={() =>
+                  navigate('/cadastro')
+                }
               >
                 Cadastrar produto
               </button>
@@ -388,90 +481,114 @@ function Solicitacoes() {
                 </thead>
 
                 <tbody>
-                  {solicitacoes.map((solicitacao) => (
-                    <tr key={solicitacao.id}>
+                  {solicitacoes.map(
+                    (solicitacao) => (
+                      <tr key={solicitacao.id}>
 
-                      <td>
-                        <strong className="produto-nome">
-                          {solicitacao.nome_produto}
-                        </strong>
-                      </td>
+                        <td>
+                          <strong className="produto-nome">
+                            {
+                              solicitacao.nome_produto
+                            }
+                          </strong>
+                        </td>
 
-                      <td>
-                        {solicitacao.quantidade}
-                      </td>
+                        <td>
+                          {
+                            solicitacao.quantidade
+                          }
+                        </td>
 
-                      <td>
-                        {formatarData(
-                          solicitacao.data_disponibilidade
-                        )}
-                      </td>
-
-                      <td className="produto-preco">
-                        {formatarPreco(solicitacao.preco)}
-                      </td>
-
-                      <td>
-                        <span
-                          className={`status-badge status-${solicitacao.status}`}
-                        >
-                          {formatarStatus(solicitacao.status)}
-                        </span>
-                      </td>
-
-                      <td>
-                        {solicitacao.observacao_produtor || '-'}
-                      </td>
-
-                      <td>
-                        {solicitacao.observacao || '-'}
-                      </td>
-
-                      <td>
-                        {formatarData(
-                          solicitacao.data_solicitacao
-                        )}
-                      </td>
-
-                      <td>
-                        <div className="acoes-tabela">
-
-                          {(solicitacao.status === 'pendente' ||
-                            solicitacao.status === 'rejeitado') && (
-                            <button
-                              className="btn-editar"
-                              type="button"
-                              onClick={() =>
-                                iniciarEdicao(solicitacao)
-                              }
-                            >
-                              Editar
-                            </button>
+                        <td>
+                          {formatarData(
+                            solicitacao.data_disponibilidade
                           )}
+                        </td>
 
-                          {solicitacao.status === 'pendente' && (
-                            <button
-                              className="btn-excluir"
-                              type="button"
-                              onClick={() =>
-                                excluir(solicitacao.id)
-                              }
-                            >
-                              Excluir
-                            </button>
+                        <td className="produto-preco">
+                          {formatarPreco(
+                            solicitacao.preco
                           )}
+                        </td>
 
-                          {solicitacao.status === 'aprovado' && (
-                            <span className="sem-acao">
-                              -
-                            </span>
+                        <td>
+                          <span
+                            className={`status-badge status-${solicitacao.status}`}
+                          >
+                            {formatarStatus(
+                              solicitacao.status
+                            )}
+                          </span>
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.observacao_produtor ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.observacao ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {formatarData(
+                            solicitacao.data_solicitacao
                           )}
+                        </td>
 
-                        </div>
-                      </td>
+                        <td>
+                          <div className="acoes-tabela">
 
-                    </tr>
-                  ))}
+                            {(solicitacao.status ===
+                              'pendente' ||
+                              solicitacao.status ===
+                              'rejeitado') && (
+                              <button
+                                className="btn-editar"
+                                type="button"
+                                onClick={() =>
+                                  iniciarEdicao(
+                                    solicitacao
+                                  )
+                                }
+                              >
+                                Editar
+                              </button>
+                            )}
+
+                            {solicitacao.status ===
+                              'pendente' && (
+                              <button
+                                className="btn-excluir"
+                                type="button"
+                                onClick={() =>
+                                  excluir(
+                                    solicitacao.id
+                                  )
+                                }
+                              >
+                                Excluir
+                              </button>
+                            )}
+
+                            {solicitacao.status ===
+                              'aprovado' && (
+                              <span className="sem-acao">
+                                -
+                              </span>
+                            )}
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    )
+                  )}
                 </tbody>
 
               </table>

@@ -39,15 +39,20 @@ function MeuPerfil() {
 
   const buscarPerfil = async () => {
     try {
-      const resposta = await api.get('/produtores/me')
+      const resposta =
+        await api.get('/produtores/me')
 
       setForm({
         cpf: resposta.data.cpf || '',
         nome: resposta.data.nome || '',
-        telefone: resposta.data.telefone || '',
-        email: resposta.data.email || '',
-        cidade: resposta.data.cidade || '',
-        endereco: resposta.data.endereco || ''
+        telefone:
+          resposta.data.telefone || '',
+        email:
+          resposta.data.email || '',
+        cidade:
+          resposta.data.cidade || '',
+        endereco:
+          resposta.data.endereco || ''
       })
 
       const completo =
@@ -80,24 +85,29 @@ function MeuPerfil() {
     setErro('')
 
     try {
-      const resposta = await api.put(
-        '/produtores/me',
-        {
-          nome: form.nome,
-          telefone: form.telefone,
-          email: form.email,
-          cidade: form.cidade,
-          endereco: form.endereco
-        }
-      )
+      const resposta =
+        await api.put(
+          '/produtores/me',
+          {
+            nome: form.nome,
+            telefone: form.telefone,
+            email: form.email,
+            cidade: form.cidade,
+            endereco: form.endereco
+          }
+        )
 
       setForm({
         cpf: resposta.data.cpf || '',
         nome: resposta.data.nome || '',
-        telefone: resposta.data.telefone || '',
-        email: resposta.data.email || '',
-        cidade: resposta.data.cidade || '',
-        endereco: resposta.data.endereco || ''
+        telefone:
+          resposta.data.telefone || '',
+        email:
+          resposta.data.email || '',
+        cidade:
+          resposta.data.cidade || '',
+        endereco:
+          resposta.data.endereco || ''
       })
 
       setCadastroCompleto(true)
@@ -144,7 +154,9 @@ function MeuPerfil() {
         <section className="dashboard-content">
 
           <div className="estado-vazio">
-            <h3>Carregando seus dados...</h3>
+            <h3>
+              Carregando seus dados...
+            </h3>
           </div>
 
         </section>
@@ -167,7 +179,8 @@ function MeuPerfil() {
               padding: '15px 17px',
               background: '#fff4df',
               color: '#8a5a00',
-              border: '1px solid #f0d8a8',
+              border:
+                '1px solid #f0d8a8',
               borderRadius: '8px',
               fontSize: '13px',
               lineHeight: '1.5'
@@ -177,7 +190,11 @@ function MeuPerfil() {
               Complete seu cadastro para continuar.
             </strong>
 
-            <div style={{ marginTop: '4px' }}>
+            <div
+              style={{
+                marginTop: '4px'
+              }}
+            >
               Antes de enviar sua primeira oferta,
               informe seus dados de contato e retirada.
             </div>
@@ -196,17 +213,6 @@ function MeuPerfil() {
           </p>
         )}
 
-        <div className="page-header">
-          <div>
-            <h2>Dados pessoais</h2>
-
-            <p>
-              Mantenha suas informações atualizadas para
-              facilitar o contato e a retirada dos produtos.
-            </p>
-          </div>
-        </div>
-
         <div
           className="cadastro-card"
           style={{
@@ -224,11 +230,15 @@ function MeuPerfil() {
 
               <input
                 type="text"
-                value={formatarCpf(form.cpf)}
+                value={formatarCpf(
+                  form.cpf
+                )}
                 readOnly
                 style={{
-                  backgroundColor: '#f3f5f4',
-                  cursor: 'not-allowed'
+                  backgroundColor:
+                    '#f3f5f4',
+                  cursor:
+                    'not-allowed'
                 }}
               />
             </div>
@@ -243,7 +253,8 @@ function MeuPerfil() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    nome: e.target.value
+                    nome:
+                      e.target.value
                   })
                 }
                 required
@@ -282,7 +293,8 @@ function MeuPerfil() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    email: e.target.value
+                    email:
+                      e.target.value
                   })
                 }
                 required
@@ -299,7 +311,8 @@ function MeuPerfil() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    cidade: e.target.value
+                    cidade:
+                      e.target.value
                   })
                 }
                 required
@@ -312,7 +325,9 @@ function MeuPerfil() {
                   !nucleosProdutivos.includes(
                     form.cidade
                   ) && (
-                    <option value={form.cidade}>
+                    <option
+                      value={form.cidade}
+                    >
                       {form.cidade}
                     </option>
                   )}
@@ -331,7 +346,9 @@ function MeuPerfil() {
             </div>
 
             <div className="campo campo-grande">
-              <label>Endereço de retirada</label>
+              <label>
+                Endereço de retirada
+              </label>
 
               <input
                 type="text"
@@ -340,7 +357,8 @@ function MeuPerfil() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    endereco: e.target.value
+                    endereco:
+                      e.target.value
                   })
                 }
                 required
@@ -374,24 +392,27 @@ function MeuPerfil() {
 
         </div>
 
-        {cadastroCompleto && mensagem && (
-          <div
-            style={{
-              maxWidth: '900px',
-              marginTop: '18px'
-            }}
-          >
-            <button
-              className="btn-secundario"
-              type="button"
-              onClick={() =>
-                navigate('/cadastro')
-              }
+        {cadastroCompleto &&
+          mensagem && (
+            <div
+              style={{
+                maxWidth: '900px',
+                marginTop: '18px'
+              }}
             >
-              Cadastrar uma oferta
-            </button>
-          </div>
-        )}
+
+              <button
+                className="btn-secundario"
+                type="button"
+                onClick={() =>
+                  navigate('/cadastro')
+                }
+              >
+                Cadastrar uma oferta
+              </button>
+
+            </div>
+          )}
 
       </section>
     </LayoutSistema>

@@ -22,7 +22,10 @@ function CadastroProduto() {
         const resposta = await api.get('/produtos/disponiveis')
         setListaProdutos(resposta.data)
       } catch (err) {
-        console.error('Erro ao buscar lista de produtos', err)
+        console.error(
+          'Erro ao buscar lista de produtos',
+          err
+        )
       }
     }
 
@@ -41,7 +44,10 @@ function CadastroProduto() {
         observacao_produtor: observacao
       })
 
-      setMensagem('Produto cadastrado com sucesso!')
+      setMensagem(
+        'Produto cadastrado com sucesso!'
+      )
+
       setCadastroSucesso(true)
 
       setNomeProduto('')
@@ -51,8 +57,15 @@ function CadastroProduto() {
       setPreco('')
       setObservacao('')
     } catch (err) {
-      console.error('Erro ao cadastrar produto:', err)
-      setMensagem('Erro ao cadastrar produto. Tente novamente.')
+      console.error(
+        'Erro ao cadastrar produto:',
+        err
+      )
+
+      setMensagem(
+        'Erro ao cadastrar produto. Tente novamente.'
+      )
+
       setCadastroSucesso(false)
     }
   }
@@ -65,21 +78,13 @@ function CadastroProduto() {
     >
       <section className="dashboard-content cadastro-produto-content">
 
-        <div className="page-header">
-          <div>
-            <h2>Nova oferta</h2>
-
-            <p>
-              Preencha os dados abaixo para cadastrar um produto.
-            </p>
-          </div>
-        </div>
-
         <div className="cadastro-card">
+
           <form
             className="cadastro-produto-form"
             onSubmit={handleCadastro}
           >
+
             <div className="campo campo-grande">
               <label>Produto</label>
 
@@ -92,7 +97,9 @@ function CadastroProduto() {
                 }}
                 required
               >
-                <option value="">Selecione o produto</option>
+                <option value="">
+                  Selecione o produto
+                </option>
 
                 {listaProdutos.map((produto) => (
                   <option
@@ -112,7 +119,9 @@ function CadastroProduto() {
                 type="number"
                 placeholder="Ex: 20"
                 value={quantidade}
-                onChange={(e) => setQuantidade(e.target.value)}
+                onChange={(e) =>
+                  setQuantidade(e.target.value)
+                }
                 min="1"
                 required
               />
@@ -123,10 +132,15 @@ function CadastroProduto() {
 
               <select
                 value={unidade}
-                onChange={(e) => setUnidade(e.target.value)}
+                onChange={(e) =>
+                  setUnidade(e.target.value)
+                }
                 required
               >
-                <option value="">Selecione a unidade</option>
+                <option value="">
+                  Selecione a unidade
+                </option>
+
                 <option value="kg">kg</option>
                 <option value="unidade">unidade</option>
                 <option value="maço">maço</option>
@@ -142,7 +156,11 @@ function CadastroProduto() {
               <input
                 type="date"
                 value={dataDisponibilidade}
-                onChange={(e) => setDataDisponibilidade(e.target.value)}
+                onChange={(e) =>
+                  setDataDisponibilidade(
+                    e.target.value
+                  )
+                }
                 required
               />
             </div>
@@ -154,7 +172,9 @@ function CadastroProduto() {
                 type="number"
                 placeholder="Ex: 3.50"
                 value={preco}
-                onChange={(e) => setPreco(e.target.value)}
+                onChange={(e) =>
+                  setPreco(e.target.value)
+                }
                 step="0.01"
                 min="0.01"
                 required
@@ -167,12 +187,15 @@ function CadastroProduto() {
               <textarea
                 placeholder="Ex: produto disponível para retirada no período da manhã."
                 value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
+                onChange={(e) =>
+                  setObservacao(e.target.value)
+                }
                 rows="4"
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: '1px solid #d7ddd9',
+                  border:
+                    '1px solid #d7ddd9',
                   borderRadius: '6px',
                   fontSize: '1rem',
                   resize: 'vertical'
@@ -183,7 +206,9 @@ function CadastroProduto() {
             {mensagem && (
               <p
                 className={`mensagem-form ${
-                  cadastroSucesso ? 'sucesso' : 'erro'
+                  cadastroSucesso
+                    ? 'sucesso'
+                    : 'erro'
                 }`}
               >
                 {mensagem}
@@ -192,21 +217,28 @@ function CadastroProduto() {
 
             {cadastroSucesso && (
               <div className="campo-grande">
+
                 <button
                   className="btn-secundario"
                   type="button"
-                  onClick={() => navigate('/solicitacoes')}
+                  onClick={() =>
+                    navigate('/solicitacoes')
+                  }
                 >
                   Visualizar solicitações
                 </button>
+
               </div>
             )}
 
             <div className="acoes-form campo-grande">
+
               <button
                 className="btn-voltar"
                 type="button"
-                onClick={() => navigate('/painel')}
+                onClick={() =>
+                  navigate('/painel')
+                }
               >
                 Voltar
               </button>
@@ -217,8 +249,11 @@ function CadastroProduto() {
               >
                 Cadastrar produto
               </button>
+
             </div>
+
           </form>
+
         </div>
 
       </section>
