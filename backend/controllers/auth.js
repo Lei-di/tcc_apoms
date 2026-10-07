@@ -3,6 +3,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+const verificarCadastroCompleto = (produtor) => {
+  if (produtor.tipo === 'admin') {
+    return true;
+  }
+
+  return Boolean(
+    produtor.nome?.trim() &&
+    produtor.telefone?.trim() &&
+    produtor.email?.trim() &&
+    produtor.cidade?.trim() &&
+    produtor.endereco?.trim()
+  );
+};
+
 const login = async (req, res) => {
   const { cpf, senha } = req.body;
 
@@ -22,7 +36,8 @@ const login = async (req, res) => {
 
     if (!produtor.ativo) {
       return res.status(403).json({
-        mensagem: 'Conta não ativada. Faça seu primeiro acesso.'
+        mensagem:
+          'Conta não ativada. Faça seu primeiro acesso.'
       });
     }
 
@@ -49,10 +64,14 @@ const login = async (req, res) => {
       }
     );
 
+    const cadastroCompleto =
+      verificarCadastroCompleto(produtor);
+
     res.json({
       token,
       nome: produtor.nome,
-      tipo: produtor.tipo
+      tipo: produtor.tipo,
+      cadastro_completo: cadastroCompleto
     });
 
   } catch (erro) {

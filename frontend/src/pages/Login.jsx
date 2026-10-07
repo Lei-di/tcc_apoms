@@ -19,15 +19,40 @@ function Login() {
         senha
       })
 
-      localStorage.setItem('token', resposta.data.token)
-      localStorage.setItem('nome', resposta.data.nome)
-      localStorage.setItem('tipo', resposta.data.tipo)
+      localStorage.setItem(
+        'token',
+        resposta.data.token
+      )
+
+      localStorage.setItem(
+        'nome',
+        resposta.data.nome
+      )
+
+      localStorage.setItem(
+        'tipo',
+        resposta.data.tipo
+      )
+
+      localStorage.setItem(
+        'cadastroCompleto',
+        String(resposta.data.cadastro_completo)
+      )
 
       if (resposta.data.tipo === 'admin') {
         navigate('/admin')
-      } else {
-        navigate('/painel')
+        return
       }
+
+      if (!resposta.data.cadastro_completo) {
+        navigate('/perfil', {
+          replace: true
+        })
+
+        return
+      }
+
+      navigate('/painel')
     } catch (err) {
       if (err.response?.status === 403) {
         setErro(
@@ -315,7 +340,12 @@ function Login() {
                   value={cpf}
                   maxLength="11"
                   onChange={(e) =>
-                    setCpf(e.target.value.replace(/\D/g, ''))
+                    setCpf(
+                      e.target.value.replace(
+                        /\D/g,
+                        ''
+                      )
+                    )
                   }
                   required
                 />
@@ -328,7 +358,9 @@ function Login() {
                   type="password"
                   placeholder="Digite sua senha"
                   value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
+                  onChange={(e) =>
+                    setSenha(e.target.value)
+                  }
                   required
                 />
               </div>

@@ -2,6 +2,44 @@ const pool = require('../models/db')
 
 // Produtor
 
+const cadastroProdutorCompleto = async (cpf) => {
+  const resultado = await pool.query(
+    `SELECT
+      nome,
+      telefone,
+      email,
+      cidade,
+      endereco,
+      ativo
+     FROM produtores
+     WHERE cpf = $1
+       AND tipo = 'produtor'`,
+    [cpf]
+  )
+
+  if (resultado.rows.length === 0) {
+    return {
+      completo: false,
+      ativo: false
+    }
+  }
+
+  const produtor = resultado.rows[0]
+
+  const completo = Boolean(
+    produtor.nome?.trim() &&
+    produtor.telefone?.trim() &&
+    produtor.email?.trim() &&
+    produtor.cidade?.trim() &&
+    produtor.endereco?.trim()
+  )
+
+  return {
+    completo,
+    ativo: produtor.ativo
+  }
+}
+
 const listarSolicitacoesProdutor = async (req, res) => {
   try {
     const resultado = await pool.query(
@@ -33,6 +71,27 @@ const criarSolicitacao = async (req, res) => {
   const cpf_produtor = req.produtor.cpf
 
   try {
+    const situacaoProdutor =
+      await cadastroProdutorCompleto(
+        cpf_produtor
+      )
+
+    if (!situacaoProdutor.ativo) {
+      return res.status(403).json({
+        codigo: 'ACESSO_INATIVO',
+        mensagem:
+          'Seu acesso ao sistema está inativo.'
+      })
+    }
+
+    if (!situacaoProdutor.completo) {
+      return res.status(403).json({
+        codigo: 'CADASTRO_INCOMPLETO',
+        mensagem:
+          'Complete seus dados antes de enviar uma oferta.'
+      })
+    }
+
     const resultado = await pool.query(
       `INSERT INTO solicitacoes
         (
@@ -57,7 +116,10 @@ const criarSolicitacao = async (req, res) => {
 
     res.status(201).json(resultado.rows[0])
   } catch (erro) {
-    console.error('Erro ao criar solicitação:', erro)
+    console.error(
+      'Erro ao criar solicitação:',
+      erro
+    )
 
     res.status(500).json({
       mensagem: 'Erro ao criar solicitação',
@@ -133,7 +195,10 @@ const excluirSolicitacao = async (req, res) => {
          AND cpf_produtor = $2
          AND status = 'pendente'
        RETURNING *`,
-      [id, cpf_produtor]
+      [
+        id,
+        cpf_produtor
+      ]
     )
 
     if (resultado.rows.length === 0) {
@@ -144,11 +209,13 @@ const excluirSolicitacao = async (req, res) => {
     }
 
     res.json({
-      mensagem: 'Solicitação excluída com sucesso.'
+      mensagem:
+        'Solicitação excluída com sucesso.'
     })
   } catch (erro) {
     res.status(500).json({
-      mensagem: 'Erro ao excluir solicitação',
+      mensagem:
+        'Erro ao excluir solicitação',
       erro
     })
   }
@@ -173,7 +240,8 @@ const listarTodasSolicitacoes = async (req, res) => {
     res.json(resultado.rows)
   } catch (erro) {
     res.status(500).json({
-      mensagem: 'Erro ao buscar solicitações',
+      mensagem:
+        'Erro ao buscar solicitações',
       erro
     })
   }
@@ -181,9 +249,17 @@ const listarTodasSolicitacoes = async (req, res) => {
 
 const avaliarSolicitacao = async (req, res) => {
   const { id } = req.params
-  const { status, observacao } = req.body
+  const {
+    status,
+    observacao
+  } = req.body
 
-  if (!['aprovado', 'rejeitado'].includes(status)) {
+  if (
+    ![
+      'aprovado',
+      'rejeitado'
+    ].includes(status)
+  ) {
     return res.status(400).json({
       mensagem: 'Status inválido.'
     })
@@ -219,7 +295,8 @@ const avaliarSolicitacao = async (req, res) => {
       })
     }
 
-    const solicitacao = resultado.rows[0]
+    const solicitacao =
+      resultado.rows[0]
 
     if (status === 'aprovado') {
       await cliente.query(
@@ -248,10 +325,14 @@ const avaliarSolicitacao = async (req, res) => {
   } catch (erro) {
     await cliente.query('ROLLBACK')
 
-    console.error('Erro ao avaliar solicitação:', erro)
+    console.error(
+      'Erro ao avaliar solicitação:',
+      erro
+    )
 
     res.status(500).json({
-      mensagem: 'Erro ao avaliar solicitação',
+      mensagem:
+        'Erro ao avaliar solicitação',
       erro
     })
   } finally {

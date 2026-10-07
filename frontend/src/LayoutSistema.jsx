@@ -10,13 +10,33 @@ function LayoutSistema({
   const navigate = useNavigate()
 
   const nome = localStorage.getItem('nome')
-  const tipo = tipoUsuario || localStorage.getItem('tipo') || 'produtor'
+  const tipo =
+    tipoUsuario ||
+    localStorage.getItem('tipo') ||
+    'produtor'
+
   const ehAdmin = tipo === 'admin'
+
+  const cadastroCompleto =
+    localStorage.getItem(
+      'cadastroCompleto'
+    ) === 'true'
+
+  const irParaCadastroProduto = () => {
+    if (!cadastroCompleto) {
+      navigate('/perfil')
+      return
+    }
+
+    navigate('/cadastro')
+  }
 
   const sair = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('nome')
     localStorage.removeItem('tipo')
+    localStorage.removeItem('cadastroCompleto')
+
     navigate('/')
   }
 
@@ -39,10 +59,14 @@ function LayoutSistema({
             <>
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'admin-solicitacoes' ? 'ativo' : ''
+                  paginaAtiva === 'admin-solicitacoes'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/admin')}
+                onClick={() =>
+                  navigate('/admin')
+                }
               >
                 <span className="sidebar-icon">
                   ≡
@@ -53,10 +77,14 @@ function LayoutSistema({
 
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'admin-produtos' ? 'ativo' : ''
+                  paginaAtiva === 'admin-produtos'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/admin/produtos')}
+                onClick={() =>
+                  navigate('/admin/produtos')
+                }
               >
                 <span className="sidebar-icon">
                   <svg
@@ -82,10 +110,14 @@ function LayoutSistema({
 
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'admin-produtores' ? 'ativo' : ''
+                  paginaAtiva === 'admin-produtores'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/admin/produtores')}
+                onClick={() =>
+                  navigate('/admin/produtores')
+                }
               >
                 <span className="sidebar-icon">
                   <svg
@@ -105,15 +137,21 @@ function LayoutSistema({
                   </svg>
                 </span>
 
-                <span>Produtores cadastrados</span>
+                <span>
+                  Produtores cadastrados
+                </span>
               </button>
 
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'admin-relatorios' ? 'ativo' : ''
+                  paginaAtiva === 'admin-relatorios'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/admin/relatorios')}
+                onClick={() =>
+                  navigate('/admin/relatorios')
+                }
               >
                 <span className="sidebar-icon">
                   <svg
@@ -141,35 +179,89 @@ function LayoutSistema({
             <>
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'painel' ? 'ativo' : ''
+                  paginaAtiva === 'painel'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/painel')}
+                onClick={() =>
+                  navigate('/painel')
+                }
               >
-                <span className="sidebar-icon">▦</span>
+                <span className="sidebar-icon">
+                  ▦
+                </span>
+
                 <span>Painel</span>
               </button>
 
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'cadastro' ? 'ativo' : ''
+                  paginaAtiva === 'cadastro'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/cadastro')}
+                onClick={irParaCadastroProduto}
               >
-                <span className="sidebar-icon">+</span>
+                <span className="sidebar-icon">
+                  +
+                </span>
+
                 <span>Cadastrar produto</span>
               </button>
 
               <button
                 className={`sidebar-item ${
-                  paginaAtiva === 'solicitacoes' ? 'ativo' : ''
+                  paginaAtiva === 'solicitacoes'
+                    ? 'ativo'
+                    : ''
                 }`}
                 type="button"
-                onClick={() => navigate('/solicitacoes')}
+                onClick={() =>
+                  navigate('/solicitacoes')
+                }
               >
-                <span className="sidebar-icon">≡</span>
+                <span className="sidebar-icon">
+                  ≡
+                </span>
+
                 <span>Minhas solicitações</span>
+              </button>
+
+              <button
+                className={`sidebar-item ${
+                  paginaAtiva === 'perfil'
+                    ? 'ativo'
+                    : ''
+                }`}
+                type="button"
+                onClick={() =>
+                  navigate('/perfil')
+                }
+              >
+                <span className="sidebar-icon">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle
+                      cx="12"
+                      cy="8"
+                      r="3.5"
+                    />
+
+                    <path d="M5 20c0-3.7 3-6 7-6s7 2.3 7 6" />
+                  </svg>
+                </span>
+
+                <span>Meu perfil</span>
               </button>
             </>
           )}
@@ -177,14 +269,19 @@ function LayoutSistema({
         </nav>
 
         <div className="sidebar-rodape">
+
           <button
             className="sidebar-item sidebar-sair"
             type="button"
             onClick={sair}
           >
-            <span className="sidebar-icon">↪</span>
+            <span className="sidebar-icon">
+              ↪
+            </span>
+
             <span>Sair</span>
           </button>
+
         </div>
 
       </aside>
@@ -211,7 +308,9 @@ function LayoutSistema({
 
             <div className="usuario-dados">
               <span>
-                {ehAdmin ? 'Administrador' : 'Produtor'}
+                {ehAdmin
+                  ? 'Administrador'
+                  : 'Produtor'}
               </span>
 
               <strong>

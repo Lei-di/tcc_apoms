@@ -8,6 +8,7 @@ import ProdutoresAdmin from './pages/ProdutoresAdmin'
 import RelatoriosAdmin from './pages/RelatoriosAdmin'
 import PrimeiroAcesso from './pages/PrimeiroAcesso'
 import Solicitacoes from './pages/Solicitacoes'
+import MeuPerfil from './pages/MeuPerfil'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/painel" element={<Painel />} />
         <Route path="/cadastro" element={<CadastroProduto />} />
         <Route path="/solicitacoes" element={<Solicitacoes />} />
+        <Route path="/perfil" element={<MeuPerfil />} />
 
         <Route path="/admin" element={<PainelAdmin />} />
         <Route path="/admin/produtos" element={<ProdutosAdmin />} />
