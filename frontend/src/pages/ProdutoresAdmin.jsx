@@ -81,7 +81,9 @@ function ProdutoresAdmin() {
     }
 
     if (!nome) {
-      setMensagem('Informe o nome completo do produtor.')
+      setMensagem(
+        'Informe o nome completo do produtor.'
+      )
       return
     }
 
@@ -91,7 +93,9 @@ function ProdutoresAdmin() {
         nome
       })
 
-      setMensagem('Produtor cadastrado com sucesso!')
+      setMensagem(
+        'Produtor cadastrado com sucesso!'
+      )
 
       setNovoProdutor({
         cpf: '',
@@ -109,7 +113,9 @@ function ProdutoresAdmin() {
       } else if (err.response?.status === 409) {
         setMensagem('CPF já cadastrado.')
       } else {
-        setMensagem('Erro ao cadastrar produtor.')
+        setMensagem(
+          'Erro ao cadastrar produtor.'
+        )
       }
     }
   }
@@ -148,7 +154,9 @@ function ProdutoresAdmin() {
 
       buscarProdutores()
     } catch (err) {
-      setMensagem('Erro ao atualizar status do produtor.')
+      setMensagem(
+        'Erro ao atualizar status do produtor.'
+      )
     }
   }
 
@@ -161,6 +169,17 @@ function ProdutoresAdmin() {
       /(\d{3})(\d{3})(\d{3})(\d{2})/,
       '$1.$2.$3-$4'
     )
+  }
+
+  const formatarData = (data) => {
+    if (!data) {
+      return 'Não informado'
+    }
+
+    const somenteData = data.split('T')[0]
+    const [ano, mes, dia] = somenteData.split('-')
+
+    return `${dia}/${mes}/${ano}`
   }
 
   return (
@@ -243,7 +262,11 @@ function ProdutoresAdmin() {
                   onChange={(e) =>
                     setNovoProdutor({
                       ...novoProdutor,
-                      cpf: e.target.value.replace(/\D/g, '')
+                      cpf:
+                        e.target.value.replace(
+                          /\D/g,
+                          ''
+                        )
                     })
                   }
                   required
@@ -345,7 +368,9 @@ function ProdutoresAdmin() {
                 <label>CPF</label>
 
                 <div style={campoInformacao}>
-                  {formatarCpf(produtorSelecionado.cpf)}
+                  {formatarCpf(
+                    produtorSelecionado.cpf
+                  )}
                 </div>
               </div>
 
@@ -353,7 +378,8 @@ function ProdutoresAdmin() {
                 <label>Nome completo</label>
 
                 <div style={campoInformacao}>
-                  {produtorSelecionado.nome || 'Não informado'}
+                  {produtorSelecionado.nome ||
+                    'Não informado'}
                 </div>
               </div>
 
@@ -361,7 +387,8 @@ function ProdutoresAdmin() {
                 <label>Telefone</label>
 
                 <div style={campoInformacao}>
-                  {produtorSelecionado.telefone || 'Não informado'}
+                  {produtorSelecionado.telefone ||
+                    'Não informado'}
                 </div>
               </div>
 
@@ -369,15 +396,33 @@ function ProdutoresAdmin() {
                 <label>E-mail</label>
 
                 <div style={campoInformacao}>
-                  {produtorSelecionado.email || 'Não informado'}
+                  {produtorSelecionado.email ||
+                    'Não informado'}
                 </div>
               </div>
 
               <div className="campo">
-                <label>Cidade / Núcleo produtivo</label>
+                <label>
+                  Cidade / Núcleo produtivo
+                </label>
 
                 <div style={campoInformacao}>
-                  {produtorSelecionado.cidade || 'Não informado'}
+                  {produtorSelecionado.cidade ||
+                    'Não informado'}
+                </div>
+              </div>
+
+              <div
+                className="campo"
+                style={{
+                  gridColumn: '1 / -1'
+                }}
+              >
+                <label>Endereço de retirada</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.endereco ||
+                    'Não informado'}
                 </div>
               </div>
 
@@ -405,16 +450,15 @@ function ProdutoresAdmin() {
                 </div>
               </div>
 
-              <div
-                className="campo"
-                style={{
-                  gridColumn: '1 / -1'
-                }}
-              >
-                <label>Endereço de retirada</label>
+              <div className="campo">
+                <label>Ativo desde</label>
 
                 <div style={campoInformacao}>
-                  {produtorSelecionado.endereco || 'Não informado'}
+                  {produtorSelecionado.ativo
+                    ? formatarData(
+                        produtorSelecionado.data_ativacao
+                      )
+                    : 'Conta inativa'}
                 </div>
               </div>
 
@@ -450,7 +494,9 @@ function ProdutoresAdmin() {
           {produtores.length === 0 ? (
             <div className="estado-vazio">
 
-              <h3>Nenhum produtor cadastrado</h3>
+              <h3>
+                Nenhum produtor cadastrado
+              </h3>
 
               <p>
                 Ainda não existem produtores cadastrados.
@@ -480,7 +526,8 @@ function ProdutoresAdmin() {
                       style={{
                         cursor: 'pointer',
                         backgroundColor:
-                          produtorSelecionado?.cpf === produtor.cpf
+                          produtorSelecionado?.cpf ===
+                          produtor.cpf
                             ? '#f3f8f5'
                             : undefined
                       }}

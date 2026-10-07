@@ -52,7 +52,8 @@ const listarProdutores = async (req, res) => {
         email,
         cidade,
         endereco,
-        ativo
+        ativo,
+        data_ativacao
        FROM produtores
        WHERE tipo = $1
        ORDER BY nome`,
@@ -95,9 +96,20 @@ const cadastrarProdutor = async (req, res) => {
           cidade,
           endereco,
           tipo,
-          ativo
+          ativo,
+          data_ativacao
         )
-       VALUES ($1, $2, NULL, NULL, NULL, NULL, $3, $4)
+       VALUES (
+         $1,
+         $2,
+         NULL,
+         NULL,
+         NULL,
+         NULL,
+         $3,
+         $4,
+         NULL
+       )
        RETURNING cpf, nome, ativo`,
       [
         cpf,
@@ -115,7 +127,10 @@ const cadastrarProdutor = async (req, res) => {
       })
     }
 
-    console.error('Erro ao cadastrar produtor:', erro)
+    console.error(
+      'Erro ao cadastrar produtor:',
+      erro
+    )
 
     res.status(500).json({
       mensagem: 'Erro ao cadastrar produtor',
@@ -198,7 +213,8 @@ const toggleAtivoProdutor = async (req, res) => {
     res.json(resultado.rows[0])
   } catch (erro) {
     res.status(500).json({
-      mensagem: 'Erro ao atualizar status do produtor',
+      mensagem:
+        'Erro ao atualizar status do produtor',
       erro
     })
   }
