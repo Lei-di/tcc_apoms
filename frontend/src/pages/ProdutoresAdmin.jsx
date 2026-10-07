@@ -4,16 +4,13 @@ import LayoutSistema from '../LayoutSistema'
 
 function ProdutoresAdmin() {
   const [produtores, setProdutores] = useState([])
+  const [produtorSelecionado, setProdutorSelecionado] = useState(null)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [mensagem, setMensagem] = useState('')
 
   const [novoProdutor, setNovoProdutor] = useState({
     cpf: '',
-    nome: '',
-    telefone: '',
-    email: '',
-    cidade: '',
-    endereco: ''
+    nome: ''
   })
 
   useEffect(() => {
@@ -29,27 +26,87 @@ function ProdutoresAdmin() {
     }
   }
 
+  const validarCpf = (cpf) => {
+    const cpfLimpo = cpf.replace(/\D/g, '')
+
+    if (cpfLimpo.length !== 11) {
+      return false
+    }
+
+    if (/^(\d)\1{10}$/.test(cpfLimpo)) {
+      return false
+    }
+
+    let soma = 0
+
+    for (let i = 0; i < 9; i++) {
+      soma += Number(cpfLimpo[i]) * (10 - i)
+    }
+
+    let primeiroDigito = (soma * 10) % 11
+
+    if (primeiroDigito === 10) {
+      primeiroDigito = 0
+    }
+
+    if (primeiroDigito !== Number(cpfLimpo[9])) {
+      return false
+    }
+
+    soma = 0
+
+    for (let i = 0; i < 10; i++) {
+      soma += Number(cpfLimpo[i]) * (11 - i)
+    }
+
+    let segundoDigito = (soma * 10) % 11
+
+    if (segundoDigito === 10) {
+      segundoDigito = 0
+    }
+
+    return segundoDigito === Number(cpfLimpo[10])
+  }
+
   const handleCadastro = async (e) => {
     e.preventDefault()
+    setMensagem('')
+
+    const cpf = novoProdutor.cpf.trim()
+    const nome = novoProdutor.nome.trim()
+
+    if (!validarCpf(cpf)) {
+      setMensagem('CPF inválido.')
+      return
+    }
+
+    if (!nome) {
+      setMensagem('Informe o nome completo do produtor.')
+      return
+    }
 
     try {
-      await api.post('/admin/produtores', novoProdutor)
+      await api.post('/admin/produtores', {
+        cpf,
+        nome
+      })
 
       setMensagem('Produtor cadastrado com sucesso!')
 
       setNovoProdutor({
         cpf: '',
-        nome: '',
-        telefone: '',
-        email: '',
-        cidade: '',
-        endereco: ''
+        nome: ''
       })
 
       setMostrarFormulario(false)
       buscarProdutores()
     } catch (err) {
-      if (err.response?.status === 409) {
+      if (err.response?.status === 400) {
+        setMensagem(
+          err.response?.data?.mensagem ||
+          'Dados inválidos.'
+        )
+      } else if (err.response?.status === 409) {
         setMensagem('CPF já cadastrado.')
       } else {
         setMensagem('Erro ao cadastrar produtor.')
@@ -57,15 +114,53 @@ function ProdutoresAdmin() {
     }
   }
 
-  const toggleAtivo = async (cpf) => {
-    try {
-      await api.patch(`/admin/produtores/${cpf}/toggle`)
+  const selecionarProdutor = (produtor) => {
+    setProdutorSelecionado(produtor)
+    setMensagem('')
+  }
 
-      setMensagem('Status do produtor atualizado com sucesso!')
+  const fecharDetalhes = () => {
+    setProdutorSelecionado(null)
+  }
+
+  const toggleAtivo = async () => {
+    if (!produtorSelecionado) {
+      return
+    }
+
+    try {
+      const resposta = await api.patch(
+        `/admin/produtores/${produtorSelecionado.cpf}/toggle`
+      )
+
+      const novoStatus = resposta.data.ativo
+
+      setProdutorSelecionado({
+        ...produtorSelecionado,
+        ativo: novoStatus
+      })
+
+      setMensagem(
+        novoStatus
+          ? 'Acesso do produtor ativado com sucesso!'
+          : 'Acesso do produtor desativado com sucesso!'
+      )
+
       buscarProdutores()
     } catch (err) {
       setMensagem('Erro ao atualizar status do produtor.')
     }
+  }
+
+  const formatarCpf = (cpf) => {
+    if (!cpf || cpf.length !== 11) {
+      return cpf || '-'
+    }
+
+    return cpf.replace(
+      /(\d{3})(\d{3})(\d{3})(\d{2})/,
+      '$1.$2.$3-$4'
+    )
   }
 
   return (
@@ -84,6 +179,7 @@ function ProdutoresAdmin() {
             type="button"
             onClick={() => {
               setMostrarFormulario(!mostrarFormulario)
+              setProdutorSelecionado(null)
               setMensagem('')
             }}
           >
@@ -119,6 +215,18 @@ function ProdutoresAdmin() {
             }}
           >
 
+            <div
+              className="edicao-titulo"
+              style={{ marginBottom: '22px' }}
+            >
+              <h3>Pré-cadastrar produtor</h3>
+
+              <p>
+                Informe o CPF e o nome do produtor para liberar
+                posteriormente o primeiro acesso ao sistema.
+              </p>
+            </div>
+
             <form
               className="cadastro-produto-form"
               onSubmit={handleCadastro}
@@ -131,10 +239,11 @@ function ProdutoresAdmin() {
                   type="text"
                   placeholder="Somente números"
                   value={novoProdutor.cpf}
+                  maxLength="11"
                   onChange={(e) =>
                     setNovoProdutor({
                       ...novoProdutor,
-                      cpf: e.target.value
+                      cpf: e.target.value.replace(/\D/g, '')
                     })
                   }
                   required
@@ -158,70 +267,6 @@ function ProdutoresAdmin() {
                 />
               </div>
 
-              <div className="campo">
-                <label>Telefone</label>
-
-                <input
-                  type="text"
-                  placeholder="Telefone"
-                  value={novoProdutor.telefone}
-                  onChange={(e) =>
-                    setNovoProdutor({
-                      ...novoProdutor,
-                      telefone: e.target.value
-                    })
-                  }
-                />
-              </div>
-
-              <div className="campo">
-                <label>E-mail</label>
-
-                <input
-                  type="email"
-                  placeholder="E-mail"
-                  value={novoProdutor.email}
-                  onChange={(e) =>
-                    setNovoProdutor({
-                      ...novoProdutor,
-                      email: e.target.value
-                    })
-                  }
-                />
-              </div>
-
-              <div className="campo">
-                <label>Cidade</label>
-
-                <input
-                  type="text"
-                  placeholder="Cidade"
-                  value={novoProdutor.cidade}
-                  onChange={(e) =>
-                    setNovoProdutor({
-                      ...novoProdutor,
-                      cidade: e.target.value
-                    })
-                  }
-                />
-              </div>
-
-              <div className="campo">
-                <label>Endereço</label>
-
-                <input
-                  type="text"
-                  placeholder="Endereço"
-                  value={novoProdutor.endereco}
-                  onChange={(e) =>
-                    setNovoProdutor({
-                      ...novoProdutor,
-                      endereco: e.target.value
-                    })
-                  }
-                />
-              </div>
-
               <div className="acoes-form campo-grande">
 
                 <button
@@ -238,12 +283,164 @@ function ProdutoresAdmin() {
                   className="btn-principal"
                   type="submit"
                 >
-                  Salvar produtor
+                  Cadastrar produtor
                 </button>
 
               </div>
 
             </form>
+
+          </div>
+        )}
+
+        {produtorSelecionado && (
+          <div
+            className="edicao-card"
+            style={{
+              maxWidth: '100%'
+            }}
+          >
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '20px',
+                marginBottom: '25px'
+              }}
+            >
+
+              <div
+                className="edicao-titulo"
+                style={{ margin: 0 }}
+              >
+                <h3>Dados do produtor</h3>
+
+                <p>
+                  Consulte as informações cadastradas do produtor.
+                </p>
+              </div>
+
+              <button
+                className="btn-voltar"
+                type="button"
+                onClick={fecharDetalhes}
+              >
+                Fechar
+              </button>
+
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(2, minmax(0, 1fr))',
+                gap: '22px'
+              }}
+            >
+
+              <div className="campo">
+                <label>CPF</label>
+
+                <div style={campoInformacao}>
+                  {formatarCpf(produtorSelecionado.cpf)}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>Nome completo</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.nome || 'Não informado'}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>Telefone</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.telefone || 'Não informado'}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>E-mail</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.email || 'Não informado'}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>Cidade / Núcleo produtivo</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.cidade || 'Não informado'}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>Status</label>
+
+                <div
+                  style={{
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <span
+                    className={`status-badge ${
+                      produtorSelecionado.ativo
+                        ? 'status-aprovado'
+                        : 'status-rejeitado'
+                    }`}
+                  >
+                    {produtorSelecionado.ativo
+                      ? 'Ativo'
+                      : 'Inativo'}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                className="campo"
+                style={{
+                  gridColumn: '1 / -1'
+                }}
+              >
+                <label>Endereço de retirada</label>
+
+                <div style={campoInformacao}>
+                  {produtorSelecionado.endereco || 'Não informado'}
+                </div>
+              </div>
+
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginTop: '25px'
+              }}
+            >
+              <button
+                type="button"
+                className={
+                  produtorSelecionado.ativo
+                    ? 'btn-excluir'
+                    : 'btn-editar'
+                }
+                onClick={toggleAtivo}
+              >
+                {produtorSelecionado.ativo
+                  ? 'Desativar acesso'
+                  : 'Ativar acesso'}
+              </button>
+            </div>
 
           </div>
         )}
@@ -268,39 +465,36 @@ function ProdutoresAdmin() {
                 <thead>
                   <tr>
                     <th>CPF</th>
-                    <th>Nome</th>
-                    <th>Telefone</th>
-                    <th>E-mail</th>
-                    <th>Cidade</th>
+                    <th>Nome completo</th>
                     <th>Status</th>
-                    <th>Ações</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {produtores.map((produtor) => (
-                    <tr key={produtor.cpf}>
+                    <tr
+                      key={produtor.cpf}
+                      onClick={() =>
+                        selecionarProdutor(produtor)
+                      }
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor:
+                          produtorSelecionado?.cpf === produtor.cpf
+                            ? '#f3f8f5'
+                            : undefined
+                      }}
+                      title="Clique para visualizar os dados do produtor"
+                    >
 
                       <td>
-                        {produtor.cpf}
+                        {formatarCpf(produtor.cpf)}
                       </td>
 
                       <td>
                         <strong className="produto-nome">
-                          {produtor.nome}
+                          {produtor.nome || '-'}
                         </strong>
-                      </td>
-
-                      <td>
-                        {produtor.telefone || '-'}
-                      </td>
-
-                      <td>
-                        {produtor.email || '-'}
-                      </td>
-
-                      <td>
-                        {produtor.cidade || '-'}
                       </td>
 
                       <td>
@@ -317,24 +511,6 @@ function ProdutoresAdmin() {
                         </span>
                       </td>
 
-                      <td>
-                        <button
-                          type="button"
-                          className={
-                            produtor.ativo
-                              ? 'btn-excluir'
-                              : 'btn-editar'
-                          }
-                          onClick={() =>
-                            toggleAtivo(produtor.cpf)
-                          }
-                        >
-                          {produtor.ativo
-                            ? 'Desativar'
-                            : 'Ativar'}
-                        </button>
-                      </td>
-
                     </tr>
                   ))}
                 </tbody>
@@ -349,6 +525,18 @@ function ProdutoresAdmin() {
       </section>
     </LayoutSistema>
   )
+}
+
+const campoInformacao = {
+  minHeight: '44px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 12px',
+  background: '#f7f9f8',
+  color: '#4e5752',
+  border: '1px solid #e1e6e3',
+  borderRadius: '6px',
+  fontSize: '14px'
 }
 
 export default ProdutoresAdmin
