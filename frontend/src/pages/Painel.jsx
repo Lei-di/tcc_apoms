@@ -43,12 +43,50 @@ function Painel() {
       solicitacao.status === 'contraoferta'
   )
 
+  const irParaSolicitacoes = () => {
+    navigate('/solicitacoes')
+  }
+
+  const handleTeclado = (e) => {
+    if (
+      e.key === 'Enter' ||
+      e.key === ' '
+    ) {
+      irParaSolicitacoes()
+    }
+  }
+
   return (
     <LayoutSistema
       titulo="Painel do Produtor"
       subtitulo="Acompanhe o resumo das suas ofertas."
       paginaAtiva="painel"
     >
+      <style>
+        {`
+          .painel-resumo-card {
+            cursor: pointer;
+            transition:
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              transform 0.2s ease;
+          }
+
+          .painel-resumo-card:hover {
+            background-color: #f0f7f3;
+            border-color: #bdd8c6;
+            box-shadow: 0 5px 15px rgba(27, 94, 32, 0.08);
+            transform: translateY(-2px);
+          }
+
+          .painel-resumo-card:focus-visible {
+            outline: 2px solid #23764e;
+            outline-offset: 2px;
+          }
+        `}
+      </style>
+
       <section className="dashboard-content">
 
         <div
@@ -61,8 +99,12 @@ function Painel() {
         >
 
           <div
-            className="table-card"
+            className="table-card painel-resumo-card"
             style={cardResumo}
+            onClick={irParaSolicitacoes}
+            onKeyDown={handleTeclado}
+            role="button"
+            tabIndex="0"
           >
             <span style={tituloCard}>
               Ofertas pendentes
@@ -78,8 +120,12 @@ function Painel() {
           </div>
 
           <div
-            className="table-card"
+            className="table-card painel-resumo-card"
             style={cardResumo}
+            onClick={irParaSolicitacoes}
+            onKeyDown={handleTeclado}
+            role="button"
+            tabIndex="0"
           >
             <span style={tituloCard}>
               Ofertas aprovadas
@@ -95,11 +141,15 @@ function Painel() {
           </div>
 
           <div
-            className="table-card"
+            className="table-card painel-resumo-card"
             style={cardResumo}
+            onClick={irParaSolicitacoes}
+            onKeyDown={handleTeclado}
+            role="button"
+            tabIndex="0"
           >
             <span style={tituloCard}>
-              Contraofertas 
+              Contraofertas
             </span>
 
             <strong style={numeroCard}>

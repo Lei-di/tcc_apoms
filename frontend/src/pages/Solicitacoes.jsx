@@ -30,6 +30,25 @@ function Solicitacoes() {
     buscarListaProdutos()
   }, [])
 
+  useEffect(() => {
+    if (
+      editando ||
+      contraofertaSelecionada
+    ) {
+      document.body.style.overflow =
+        'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [
+    editando,
+    contraofertaSelecionada
+  ])
+
   const buscarSolicitacoes = async () => {
     try {
       const resposta =
@@ -84,7 +103,8 @@ function Solicitacoes() {
     e.preventDefault()
 
     const dados = {
-      nome_produto: form.nome_produto,
+      nome_produto:
+        form.nome_produto,
 
       quantidade:
         `${form.quantidade} ${form.unidade}`,
@@ -148,7 +168,8 @@ function Solicitacoes() {
         solicitacao.preco,
 
       observacao_produtor:
-        solicitacao.observacao_produtor || ''
+        solicitacao.observacao_produtor ||
+        ''
     })
 
     setMensagem('')
@@ -168,7 +189,9 @@ function Solicitacoes() {
     })
   }
 
-  const abrirContraoferta = (solicitacao) => {
+  const abrirContraoferta = (
+    solicitacao
+  ) => {
     setEditando(null)
     setMensagem('')
 
@@ -299,11 +322,17 @@ function Solicitacoes() {
       return 'Rejeitada pela APOMS'
     }
 
-    if (status === 'contraoferta_aceita') {
+    if (
+      status ===
+      'contraoferta_aceita'
+    ) {
       return 'Contraoferta aceita'
     }
 
-    if (status === 'contraoferta_recusada') {
+    if (
+      status ===
+      'contraoferta_recusada'
+    ) {
       return 'Contraoferta recusada'
     }
 
@@ -336,14 +365,6 @@ function Solicitacoes() {
     >
       <section className="dashboard-content">
 
-        <div
-          className="page-header"
-          style={{
-            justifyContent: 'flex-end'
-          }}
-        >
-        </div>
-
         {mensagem && (
           <p
             className={`mensagem-pagina ${
@@ -356,351 +377,414 @@ function Solicitacoes() {
           </p>
         )}
 
+        {/* Modal de contraoferta */}
         {contraofertaSelecionada && (
           <div
-            className="edicao-card"
-            style={{
-              maxWidth: '100%'
-            }}
+            style={modalOverlay}
+            onClick={fecharContraoferta}
           >
 
-            <div className="edicao-titulo">
-              <h3>
-                Contraoferta recebida
-              </h3>
-
-              <p>
-                Analise a proposta enviada pela APOMS antes de responder.
-              </p>
-            </div>
-
             <div
-              className="cadastro-produto-form"
-              style={{
-                marginBottom: '22px'
-              }}
+              style={modalConteudo}
+              onClick={(e) =>
+                e.stopPropagation()
+              }
             >
 
-              <div className="campo">
-                <label>Produto</label>
+              <div style={modalCabecalho}>
 
-                <div style={campoInformacao}>
-                  {
-                    contraofertaSelecionada.nome_produto
-                  }
+                <div>
+                  <h3 style={modalTitulo}>
+                    Contraoferta recebida
+                  </h3>
+
+                  <p style={modalDescricao}>
+                    Analise a proposta enviada pela APOMS antes de responder.
+                  </p>
                 </div>
+
+                <button
+                  type="button"
+                  style={botaoFecharModal}
+                  title="Fechar"
+                  onClick={fecharContraoferta}
+                >
+                  ×
+                </button>
+
               </div>
 
-              <div className="campo">
-                <label>
-                  Quantidade original
-                </label>
-
-                <div style={campoInformacao}>
-                  {
-                    contraofertaSelecionada.quantidade
-                  }
-                </div>
-              </div>
-
-              <div className="campo">
-                <label>
-                  Quantidade proposta
-                </label>
-
-                <div style={campoDestaque}>
-                  {
-                    contraofertaSelecionada.quantidade_contraoferta
-                  }
-                </div>
-              </div>
-
-              <div className="campo">
-                <label>
-                  Preço original
-                </label>
-
-                <div style={campoInformacao}>
-                  {formatarPreco(
-                    contraofertaSelecionada.preco
-                  )}
-                </div>
-              </div>
-
-              <div className="campo">
-                <label>
-                  Preço proposto
-                </label>
-
-                <div style={campoDestaque}>
-                  {formatarPreco(
-                    contraofertaSelecionada.preco_contraoferta
-                  )}
-                </div>
-              </div>
-
-              <div className="campo campo-grande">
-                <label>
-                  Comentário da APOMS
-                </label>
-
-                <div style={campoInformacao}>
-                  {
-                    contraofertaSelecionada.observacao
-                  }
-                </div>
-              </div>
-
-            </div>
-
-            <div className="acoes-form">
-
-              <button
-                className="btn-voltar"
-                type="button"
-                onClick={fecharContraoferta}
+              <div
+                className="cadastro-produto-form"
+                style={{
+                  marginBottom: '22px'
+                }}
               >
-                Fechar
-              </button>
 
-              <button
-                className="btn-excluir"
-                type="button"
-                onClick={() =>
-                  responderContraoferta(
-                    'recusar'
-                  )
-                }
-              >
-                Recusar contraoferta
-              </button>
+                <div className="campo">
+                  <label>
+                    Produto
+                  </label>
 
-              <button
-                className="btn-principal"
-                type="button"
-                onClick={() =>
-                  responderContraoferta(
-                    'aceitar'
-                  )
-                }
-              >
-                Aceitar contraoferta
-              </button>
+                  <div style={campoInformacao}>
+                    {
+                      contraofertaSelecionada.nome_produto
+                    }
+                  </div>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Quantidade original
+                  </label>
+
+                  <div style={campoInformacao}>
+                    {
+                      contraofertaSelecionada.quantidade
+                    }
+                  </div>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Quantidade proposta
+                  </label>
+
+                  <div style={campoDestaque}>
+                    {
+                      contraofertaSelecionada.quantidade_contraoferta
+                    }
+                  </div>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Preço original
+                  </label>
+
+                  <div style={campoInformacao}>
+                    {formatarPreco(
+                      contraofertaSelecionada.preco
+                    )}
+                  </div>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Preço proposto
+                  </label>
+
+                  <div style={campoDestaque}>
+                    {formatarPreco(
+                      contraofertaSelecionada.preco_contraoferta
+                    )}
+                  </div>
+                </div>
+
+                <div className="campo campo-grande">
+                  <label>
+                    Comentário da APOMS
+                  </label>
+
+                  <div style={campoInformacao}>
+                    {
+                      contraofertaSelecionada.observacao
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="acoes-form">
+
+                <button
+                  className="btn-voltar"
+                  type="button"
+                  onClick={
+                    fecharContraoferta
+                  }
+                >
+                  Fechar
+                </button>
+
+                <button
+                  className="btn-excluir"
+                  type="button"
+                  onClick={() =>
+                    responderContraoferta(
+                      'recusar'
+                    )
+                  }
+                >
+                  Recusar contraoferta
+                </button>
+
+                <button
+                  className="btn-principal"
+                  type="button"
+                  onClick={() =>
+                    responderContraoferta(
+                      'aceitar'
+                    )
+                  }
+                >
+                  Aceitar contraoferta
+                </button>
+
+              </div>
 
             </div>
 
           </div>
         )}
 
+        {/* Modal de edição */}
         {editando && (
-          <div className="edicao-card">
+          <div
+            style={modalOverlay}
+            onClick={cancelarEdicao}
+          >
 
-            <div className="edicao-titulo">
-              <h3>
-                Editar oferta
-              </h3>
-
-              <p>
-                Altere os dados enquanto a oferta ainda estiver pendente.
-              </p>
-            </div>
-
-            <form
-              className="cadastro-produto-form"
-              onSubmit={handleSubmit}
+            <div
+              style={modalConteudo}
+              onClick={(e) =>
+                e.stopPropagation()
+              }
             >
 
-              <div className="campo campo-grande">
-                <label>Produto</label>
+              <div style={modalCabecalho}>
 
-                <select
-                  value={form.nome_produto}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      nome_produto:
-                        e.target.value
-                    })
-                  }
-                  required
-                >
-                  <option value="">
-                    Selecione o produto
-                  </option>
+                <div>
+                  <h3 style={modalTitulo}>
+                    Editar oferta
+                  </h3>
 
-                  {listaProdutos.map(
-                    (produto) => (
-                      <option
-                        key={produto.id}
-                        value={produto.nome}
-                      >
-                        {produto.nome}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              <div className="campo">
-                <label>
-                  Quantidade
-                </label>
-
-                <input
-                  type="number"
-                  value={form.quantidade}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      quantidade:
-                        e.target.value
-                    })
-                  }
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="campo">
-                <label>
-                  Unidade de medida
-                </label>
-
-                <select
-                  value={form.unidade}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      unidade:
-                        e.target.value
-                    })
-                  }
-                  required
-                >
-                  <option value="">
-                    Selecione a unidade
-                  </option>
-
-                  <option value="kg">
-                    kg
-                  </option>
-
-                  <option value="unidade">
-                    unidade
-                  </option>
-
-                  <option value="maço">
-                    maço
-                  </option>
-
-                  <option value="caixa">
-                    caixa
-                  </option>
-
-                  <option value="litro">
-                    litro
-                  </option>
-
-                  <option value="dúzia">
-                    dúzia
-                  </option>
-                </select>
-              </div>
-
-              <div className="campo">
-                <label>
-                  Disponibilidade
-                </label>
-
-                <input
-                  type="date"
-                  value={
-                    form.data_disponibilidade
-                  }
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      data_disponibilidade:
-                        e.target.value
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="campo">
-                <label>
-                  Preço (R$)
-                </label>
-
-                <input
-                  type="number"
-                  value={form.preco}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      preco:
-                        e.target.value
-                    })
-                  }
-                  step="0.01"
-                  min="0.01"
-                  required
-                />
-              </div>
-
-              <div className="campo campo-grande">
-                <label>
-                  Observação
-                </label>
-
-                <textarea
-                  value={
-                    form.observacao_produtor
-                  }
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      observacao_produtor:
-                        e.target.value
-                    })
-                  }
-                  rows="4"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border:
-                      '1px solid #d7ddd9',
-                    borderRadius: '6px',
-                    fontSize: '1rem',
-                    resize: 'vertical',
-                    backgroundColor:
-                      'transparent',
-                    color: 'inherit'
-                  }}
-                />
-              </div>
-
-              <div className="acoes-form campo-grande">
+                  <p style={modalDescricao}>
+                    Altere os dados enquanto a oferta ainda estiver pendente.
+                  </p>
+                </div>
 
                 <button
-                  className="btn-voltar"
                   type="button"
+                  style={botaoFecharModal}
+                  title="Fechar"
                   onClick={cancelarEdicao}
                 >
-                  Cancelar
-                </button>
-
-                <button
-                  className="btn-principal"
-                  type="submit"
-                >
-                  Salvar alterações
+                  ×
                 </button>
 
               </div>
 
-            </form>
+              <form
+                className="cadastro-produto-form"
+                onSubmit={handleSubmit}
+              >
+
+                <div className="campo campo-grande">
+                  <label>
+                    Produto
+                  </label>
+
+                  <select
+                    value={
+                      form.nome_produto
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        nome_produto:
+                          e.target.value
+                      })
+                    }
+                    required
+                  >
+                    <option value="">
+                      Selecione o produto
+                    </option>
+
+                    {listaProdutos.map(
+                      (produto) => (
+                        <option
+                          key={produto.id}
+                          value={produto.nome}
+                        >
+                          {produto.nome}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Quantidade
+                  </label>
+
+                  <input
+                    type="number"
+                    value={
+                      form.quantidade
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        quantidade:
+                          e.target.value
+                      })
+                    }
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Unidade de medida
+                  </label>
+
+                  <select
+                    value={
+                      form.unidade
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        unidade:
+                          e.target.value
+                      })
+                    }
+                    required
+                  >
+                    <option value="">
+                      Selecione a unidade
+                    </option>
+
+                    <option value="kg">
+                      kg
+                    </option>
+
+                    <option value="unidade">
+                      unidade
+                    </option>
+
+                    <option value="maço">
+                      maço
+                    </option>
+
+                    <option value="caixa">
+                      caixa
+                    </option>
+
+                    <option value="litro">
+                      litro
+                    </option>
+
+                    <option value="dúzia">
+                      dúzia
+                    </option>
+                  </select>
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Disponibilidade
+                  </label>
+
+                  <input
+                    type="date"
+                    value={
+                      form.data_disponibilidade
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        data_disponibilidade:
+                          e.target.value
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="campo">
+                  <label>
+                    Preço (R$)
+                  </label>
+
+                  <input
+                    type="number"
+                    value={
+                      form.preco
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        preco:
+                          e.target.value
+                      })
+                    }
+                    step="0.01"
+                    min="0.01"
+                    required
+                  />
+                </div>
+
+                <div className="campo campo-grande">
+                  <label>
+                    Observação
+                  </label>
+
+                  <textarea
+                    value={
+                      form.observacao_produtor
+                    }
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        observacao_produtor:
+                          e.target.value
+                      })
+                    }
+                    rows="4"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border:
+                        '1px solid #d7ddd9',
+                      borderRadius: '6px',
+                      fontSize: '1rem',
+                      resize: 'vertical',
+                      backgroundColor:
+                        'transparent',
+                      color: 'inherit'
+                    }}
+                  />
+                </div>
+
+                <div className="acoes-form campo-grande">
+
+                  <button
+                    className="btn-voltar"
+                    type="button"
+                    onClick={
+                      cancelarEdicao
+                    }
+                  >
+                    Cancelar
+                  </button>
+
+                  <button
+                    className="btn-principal"
+                    type="submit"
+                  >
+                    Salvar alterações
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
 
           </div>
         )}
@@ -720,6 +804,7 @@ function Solicitacoes() {
           <div className="table-card">
 
             <div style={cabecalhoColuna}>
+
               <div>
                 <h2 style={tituloColuna}>
                   Pendentes
@@ -729,6 +814,7 @@ function Solicitacoes() {
                   Aguardando avaliação da APOMS.
                 </p>
               </div>
+
             </div>
 
             {pendentes.length === 0 ? (
@@ -772,6 +858,7 @@ function Solicitacoes() {
                         marginTop: '14px'
                       }}
                     >
+
                       <button
                         className="btn-editar"
                         type="button"
@@ -795,6 +882,7 @@ function Solicitacoes() {
                       >
                         Excluir
                       </button>
+
                     </div>
 
                   </div>
@@ -808,6 +896,7 @@ function Solicitacoes() {
           <div className="table-card">
 
             <div style={cabecalhoColuna}>
+
               <div>
                 <h2 style={tituloColuna}>
                   Contraofertas
@@ -817,6 +906,7 @@ function Solicitacoes() {
                   Aguardando sua avaliação.
                 </p>
               </div>
+
             </div>
 
             {contraofertas.length === 0 ? (
@@ -851,7 +941,9 @@ function Solicitacoes() {
 
                       {solicitacao.observacao && (
                         <span style={detalheOferta}>
-                          {solicitacao.observacao}
+                          {
+                            solicitacao.observacao
+                          }
                         </span>
                       )}
                     </div>
@@ -926,7 +1018,9 @@ function Solicitacoes() {
                   {historico.map(
                     (solicitacao) => (
                       <tr
-                        key={solicitacao.id}
+                        key={
+                          solicitacao.id
+                        }
                       >
 
                         <td>
@@ -985,6 +1079,7 @@ function Solicitacoes() {
                           {solicitacao.quantidade_contraoferta ||
                           solicitacao.preco_contraoferta ? (
                             <div>
+
                               <div>
                                 Qtd.:{' '}
                                 {
@@ -998,6 +1093,7 @@ function Solicitacoes() {
                                   solicitacao.preco_contraoferta
                                 )}
                               </div>
+
                             </div>
                           ) : (
                             '-'
@@ -1069,19 +1165,6 @@ const descricaoColuna = {
   fontSize: '12px'
 }
 
-const contadorColuna = {
-  minWidth: '34px',
-  height: '34px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: '#edf6f1',
-  color: '#23764e',
-  borderRadius: '50%',
-  fontSize: '14px',
-  fontWeight: '700'
-}
-
 const itemColuna = {
   padding: '18px 20px',
   borderBottom: '1px solid #edf0ee'
@@ -1122,6 +1205,66 @@ const estadoHistorico = {
   color: '#8a938e',
   fontSize: '13px',
   textAlign: 'center'
+}
+
+const modalOverlay = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 3000,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '25px',
+  background: 'rgba(20, 28, 23, 0.55)'
+}
+
+const modalConteudo = {
+  width: '100%',
+  maxWidth: '850px',
+  maxHeight: '90vh',
+  overflowY: 'auto',
+  padding: '28px',
+  background: 'white',
+  border: '1px solid #e1e6e3',
+  borderRadius: '10px',
+  boxShadow:
+    '0 18px 50px rgba(0, 0, 0, 0.20)'
+}
+
+const modalCabecalho = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '20px',
+  marginBottom: '24px'
+}
+
+const modalTitulo = {
+  margin: 0,
+  color: '#26332b',
+  fontSize: '20px'
+}
+
+const modalDescricao = {
+  marginTop: '6px',
+  color: '#7b8580',
+  fontSize: '13px'
+}
+
+const botaoFecharModal = {
+  width: '36px',
+  height: '36px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  padding: 0,
+  background: 'transparent',
+  color: '#657069',
+  border: '1px solid #d7ddd9',
+  borderRadius: '6px',
+  fontSize: '22px',
+  lineHeight: 1
 }
 
 export default Solicitacoes
