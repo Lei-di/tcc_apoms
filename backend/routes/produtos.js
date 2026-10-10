@@ -10,10 +10,16 @@ const {
   listarProdutos,
   cadastrarProduto,
   deletarProduto,
+
   listarProdutosDisponiveis,
   cadastrarProdutoDisponivel,
   editarProdutoDisponivel,
-  excluirProdutoDisponivel
+  excluirProdutoDisponivel,
+
+  criarSolicitacaoProduto,
+  listarMinhasSolicitacoesProdutos,
+  listarSolicitacoesProdutosAdmin,
+  avaliarSolicitacaoProduto
 } = require('../controllers/produtos')
 
 
@@ -40,6 +46,33 @@ router.delete(
   '/disponiveis/:id',
   verificarAdmin,
   excluirProdutoDisponivel
+)
+
+
+// Solicitações de inclusão no catálogo
+
+router.post(
+  '/solicitacoes',
+  verificarToken,
+  criarSolicitacaoProduto
+)
+
+router.get(
+  '/solicitacoes/minhas',
+  verificarToken,
+  listarMinhasSolicitacoesProdutos
+)
+
+router.get(
+  '/solicitacoes',
+  verificarAdmin,
+  listarSolicitacoesProdutosAdmin
+)
+
+router.patch(
+  '/solicitacoes/:id/avaliar',
+  verificarAdmin,
+  avaliarSolicitacaoProduto
 )
 
 

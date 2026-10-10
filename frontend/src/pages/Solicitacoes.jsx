@@ -5,6 +5,12 @@ import LayoutSistema from '../LayoutSistema'
 
 function Solicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState([])
+
+  const [
+    solicitacoesProdutos,
+    setSolicitacoesProdutos
+  ] = useState([])
+
   const [listaProdutos, setListaProdutos] = useState([])
   const [mensagem, setMensagem] = useState('')
   const [editando, setEditando] = useState(null)
@@ -27,6 +33,7 @@ function Solicitacoes() {
 
   useEffect(() => {
     buscarSolicitacoes()
+    buscarSolicitacoesProdutos()
     buscarListaProdutos()
   }, [])
 
@@ -38,11 +45,13 @@ function Solicitacoes() {
       document.body.style.overflow =
         'hidden'
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow =
+        ''
     }
 
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow =
+        ''
     }
   }, [
     editando,
@@ -52,9 +61,13 @@ function Solicitacoes() {
   const buscarSolicitacoes = async () => {
     try {
       const resposta =
-        await api.get('/solicitacoes/minhas')
+        await api.get(
+          '/solicitacoes/minhas'
+        )
 
-      setSolicitacoes(resposta.data)
+      setSolicitacoes(
+        resposta.data
+      )
     } catch (err) {
       console.error(
         'Erro ao buscar solicitações:',
@@ -65,12 +78,35 @@ function Solicitacoes() {
     }
   }
 
+  const buscarSolicitacoesProdutos =
+    async () => {
+      try {
+        const resposta =
+          await api.get(
+            '/produtos/solicitacoes/minhas'
+          )
+
+        setSolicitacoesProdutos(
+          resposta.data
+        )
+      } catch (err) {
+        console.error(
+          'Erro ao buscar solicitações de produtos:',
+          err
+        )
+      }
+    }
+
   const buscarListaProdutos = async () => {
     try {
       const resposta =
-        await api.get('/produtos/disponiveis')
+        await api.get(
+          '/produtos/disponiveis'
+        )
 
-      setListaProdutos(resposta.data)
+      setListaProdutos(
+        resposta.data
+      )
     } catch (err) {
       console.error(
         'Erro ao buscar lista de produtos:',
@@ -79,25 +115,32 @@ function Solicitacoes() {
     }
   }
 
-  const pendentes = solicitacoes.filter(
-    (solicitacao) =>
-      solicitacao.status === 'pendente'
-  )
+  const pendentes =
+    solicitacoes.filter(
+      (solicitacao) =>
+        solicitacao.status ===
+        'pendente'
+    )
 
-  const contraofertas = solicitacoes.filter(
-    (solicitacao) =>
-      solicitacao.status === 'contraoferta'
-  )
+  const contraofertas =
+    solicitacoes.filter(
+      (solicitacao) =>
+        solicitacao.status ===
+        'contraoferta'
+    )
 
-  const historico = solicitacoes.filter(
-    (solicitacao) =>
-      [
-        'aprovado',
-        'rejeitado',
-        'contraoferta_aceita',
-        'contraoferta_recusada'
-      ].includes(solicitacao.status)
-  )
+  const historico =
+    solicitacoes.filter(
+      (solicitacao) =>
+        [
+          'aprovado',
+          'rejeitado',
+          'contraoferta_aceita',
+          'contraoferta_recusada'
+        ].includes(
+          solicitacao.status
+        )
+    )
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -113,7 +156,9 @@ function Solicitacoes() {
         form.data_disponibilidade,
 
       preco:
-        parseFloat(form.preco),
+        parseFloat(
+          form.preco
+        ),
 
       observacao_produtor:
         form.observacao_produtor
@@ -143,11 +188,17 @@ function Solicitacoes() {
     }
   }
 
-  const iniciarEdicao = (solicitacao) => {
+  const iniciarEdicao = (
+    solicitacao
+  ) => {
     const partes =
-      solicitacao.quantidade.split(' ')
+      solicitacao.quantidade.split(
+        ' '
+      )
 
-    setContraofertaSelecionada(null)
+    setContraofertaSelecionada(
+      null
+    )
 
     setForm({
       nome_produto:
@@ -161,7 +212,9 @@ function Solicitacoes() {
 
       data_disponibilidade:
         solicitacao.data_disponibilidade
-          ? solicitacao.data_disponibilidade.split('T')[0]
+          ? solicitacao.data_disponibilidade.split(
+              'T'
+            )[0]
           : '',
 
       preco:
@@ -173,7 +226,9 @@ function Solicitacoes() {
     })
 
     setMensagem('')
-    setEditando(solicitacao.id)
+    setEditando(
+      solicitacao.id
+    )
   }
 
   const cancelarEdicao = () => {
@@ -201,60 +256,69 @@ function Solicitacoes() {
   }
 
   const fecharContraoferta = () => {
-    setContraofertaSelecionada(null)
+    setContraofertaSelecionada(
+      null
+    )
   }
 
-  const responderContraoferta = async (
-    resposta
-  ) => {
-    if (!contraofertaSelecionada) {
-      return
-    }
-
-    if (resposta === 'recusar') {
-      const confirmar =
-        window.confirm(
-          'Ao recusar a contraoferta, esta oferta será encerrada. Deseja continuar?'
-        )
-
-      if (!confirmar) {
+  const responderContraoferta =
+    async (resposta) => {
+      if (
+        !contraofertaSelecionada
+      ) {
         return
       }
-    }
 
-    try {
-      await api.patch(
-        `/solicitacoes/${contraofertaSelecionada.id}/contraoferta/responder`,
-        {
-          resposta
+      if (
+        resposta === 'recusar'
+      ) {
+        const confirmar =
+          window.confirm(
+            'Ao recusar a contraoferta, esta oferta será encerrada. Deseja continuar?'
+          )
+
+        if (!confirmar) {
+          return
         }
-      )
-
-      if (resposta === 'aceitar') {
-        setMensagem(
-          'Contraoferta aceita com sucesso!'
-        )
-      } else {
-        setMensagem(
-          'Contraoferta recusada. A oferta foi encerrada.'
-        )
       }
 
-      setContraofertaSelecionada(null)
+      try {
+        await api.patch(
+          `/solicitacoes/${contraofertaSelecionada.id}/contraoferta/responder`,
+          {
+            resposta
+          }
+        )
 
-      buscarSolicitacoes()
-    } catch (err) {
-      console.error(
-        'Erro ao responder contraoferta:',
-        err
-      )
+        if (
+          resposta === 'aceitar'
+        ) {
+          setMensagem(
+            'Contraoferta aceita com sucesso!'
+          )
+        } else {
+          setMensagem(
+            'Contraoferta recusada. A oferta foi encerrada.'
+          )
+        }
 
-      setMensagem(
-        err.response?.data?.mensagem ||
-        'Erro ao responder contraoferta.'
-      )
+        setContraofertaSelecionada(
+          null
+        )
+
+        buscarSolicitacoes()
+      } catch (err) {
+        console.error(
+          'Erro ao responder contraoferta:',
+          err
+        )
+
+        setMensagem(
+          err.response?.data?.mensagem ||
+          'Erro ao responder contraoferta.'
+        )
+      }
     }
-  }
 
   const excluir = async (id) => {
     if (
@@ -304,7 +368,9 @@ function Solicitacoes() {
       return '-'
     }
 
-    return Number(preco).toLocaleString(
+    return Number(
+      preco
+    ).toLocaleString(
       'pt-BR',
       {
         style: 'currency',
@@ -313,12 +379,18 @@ function Solicitacoes() {
     )
   }
 
-  const formatarStatus = (status) => {
-    if (status === 'aprovado') {
+  const formatarStatus = (
+    status
+  ) => {
+    if (
+      status === 'aprovado'
+    ) {
       return 'Aprovada'
     }
 
-    if (status === 'rejeitado') {
+    if (
+      status === 'rejeitado'
+    ) {
       return 'Rejeitada pela APOMS'
     }
 
@@ -339,22 +411,44 @@ function Solicitacoes() {
     return status
   }
 
-  const classeStatus = (status) => {
+  const classeStatus = (
+    status
+  ) => {
     if (
       status === 'aprovado' ||
-      status === 'contraoferta_aceita'
+      status ===
+        'contraoferta_aceita'
     ) {
       return 'status-aprovado'
     }
 
     if (
       status === 'rejeitado' ||
-      status === 'contraoferta_recusada'
+      status ===
+        'contraoferta_recusada'
     ) {
       return 'status-rejeitado'
     }
 
     return 'status-pendente'
+  }
+
+  const formatarStatusProduto = (
+    status
+  ) => {
+    if (
+      status === 'aprovado'
+    ) {
+      return 'Aprovada'
+    }
+
+    if (
+      status === 'rejeitado'
+    ) {
+      return 'Rejeitada'
+    }
+
+    return 'Pendente'
   }
 
   return (
@@ -377,11 +471,13 @@ function Solicitacoes() {
           </p>
         )}
 
-        {/* Modal de contraoferta */}
+        {/* Contraoferta */}
         {contraofertaSelecionada && (
           <div
             style={modalOverlay}
-            onClick={fecharContraoferta}
+            onClick={
+              fecharContraoferta
+            }
           >
 
             <div
@@ -406,20 +502,16 @@ function Solicitacoes() {
                 <button
                   type="button"
                   style={botaoFecharModal}
-                  title="Fechar"
-                  onClick={fecharContraoferta}
+                  onClick={
+                    fecharContraoferta
+                  }
                 >
                   ×
                 </button>
 
               </div>
 
-              <div
-                className="cadastro-produto-form"
-                style={{
-                  marginBottom: '22px'
-                }}
-              >
+              <div className="cadastro-produto-form">
 
                 <div className="campo">
                   <label>
@@ -495,7 +587,12 @@ function Solicitacoes() {
 
               </div>
 
-              <div className="acoes-form">
+              <div
+                className="acoes-form"
+                style={{
+                  marginTop: '22px'
+                }}
+              >
 
                 <button
                   className="btn-voltar"
@@ -538,11 +635,13 @@ function Solicitacoes() {
           </div>
         )}
 
-        {/* Modal de edição */}
+        {/* Editar oferta */}
         {editando && (
           <div
             style={modalOverlay}
-            onClick={cancelarEdicao}
+            onClick={
+              cancelarEdicao
+            }
           >
 
             <div
@@ -567,8 +666,9 @@ function Solicitacoes() {
                 <button
                   type="button"
                   style={botaoFecharModal}
-                  title="Fechar"
-                  onClick={cancelarEdicao}
+                  onClick={
+                    cancelarEdicao
+                  }
                 >
                   ×
                 </button>
@@ -577,7 +677,9 @@ function Solicitacoes() {
 
               <form
                 className="cadastro-produto-form"
-                onSubmit={handleSubmit}
+                onSubmit={
+                  handleSubmit
+                }
               >
 
                 <div className="campo campo-grande">
@@ -605,10 +707,16 @@ function Solicitacoes() {
                     {listaProdutos.map(
                       (produto) => (
                         <option
-                          key={produto.id}
-                          value={produto.nome}
+                          key={
+                            produto.id
+                          }
+                          value={
+                            produto.nome
+                          }
                         >
-                          {produto.nome}
+                          {
+                            produto.nome
+                          }
                         </option>
                       )
                     )}
@@ -746,18 +854,7 @@ function Solicitacoes() {
                       })
                     }
                     rows="4"
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border:
-                        '1px solid #d7ddd9',
-                      borderRadius: '6px',
-                      fontSize: '1rem',
-                      resize: 'vertical',
-                      backgroundColor:
-                        'transparent',
-                      color: 'inherit'
-                    }}
+                    style={textareaStyle}
                   />
                 </div>
 
@@ -789,32 +886,19 @@ function Solicitacoes() {
           </div>
         )}
 
-        {/* Ofertas em andamento */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(2, minmax(0, 1fr))',
-            gap: '22px',
-            marginBottom: '32px'
-          }}
-        >
+        {/* Em andamento */}
+        <div style={gradeAndamento}>
 
-          {/* Pendentes */}
           <div className="table-card">
 
             <div style={cabecalhoColuna}>
+              <h2 style={tituloColuna}>
+                Pendentes
+              </h2>
 
-              <div>
-                <h2 style={tituloColuna}>
-                  Pendentes
-                </h2>
-
-                <p style={descricaoColuna}>
-                  Aguardando avaliação da APOMS.
-                </p>
-              </div>
-
+              <p style={descricaoColuna}>
+                Aguardando avaliação da APOMS.
+              </p>
             </div>
 
             {pendentes.length === 0 ? (
@@ -825,32 +909,34 @@ function Solicitacoes() {
               pendentes.map(
                 (solicitacao) => (
                   <div
-                    key={solicitacao.id}
+                    key={
+                      solicitacao.id
+                    }
                     style={itemColuna}
                   >
 
-                    <div>
-                      <strong style={nomeOferta}>
-                        {
-                          solicitacao.nome_produto
-                        }
-                      </strong>
+                    <strong style={nomeOferta}>
+                      {
+                        solicitacao.nome_produto
+                      }
+                    </strong>
 
-                      <span style={detalheOferta}>
-                        {solicitacao.quantidade}
-                        {' • '}
-                        {formatarPreco(
-                          solicitacao.preco
-                        )}
-                      </span>
+                    <span style={detalheOferta}>
+                      {
+                        solicitacao.quantidade
+                      }
+                      {' • '}
+                      {formatarPreco(
+                        solicitacao.preco
+                      )}
+                    </span>
 
-                      <span style={detalheOferta}>
-                        Enviada em{' '}
-                        {formatarData(
-                          solicitacao.data_solicitacao
-                        )}
-                      </span>
-                    </div>
+                    <span style={detalheOferta}>
+                      Enviada em{' '}
+                      {formatarData(
+                        solicitacao.data_solicitacao
+                      )}
+                    </span>
 
                     <div
                       className="acoes-tabela"
@@ -892,24 +978,20 @@ function Solicitacoes() {
 
           </div>
 
-          {/* Contraofertas */}
           <div className="table-card">
 
             <div style={cabecalhoColuna}>
+              <h2 style={tituloColuna}>
+                Contraofertas
+              </h2>
 
-              <div>
-                <h2 style={tituloColuna}>
-                  Contraofertas
-                </h2>
-
-                <p style={descricaoColuna}>
-                  Aguardando sua avaliação.
-                </p>
-              </div>
-
+              <p style={descricaoColuna}>
+                Aguardando sua avaliação.
+              </p>
             </div>
 
-            {contraofertas.length === 0 ? (
+            {contraofertas.length ===
+            0 ? (
               <div style={estadoColuna}>
                 Nenhuma contraoferta aguardando resposta.
               </div>
@@ -917,36 +999,36 @@ function Solicitacoes() {
               contraofertas.map(
                 (solicitacao) => (
                   <div
-                    key={solicitacao.id}
+                    key={
+                      solicitacao.id
+                    }
                     style={itemColuna}
                   >
 
-                    <div>
-                      <strong style={nomeOferta}>
-                        {
-                          solicitacao.nome_produto
-                        }
-                      </strong>
+                    <strong style={nomeOferta}>
+                      {
+                        solicitacao.nome_produto
+                      }
+                    </strong>
 
-                      <span style={detalheOferta}>
-                        Proposta:{' '}
-                        {
-                          solicitacao.quantidade_contraoferta
-                        }
-                        {' • '}
-                        {formatarPreco(
-                          solicitacao.preco_contraoferta
-                        )}
-                      </span>
-
-                      {solicitacao.observacao && (
-                        <span style={detalheOferta}>
-                          {
-                            solicitacao.observacao
-                          }
-                        </span>
+                    <span style={detalheOferta}>
+                      Proposta:{' '}
+                      {
+                        solicitacao.quantidade_contraoferta
+                      }
+                      {' • '}
+                      {formatarPreco(
+                        solicitacao.preco_contraoferta
                       )}
-                    </div>
+                    </span>
+
+                    {solicitacao.observacao && (
+                      <span style={detalheOferta}>
+                        {
+                          solicitacao.observacao
+                        }
+                      </span>
+                    )}
 
                     <button
                       className="btn-secundario"
@@ -972,19 +1054,108 @@ function Solicitacoes() {
 
         </div>
 
-        {/* Histórico */}
+        {/* Solicitações de novos produtos */}
+        <div style={tituloSecao}>
+          <h2>
+            Solicitações de inclusão de produtos
+          </h2>
+
+          <p>
+            Acompanhe os produtos que você solicitou para inclusão no catálogo.
+          </p>
+        </div>
+
         <div
+          className="table-card"
           style={{
-            marginBottom: '14px'
+            marginBottom: '32px'
           }}
         >
-          <h2
-            style={{
-              margin: 0,
-              color: '#26332b',
-              fontSize: '19px'
-            }}
-          >
+
+          {solicitacoesProdutos.length ===
+          0 ? (
+            <div style={estadoHistorico}>
+              Nenhuma solicitação de inclusão de produto.
+            </div>
+          ) : (
+            <div className="table-responsive">
+
+              <table className="dashboard-table">
+
+                <thead>
+                  <tr>
+                    <th>Produto solicitado</th>
+                    <th>Status</th>
+                    <th>Produto no catálogo</th>
+                    <th>Retorno APOMS</th>
+                    <th>Data da solicitação</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {solicitacoesProdutos.map(
+                    (solicitacao) => (
+                      <tr
+                        key={
+                          solicitacao.id
+                        }
+                      >
+
+                        <td>
+                          <strong className="produto-nome">
+                            {
+                              solicitacao.nome_produto
+                            }
+                          </strong>
+                        </td>
+
+                        <td>
+                          <span
+                            className={`status-badge ${classeStatus(
+                              solicitacao.status
+                            )}`}
+                          >
+                            {formatarStatusProduto(
+                              solicitacao.status
+                            )}
+                          </span>
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.nome_produto_aprovado ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.retorno_admin ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {formatarData(
+                            solicitacao.data_solicitacao
+                          )}
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+        {/* Histórico das ofertas */}
+        <div style={tituloSecao}>
+          <h2>
             Histórico de solicitações
           </h2>
         </div>
@@ -1123,34 +1294,23 @@ function Solicitacoes() {
   )
 }
 
-const campoInformacao = {
-  minHeight: '44px',
-  display: 'flex',
-  alignItems: 'center',
-  padding: '10px 12px',
-  background: '#f7f9f8',
-  color: '#4e5752',
-  border: '1px solid #e1e6e3',
-  borderRadius: '6px',
-  fontSize: '14px'
+const gradeAndamento = {
+  display: 'grid',
+  gridTemplateColumns:
+    'repeat(2, minmax(0, 1fr))',
+  gap: '22px',
+  marginBottom: '32px'
 }
 
-const campoDestaque = {
-  ...campoInformacao,
-  background: '#fff8e8',
-  color: '#8a5a00',
-  border: '1px solid #eed8a6',
-  fontWeight: '600'
+const tituloSecao = {
+  marginBottom: '14px'
 }
 
 const cabecalhoColuna = {
   minHeight: '82px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '15px',
   padding: '18px 20px',
-  borderBottom: '1px solid #e4e9e6'
+  borderBottom:
+    '1px solid #e4e9e6'
 }
 
 const tituloColuna = {
@@ -1167,7 +1327,8 @@ const descricaoColuna = {
 
 const itemColuna = {
   padding: '18px 20px',
-  borderBottom: '1px solid #edf0ee'
+  borderBottom:
+    '1px solid #edf0ee'
 }
 
 const nomeOferta = {
@@ -1197,7 +1358,7 @@ const estadoColuna = {
 }
 
 const estadoHistorico = {
-  minHeight: '160px',
+  minHeight: '150px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -1205,6 +1366,41 @@ const estadoHistorico = {
   color: '#8a938e',
   fontSize: '13px',
   textAlign: 'center'
+}
+
+const campoInformacao = {
+  minHeight: '44px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 12px',
+  background: '#f7f9f8',
+  color: '#4e5752',
+  border:
+    '1px solid #e1e6e3',
+  borderRadius: '6px',
+  fontSize: '14px'
+}
+
+const campoDestaque = {
+  ...campoInformacao,
+  background: '#fff8e8',
+  color: '#8a5a00',
+  border:
+    '1px solid #eed8a6',
+  fontWeight: '600'
+}
+
+const textareaStyle = {
+  width: '100%',
+  padding: '12px',
+  border:
+    '1px solid #d7ddd9',
+  borderRadius: '6px',
+  fontSize: '1rem',
+  resize: 'vertical',
+  backgroundColor:
+    'transparent',
+  color: 'inherit'
 }
 
 const modalOverlay = {
@@ -1215,7 +1411,8 @@ const modalOverlay = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: '25px',
-  background: 'rgba(20, 28, 23, 0.55)'
+  background:
+    'rgba(20, 28, 23, 0.55)'
 }
 
 const modalConteudo = {
@@ -1225,7 +1422,8 @@ const modalConteudo = {
   overflowY: 'auto',
   padding: '28px',
   background: 'white',
-  border: '1px solid #e1e6e3',
+  border:
+    '1px solid #e1e6e3',
   borderRadius: '10px',
   boxShadow:
     '0 18px 50px rgba(0, 0, 0, 0.20)'
@@ -1234,7 +1432,8 @@ const modalConteudo = {
 const modalCabecalho = {
   display: 'flex',
   alignItems: 'flex-start',
-  justifyContent: 'space-between',
+  justifyContent:
+    'space-between',
   gap: '20px',
   marginBottom: '24px'
 }
@@ -1261,10 +1460,10 @@ const botaoFecharModal = {
   padding: 0,
   background: 'transparent',
   color: '#657069',
-  border: '1px solid #d7ddd9',
+  border:
+    '1px solid #d7ddd9',
   borderRadius: '6px',
-  fontSize: '22px',
-  lineHeight: 1
+  fontSize: '22px'
 }
 
 export default Solicitacoes

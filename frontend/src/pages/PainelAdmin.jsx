@@ -4,28 +4,77 @@ import LayoutSistema from '../LayoutSistema'
 
 function PainelAdmin() {
   const [solicitacoes, setSolicitacoes] = useState([])
+  const [
+    solicitacoesProdutos,
+    setSolicitacoesProdutos
+  ] = useState([])
+
   const [mensagem, setMensagem] = useState('')
 
   const [avaliando, setAvaliando] = useState(null)
   const [statusAvaliacao, setStatusAvaliacao] = useState('')
   const [retorno, setRetorno] = useState('')
 
-  const [quantidadeContraoferta, setQuantidadeContraoferta] =
-    useState('')
+  const [
+    quantidadeContraoferta,
+    setQuantidadeContraoferta
+  ] = useState('')
 
-  const [precoContraoferta, setPrecoContraoferta] =
-    useState('')
+  const [
+    precoContraoferta,
+    setPrecoContraoferta
+  ] = useState('')
+
+  const [
+    avaliandoProduto,
+    setAvaliandoProduto
+  ] = useState(null)
+
+  const [
+    statusProduto,
+    setStatusProduto
+  ] = useState('')
+
+  const [
+    nomeProdutoAprovado,
+    setNomeProdutoAprovado
+  ] = useState('')
+
+  const [
+    retornoProduto,
+    setRetornoProduto
+  ] = useState('')
 
   useEffect(() => {
     buscarSolicitacoes()
+    buscarSolicitacoesProdutos()
   }, [])
+
+  useEffect(() => {
+    if (avaliandoProduto) {
+      document.body.style.overflow =
+        'hidden'
+    } else {
+      document.body.style.overflow =
+        ''
+    }
+
+    return () => {
+      document.body.style.overflow =
+        ''
+    }
+  }, [avaliandoProduto])
 
   const buscarSolicitacoes = async () => {
     try {
       const resposta =
-        await api.get('/solicitacoes/todas')
+        await api.get(
+          '/solicitacoes/todas'
+        )
 
-      setSolicitacoes(resposta.data)
+      setSolicitacoes(
+        resposta.data
+      )
     } catch (err) {
       console.error(
         'Erro ao buscar solicitações:',
@@ -33,6 +82,25 @@ function PainelAdmin() {
       )
     }
   }
+
+  const buscarSolicitacoesProdutos =
+    async () => {
+      try {
+        const resposta =
+          await api.get(
+            '/produtos/solicitacoes'
+          )
+
+        setSolicitacoesProdutos(
+          resposta.data
+        )
+      } catch (err) {
+        console.error(
+          'Erro ao buscar solicitações de produtos:',
+          err
+        )
+      }
+    }
 
   const iniciarAvaliacao = (
     solicitacao,
@@ -43,7 +111,10 @@ function PainelAdmin() {
     setRetorno('')
     setMensagem('')
 
-    if (status === 'contraoferta') {
+    if (
+      status ===
+      'contraoferta'
+    ) {
       setQuantidadeContraoferta(
         solicitacao.quantidade
       )
@@ -74,14 +145,21 @@ function PainelAdmin() {
       return
     }
 
-    if (statusAvaliacao === 'contraoferta') {
+    if (
+      statusAvaliacao ===
+      'contraoferta'
+    ) {
       const quantidadeMudou =
         quantidadeContraoferta.trim() !==
         avaliando.quantidade
 
       const precoMudou =
-        Number(precoContraoferta) !==
-        Number(avaliando.preco)
+        Number(
+          precoContraoferta
+        ) !==
+        Number(
+          avaliando.preco
+        )
 
       if (
         !quantidadeMudou &&
@@ -99,34 +177,50 @@ function PainelAdmin() {
       await api.patch(
         `/solicitacoes/${avaliando.id}/avaliar`,
         {
-          status: statusAvaliacao,
-          observacao: retorno.trim(),
+          status:
+            statusAvaliacao,
+
+          observacao:
+            retorno.trim(),
 
           quantidade_contraoferta:
-            statusAvaliacao === 'contraoferta'
+            statusAvaliacao ===
+            'contraoferta'
               ? quantidadeContraoferta.trim()
               : null,
 
           preco_contraoferta:
-            statusAvaliacao === 'contraoferta'
-              ? parseFloat(precoContraoferta)
+            statusAvaliacao ===
+            'contraoferta'
+              ? parseFloat(
+                  precoContraoferta
+                )
               : null
         }
       )
 
-      if (statusAvaliacao === 'aprovado') {
+      if (
+        statusAvaliacao ===
+        'aprovado'
+      ) {
         setMensagem(
           'Oferta aprovada com sucesso!'
         )
       }
 
-      if (statusAvaliacao === 'rejeitado') {
+      if (
+        statusAvaliacao ===
+        'rejeitado'
+      ) {
         setMensagem(
           'Oferta rejeitada com sucesso!'
         )
       }
 
-      if (statusAvaliacao === 'contraoferta') {
+      if (
+        statusAvaliacao ===
+        'contraoferta'
+      ) {
         setMensagem(
           'Contraoferta enviada ao produtor!'
         )
@@ -141,18 +235,120 @@ function PainelAdmin() {
       )
 
       setMensagem(
-        err.response?.data?.mensagem ||
-        'Erro ao avaliar solicitação.'
+        `Erro: ${
+          err.response?.data?.mensagem ||
+          'Erro ao avaliar solicitação.'
+        }`
       )
     }
   }
+
+  const iniciarAvaliacaoProduto = (
+    solicitacao,
+    status
+  ) => {
+    setAvaliandoProduto(
+      solicitacao
+    )
+
+    setStatusProduto(
+      status
+    )
+
+    setNomeProdutoAprovado(
+      solicitacao.nome_produto
+    )
+
+    setRetornoProduto('')
+    setMensagem('')
+  }
+
+  const cancelarAvaliacaoProduto = () => {
+    setAvaliandoProduto(null)
+    setStatusProduto('')
+    setNomeProdutoAprovado('')
+    setRetornoProduto('')
+  }
+
+  const confirmarAvaliacaoProduto =
+    async () => {
+      if (
+        statusProduto === 'aprovado' &&
+        !nomeProdutoAprovado.trim()
+      ) {
+        setMensagem(
+          'Informe o nome do produto.'
+        )
+
+        return
+      }
+
+      if (
+        statusProduto === 'rejeitado' &&
+        !retornoProduto.trim()
+      ) {
+        setMensagem(
+          'Informe o motivo da rejeição.'
+        )
+
+        return
+      }
+
+      try {
+        await api.patch(
+          `/produtos/solicitacoes/${avaliandoProduto.id}/avaliar`,
+          {
+            status:
+              statusProduto,
+
+            nome_produto_aprovado:
+              statusProduto ===
+              'aprovado'
+                ? nomeProdutoAprovado.trim()
+                : null,
+
+            retorno_admin:
+              retornoProduto.trim()
+          }
+        )
+
+        if (
+          statusProduto ===
+          'aprovado'
+        ) {
+          setMensagem(
+            'Solicitação aprovada e produto incluído no catálogo!'
+          )
+        } else {
+          setMensagem(
+            'Solicitação de produto rejeitada.'
+          )
+        }
+
+        cancelarAvaliacaoProduto()
+        buscarSolicitacoesProdutos()
+      } catch (err) {
+        console.error(
+          'Erro ao avaliar solicitação de produto:',
+          err
+        )
+
+        setMensagem(
+          `Erro: ${
+            err.response?.data?.mensagem ||
+            'Erro ao avaliar solicitação de produto.'
+          }`
+        )
+      }
+    }
 
   const formatarData = (data) => {
     if (!data) {
       return '-'
     }
 
-    const somenteData = data.split('T')[0]
+    const somenteData =
+      data.split('T')[0]
 
     const [ano, mes, dia] =
       somenteData.split('-')
@@ -168,7 +364,9 @@ function PainelAdmin() {
       return '-'
     }
 
-    return Number(preco).toLocaleString(
+    return Number(
+      preco
+    ).toLocaleString(
       'pt-BR',
       {
         style: 'currency',
@@ -186,18 +384,23 @@ function PainelAdmin() {
       return 'Rejeitada'
     }
 
-    if (status === 'contraoferta') {
+    if (
+      status ===
+      'contraoferta'
+    ) {
       return 'Contraoferta enviada'
     }
 
     if (
-      status === 'contraoferta_aceita'
+      status ===
+      'contraoferta_aceita'
     ) {
       return 'Contraoferta aceita'
     }
 
     if (
-      status === 'contraoferta_recusada'
+      status ===
+      'contraoferta_recusada'
     ) {
       return 'Contraoferta recusada'
     }
@@ -208,14 +411,16 @@ function PainelAdmin() {
   const classeStatus = (status) => {
     if (
       status === 'aprovado' ||
-      status === 'contraoferta_aceita'
+      status ===
+        'contraoferta_aceita'
     ) {
       return 'status-aprovado'
     }
 
     if (
       status === 'rejeitado' ||
-      status === 'contraoferta_recusada'
+      status ===
+        'contraoferta_recusada'
     ) {
       return 'status-rejeitado'
     }
@@ -224,12 +429,16 @@ function PainelAdmin() {
   }
 
   const tituloAvaliacao = () => {
-    if (statusAvaliacao === 'aprovado') {
+    if (
+      statusAvaliacao ===
+      'aprovado'
+    ) {
       return 'Aprovar oferta'
     }
 
     if (
-      statusAvaliacao === 'contraoferta'
+      statusAvaliacao ===
+      'contraoferta'
     ) {
       return 'Enviar contraoferta'
     }
@@ -239,8 +448,8 @@ function PainelAdmin() {
 
   return (
     <LayoutSistema
-      titulo="Solicitações de Produto"
-      subtitulo="Analise as ofertas enviadas pelos produtores."
+      titulo="Solicitações"
+      subtitulo="Analise as ofertas e solicitações enviadas pelos produtores."
       paginaAtiva="admin-solicitacoes"
       tipoUsuario="admin"
     >
@@ -259,6 +468,357 @@ function PainelAdmin() {
             {mensagem}
           </p>
         )}
+
+        {/* Avaliação de inclusão de produto */}
+        {avaliandoProduto && (
+          <div
+            style={modalOverlay}
+            onClick={
+              cancelarAvaliacaoProduto
+            }
+          >
+
+            <div
+              style={modalConteudo}
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
+
+              <div style={modalCabecalho}>
+
+                <div>
+                  <h3 style={modalTitulo}>
+                    {statusProduto ===
+                    'aprovado'
+                      ? 'Aprovar inclusão de produto'
+                      : 'Rejeitar inclusão de produto'}
+                  </h3>
+
+                  <p style={modalDescricao}>
+                    Solicitação enviada por{' '}
+                    <strong>
+                      {
+                        avaliandoProduto.nome_produtor
+                      }
+                    </strong>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  style={botaoFecharModal}
+                  onClick={
+                    cancelarAvaliacaoProduto
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <div className="campo">
+
+                <label>
+                  Produto solicitado
+                </label>
+
+                <div style={campoInformacao}>
+                  {
+                    avaliandoProduto.nome_produto
+                  }
+                </div>
+
+              </div>
+
+              {avaliandoProduto.observacao_produtor && (
+                <div
+                  className="campo"
+                  style={{
+                    marginTop: '18px'
+                  }}
+                >
+                  <label>
+                    Observação do produtor
+                  </label>
+
+                  <div style={campoInformacao}>
+                    {
+                      avaliandoProduto.observacao_produtor
+                    }
+                  </div>
+                </div>
+              )}
+
+              {statusProduto ===
+                'aprovado' && (
+                <div
+                  className="campo"
+                  style={{
+                    marginTop: '18px'
+                  }}
+                >
+                  <label>
+                    Nome no catálogo
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      nomeProdutoAprovado
+                    }
+                    onChange={(e) =>
+                      setNomeProdutoAprovado(
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+              )}
+
+              <div
+                className="campo"
+                style={{
+                  marginTop: '18px'
+                }}
+              >
+                <label>
+                  {statusProduto ===
+                  'rejeitado'
+                    ? 'Motivo da rejeição'
+                    : 'Retorno ao produtor'}
+                </label>
+
+                <textarea
+                  value={
+                    retornoProduto
+                  }
+                  onChange={(e) =>
+                    setRetornoProduto(
+                      e.target.value
+                    )
+                  }
+                  placeholder={
+                    statusProduto ===
+                    'rejeitado'
+                      ? 'Informe o motivo da rejeição.'
+                      : 'Opcional. Informe uma observação sobre a aprovação.'
+                  }
+                  rows="4"
+                  style={textareaStyle}
+                />
+              </div>
+
+              <div
+                className="acoes-form"
+                style={{
+                  marginTop: '22px'
+                }}
+              >
+
+                <button
+                  className="btn-voltar"
+                  type="button"
+                  onClick={
+                    cancelarAvaliacaoProduto
+                  }
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className={
+                    statusProduto ===
+                    'rejeitado'
+                      ? 'btn-excluir'
+                      : 'btn-principal'
+                  }
+                  type="button"
+                  onClick={
+                    confirmarAvaliacaoProduto
+                  }
+                >
+                  {statusProduto ===
+                  'aprovado'
+                    ? 'Aprovar e incluir'
+                    : 'Confirmar rejeição'}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* Solicitações de inclusão */}
+        <div style={tituloSecao}>
+
+          <h2>
+            Solicitações de inclusão de produtos
+          </h2>
+
+          <p>
+            Avalie pedidos de produtos que ainda não fazem parte do catálogo.
+          </p>
+
+        </div>
+
+        <div
+          className="table-card"
+          style={{
+            marginBottom: '34px'
+          }}
+        >
+
+          {solicitacoesProdutos.length ===
+          0 ? (
+            <div style={estadoVazioMenor}>
+              Nenhuma solicitação de inclusão de produto.
+            </div>
+          ) : (
+            <div className="table-responsive">
+
+              <table className="dashboard-table">
+
+                <thead>
+                  <tr>
+                    <th>Produtor</th>
+                    <th>Produto solicitado</th>
+                    <th>Observação</th>
+                    <th>Status</th>
+                    <th>Produto no catálogo</th>
+                    <th>Retorno</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {solicitacoesProdutos.map(
+                    (solicitacao) => (
+                      <tr
+                        key={
+                          solicitacao.id
+                        }
+                      >
+
+                        <td>
+                          <strong className="produto-nome">
+                            {
+                              solicitacao.nome_produtor
+                            }
+                          </strong>
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.nome_produto
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.observacao_produtor ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          <span
+                            className={`status-badge ${classeStatus(
+                              solicitacao.status
+                            )}`}
+                          >
+                            {formatarStatus(
+                              solicitacao.status
+                            )}
+                          </span>
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.nome_produto_aprovado ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            solicitacao.retorno_admin ||
+                            '-'
+                          }
+                        </td>
+
+                        <td>
+                          {formatarData(
+                            solicitacao.data_solicitacao
+                          )}
+                        </td>
+
+                        <td>
+                          {solicitacao.status ===
+                          'pendente' ? (
+                            <div className="acoes-tabela">
+
+                              <button
+                                className="btn-editar"
+                                type="button"
+                                onClick={() =>
+                                  iniciarAvaliacaoProduto(
+                                    solicitacao,
+                                    'aprovado'
+                                  )
+                                }
+                              >
+                                Aprovar
+                              </button>
+
+                              <button
+                                className="btn-excluir"
+                                type="button"
+                                onClick={() =>
+                                  iniciarAvaliacaoProduto(
+                                    solicitacao,
+                                    'rejeitado'
+                                  )
+                                }
+                              >
+                                Rejeitar
+                              </button>
+
+                            </div>
+                          ) : (
+                            <span className="sem-acao">
+                              -
+                            </span>
+                          )}
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+        {/* Solicitações de ofertas */}
+        <div style={tituloSecao}>
+
+          <h2>
+            Solicitações de ofertas
+          </h2>
+
+          <p>
+            Analise as ofertas enviadas pelos produtores.
+          </p>
+
+        </div>
 
         {avaliando && (
           <div
@@ -297,7 +857,9 @@ function PainelAdmin() {
                   </label>
 
                   <div style={campoInformacao}>
-                    {avaliando.quantidade}
+                    {
+                      avaliando.quantidade
+                    }
                   </div>
                 </div>
 
@@ -375,18 +937,7 @@ function PainelAdmin() {
                     : 'Informe um comentário sobre a avaliação.'
                 }
                 rows="4"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border:
-                    '1px solid #d7ddd9',
-                  borderRadius: '6px',
-                  fontSize: '1rem',
-                  resize: 'vertical',
-                  backgroundColor:
-                    'transparent',
-                  color: 'inherit'
-                }}
+                style={textareaStyle}
               />
             </div>
 
@@ -400,7 +951,9 @@ function PainelAdmin() {
               <button
                 className="btn-voltar"
                 type="button"
-                onClick={cancelarAvaliacao}
+                onClick={
+                  cancelarAvaliacao
+                }
               >
                 Cancelar
               </button>
@@ -413,7 +966,9 @@ function PainelAdmin() {
                     : 'btn-principal'
                 }
                 type="button"
-                onClick={confirmarAvaliacao}
+                onClick={
+                  confirmarAvaliacao
+                }
               >
                 {statusAvaliacao ===
                 'aprovado'
@@ -639,6 +1194,20 @@ function PainelAdmin() {
   )
 }
 
+const tituloSecao = {
+  marginBottom: '14px'
+}
+
+const estadoVazioMenor = {
+  minHeight: '130px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '25px',
+  color: '#8a938e',
+  fontSize: '13px'
+}
+
 const campoInformacao = {
   minHeight: '44px',
   display: 'flex',
@@ -646,9 +1215,86 @@ const campoInformacao = {
   padding: '10px 12px',
   background: '#f7f9f8',
   color: '#4e5752',
-  border: '1px solid #e1e6e3',
+  border:
+    '1px solid #e1e6e3',
   borderRadius: '6px',
   fontSize: '14px'
+}
+
+const textareaStyle = {
+  width: '100%',
+  padding: '12px',
+  border:
+    '1px solid #d7ddd9',
+  borderRadius: '6px',
+  fontSize: '1rem',
+  resize: 'vertical',
+  backgroundColor:
+    'transparent',
+  color: 'inherit'
+}
+
+const modalOverlay = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 3000,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '25px',
+  background:
+    'rgba(20, 28, 23, 0.55)'
+}
+
+const modalConteudo = {
+  width: '100%',
+  maxWidth: '650px',
+  maxHeight: '90vh',
+  overflowY: 'auto',
+  padding: '28px',
+  background: 'white',
+  border:
+    '1px solid #e1e6e3',
+  borderRadius: '10px',
+  boxShadow:
+    '0 18px 50px rgba(0, 0, 0, 0.20)'
+}
+
+const modalCabecalho = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent:
+    'space-between',
+  gap: '20px',
+  marginBottom: '24px'
+}
+
+const modalTitulo = {
+  margin: 0,
+  color: '#26332b',
+  fontSize: '20px'
+}
+
+const modalDescricao = {
+  marginTop: '6px',
+  color: '#7b8580',
+  fontSize: '13px'
+}
+
+const botaoFecharModal = {
+  width: '36px',
+  height: '36px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  padding: 0,
+  background: 'transparent',
+  color: '#657069',
+  border:
+    '1px solid #d7ddd9',
+  borderRadius: '6px',
+  fontSize: '22px'
 }
 
 export default PainelAdmin
