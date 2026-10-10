@@ -19,7 +19,9 @@ function CadastroProduto() {
   useEffect(() => {
     const buscarListaProdutos = async () => {
       try {
-        const resposta = await api.get('/produtos/disponiveis')
+        const resposta =
+          await api.get('/produtos/disponiveis')
+
         setListaProdutos(resposta.data)
       } catch (err) {
         console.error(
@@ -38,14 +40,18 @@ function CadastroProduto() {
     try {
       await api.post('/solicitacoes', {
         nome_produto: nomeProduto,
-        quantidade: `${quantidade} ${unidade}`,
-        data_disponibilidade: dataDisponibilidade,
-        preco: parseFloat(preco),
-        observacao_produtor: observacao
+        quantidade:
+          `${quantidade} ${unidade}`,
+        data_disponibilidade:
+          dataDisponibilidade,
+        preco:
+          parseFloat(preco),
+        observacao_produtor:
+          observacao
       })
 
       setMensagem(
-        'Produto cadastrado com sucesso!'
+        'Oferta enviada com sucesso!'
       )
 
       setCadastroSucesso(true)
@@ -58,12 +64,13 @@ function CadastroProduto() {
       setObservacao('')
     } catch (err) {
       console.error(
-        'Erro ao cadastrar produto:',
+        'Erro ao enviar oferta:',
         err
       )
 
       setMensagem(
-        'Erro ao cadastrar produto. Tente novamente.'
+        err.response?.data?.mensagem ||
+        'Erro ao enviar oferta. Tente novamente.'
       )
 
       setCadastroSucesso(false)
@@ -72,8 +79,8 @@ function CadastroProduto() {
 
   return (
     <LayoutSistema
-      titulo="Cadastrar Produto"
-      subtitulo="Informe os dados do produto que deseja disponibilizar."
+      titulo="Cadastrar oferta"
+      subtitulo="Informe os dados da oferta que deseja enviar."
       paginaAtiva="cadastro"
     >
       <section className="dashboard-content cadastro-produto-content">
@@ -101,14 +108,16 @@ function CadastroProduto() {
                   Selecione o produto
                 </option>
 
-                {listaProdutos.map((produto) => (
-                  <option
-                    key={produto.id}
-                    value={produto.nome}
-                  >
-                    {produto.nome}
-                  </option>
-                ))}
+                {listaProdutos.map(
+                  (produto) => (
+                    <option
+                      key={produto.id}
+                      value={produto.nome}
+                    >
+                      {produto.nome}
+                    </option>
+                  )
+                )}
               </select>
             </div>
 
@@ -120,7 +129,9 @@ function CadastroProduto() {
                 placeholder="Ex: 20"
                 value={quantidade}
                 onChange={(e) =>
-                  setQuantidade(e.target.value)
+                  setQuantidade(
+                    e.target.value
+                  )
                 }
                 min="1"
                 required
@@ -128,12 +139,16 @@ function CadastroProduto() {
             </div>
 
             <div className="campo">
-              <label>Unidade de medida</label>
+              <label>
+                Unidade de medida
+              </label>
 
               <select
                 value={unidade}
                 onChange={(e) =>
-                  setUnidade(e.target.value)
+                  setUnidade(
+                    e.target.value
+                  )
                 }
                 required
               >
@@ -141,17 +156,36 @@ function CadastroProduto() {
                   Selecione a unidade
                 </option>
 
-                <option value="kg">kg</option>
-                <option value="unidade">unidade</option>
-                <option value="maço">maço</option>
-                <option value="caixa">caixa</option>
-                <option value="litro">litro</option>
-                <option value="dúzia">dúzia</option>
+                <option value="kg">
+                  kg
+                </option>
+
+                <option value="unidade">
+                  unidade
+                </option>
+
+                <option value="maço">
+                  maço
+                </option>
+
+                <option value="caixa">
+                  caixa
+                </option>
+
+                <option value="litro">
+                  litro
+                </option>
+
+                <option value="dúzia">
+                  dúzia
+                </option>
               </select>
             </div>
 
             <div className="campo">
-              <label>Disponibilidade</label>
+              <label>
+                Disponibilidade
+              </label>
 
               <input
                 type="date"
@@ -166,14 +200,18 @@ function CadastroProduto() {
             </div>
 
             <div className="campo">
-              <label>Preço (R$)</label>
+              <label>
+                Preço (R$)
+              </label>
 
               <input
                 type="number"
                 placeholder="Ex: 3.50"
                 value={preco}
                 onChange={(e) =>
-                  setPreco(e.target.value)
+                  setPreco(
+                    e.target.value
+                  )
                 }
                 step="0.01"
                 min="0.01"
@@ -182,13 +220,17 @@ function CadastroProduto() {
             </div>
 
             <div className="campo campo-grande">
-              <label>Observação</label>
+              <label>
+                Observação
+              </label>
 
               <textarea
                 placeholder="Ex: produto disponível para retirada no período da manhã."
                 value={observacao}
                 onChange={(e) =>
-                  setObservacao(e.target.value)
+                  setObservacao(
+                    e.target.value
+                  )
                 }
                 rows="4"
                 style={{
@@ -222,7 +264,9 @@ function CadastroProduto() {
                   className="btn-secundario"
                   type="button"
                   onClick={() =>
-                    navigate('/solicitacoes')
+                    navigate(
+                      '/solicitacoes'
+                    )
                   }
                 >
                   Visualizar solicitações
@@ -247,7 +291,7 @@ function CadastroProduto() {
                 className="btn-principal"
                 type="submit"
               >
-                Cadastrar produto
+                Enviar oferta
               </button>
 
             </div>

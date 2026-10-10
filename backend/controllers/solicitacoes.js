@@ -60,8 +60,7 @@ const listarSolicitacoesProdutor = async (req, res) => {
     res.json(resultado.rows)
   } catch (erro) {
     res.status(500).json({
-      mensagem:
-        'Erro ao buscar solicitações',
+      mensagem: 'Erro ao buscar solicitações',
       erro
     })
   }
@@ -102,16 +101,16 @@ const criarSolicitacao = async (req, res) => {
 
     const resultado = await pool.query(
       `INSERT INTO solicitacoes
-        (
-          cpf_produtor,
-          nome_produto,
-          quantidade,
-          data_disponibilidade,
-          preco,
-          observacao_produtor
-        )
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
+      (
+        cpf_produtor,
+        nome_produto,
+        quantidade,
+        data_disponibilidade,
+        preco,
+        observacao_produtor
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *`,
       [
         cpf_produtor,
         nome_produto,
@@ -140,8 +139,7 @@ const criarSolicitacao = async (req, res) => {
     )
 
     res.status(500).json({
-      mensagem:
-        'Erro ao criar solicitação',
+      mensagem: 'Erro ao criar solicitação',
       erro
     })
   }
@@ -158,8 +156,7 @@ const editarSolicitacao = async (req, res) => {
     observacao_produtor
   } = req.body
 
-  const cpf_produtor =
-    req.produtor.cpf
+  const cpf_produtor = req.produtor.cpf
 
   try {
     const resultado = await pool.query(
@@ -169,13 +166,10 @@ const editarSolicitacao = async (req, res) => {
          quantidade = $2,
          data_disponibilidade = $3,
          preco = $4,
-         observacao_produtor = $5,
-         status = 'pendente',
-         observacao = NULL,
-         data_avaliacao = NULL
+         observacao_produtor = $5
        WHERE id = $6
          AND cpf_produtor = $7
-         AND status IN ('pendente', 'rejeitado')
+         AND status = 'pendente'
        RETURNING *`,
       [
         nome_produto,
@@ -210,15 +204,14 @@ const editarSolicitacao = async (req, res) => {
       tipo: 'solicitacao_atualizada',
       titulo: 'Solicitação atualizada',
       mensagem:
-        `${nomeProdutor} atualizou a oferta de ${nome_produto} e a reenviou para avaliação.`,
+        `${nomeProdutor} atualizou a oferta de ${nome_produto}.`,
       link: '/admin'
     })
 
     res.json(resultado.rows[0])
   } catch (erro) {
     res.status(500).json({
-      mensagem:
-        'Erro ao editar solicitação',
+      mensagem: 'Erro ao editar solicitação',
       erro
     })
   }
@@ -226,8 +219,7 @@ const editarSolicitacao = async (req, res) => {
 
 const excluirSolicitacao = async (req, res) => {
   const { id } = req.params
-  const cpf_produtor =
-    req.produtor.cpf
+  const cpf_produtor = req.produtor.cpf
 
   try {
     const resultado = await pool.query(
@@ -262,6 +254,159 @@ const excluirSolicitacao = async (req, res) => {
   }
 }
 
+const responderContraoferta = async (req, res) => {
+  const { id } = req.params
+  const { resposta } = req.body
+
+  const cpf_produtor = req.produtor.cpf
+
+  if (
+    ![
+      'aceitar',
+      'recusar'
+    ].includes(resposta)
+  ) {
+    return res.status(400).json({
+      mensagem:
+        'Resposta da contraoferta inválida.'
+    })
+  }
+
+  const cliente = await pool.connect()
+
+  try {
+    await cliente.query('BEGIN')
+
+    const resultado = await cliente.query(
+      `SELECT *
+       FROM solicitacoes
+       WHERE id = $1
+         AND cpf_produtor = $2
+         AND status = 'contraoferta'
+       FOR UPDATE`,
+      [
+        id,
+        cpf_produtor
+      ]
+    )
+
+    if (resultado.rows.length === 0) {
+      await cliente.query('ROLLBACK')
+
+      return res.status(404).json({
+        mensagem:
+          'Contraoferta não encontrada ou já respondida.'
+      })
+    }
+
+    const solicitacao = resultado.rows[0]
+
+    const produtorResultado =
+      await cliente.query(
+        `SELECT nome
+         FROM produtores
+         WHERE cpf = $1`,
+        [cpf_produtor]
+      )
+
+    const nomeProdutor =
+      produtorResultado.rows[0]?.nome ||
+      'Produtor'
+
+    if (resposta === 'aceitar') {
+      const quantidadeFinal =
+        solicitacao.quantidade_contraoferta ||
+        solicitacao.quantidade
+
+      const precoFinal =
+        solicitacao.preco_contraoferta ||
+        solicitacao.preco
+
+      await cliente.query(
+        `UPDATE solicitacoes
+         SET
+           status = 'contraoferta_aceita',
+           data_resposta_contraoferta = NOW()
+         WHERE id = $1`,
+        [id]
+      )
+
+      await cliente.query(
+        `INSERT INTO produtos
+        (
+          cpf_produtor,
+          nome_produto,
+          quantidade,
+          data_disponibilidade,
+          preco
+        )
+        VALUES ($1, $2, $3, $4, $5)`,
+        [
+          solicitacao.cpf_produtor,
+          solicitacao.nome_produto,
+          quantidadeFinal,
+          solicitacao.data_disponibilidade,
+          precoFinal
+        ]
+      )
+
+      await cliente.query('COMMIT')
+
+      await notificarAdministradores({
+        tipo: 'contraoferta_aceita',
+        titulo: 'Contraoferta aceita',
+        mensagem:
+          `${nomeProdutor} aceitou a contraoferta de ${solicitacao.nome_produto}.`,
+        link: '/admin'
+      })
+
+      return res.json({
+        mensagem:
+          'Contraoferta aceita com sucesso.'
+      })
+    }
+
+    await cliente.query(
+      `UPDATE solicitacoes
+       SET
+         status = 'contraoferta_recusada',
+         data_resposta_contraoferta = NOW()
+       WHERE id = $1`,
+      [id]
+    )
+
+    await cliente.query('COMMIT')
+
+    await notificarAdministradores({
+      tipo: 'contraoferta_recusada',
+      titulo: 'Contraoferta recusada',
+      mensagem:
+        `${nomeProdutor} recusou a contraoferta de ${solicitacao.nome_produto}.`,
+      link: '/admin'
+    })
+
+    res.json({
+      mensagem:
+        'Contraoferta recusada.'
+    })
+  } catch (erro) {
+    await cliente.query('ROLLBACK')
+
+    console.error(
+      'Erro ao responder contraoferta:',
+      erro
+    )
+
+    res.status(500).json({
+      mensagem:
+        'Erro ao responder contraoferta',
+      erro
+    })
+  } finally {
+    cliente.release()
+  }
+}
+
 
 // Administrador
 
@@ -275,7 +420,7 @@ const listarTodasSolicitacoes = async (req, res) => {
        FROM solicitacoes s
        JOIN produtores p
          ON s.cpf_produtor = p.cpf
-       ORDER BY data_solicitacao DESC`
+       ORDER BY s.data_solicitacao DESC`
     )
 
     res.json(resultado.rows)
@@ -293,13 +438,16 @@ const avaliarSolicitacao = async (req, res) => {
 
   const {
     status,
-    observacao
+    observacao,
+    preco_contraoferta,
+    quantidade_contraoferta
   } = req.body
 
   if (
     ![
       'aprovado',
-      'rejeitado'
+      'rejeitado',
+      'contraoferta'
     ].includes(status)
   ) {
     return res.status(400).json({
@@ -307,35 +455,30 @@ const avaliarSolicitacao = async (req, res) => {
     })
   }
 
-  const cliente =
-    await pool.connect()
+  if (!observacao?.trim()) {
+    return res.status(400).json({
+      mensagem:
+        'Informe um comentário para a avaliação.'
+    })
+  }
+
+  const cliente = await pool.connect()
 
   try {
     await cliente.query('BEGIN')
 
-    const resultado =
+    const resultadoAtual =
       await cliente.query(
-        `UPDATE solicitacoes
-         SET
-           status = $1,
-           observacao = $2,
-           data_avaliacao = NOW()
-         WHERE id = $3
+        `SELECT *
+         FROM solicitacoes
+         WHERE id = $1
            AND status = 'pendente'
-         RETURNING *`,
-        [
-          status,
-          observacao,
-          id
-        ]
+         FOR UPDATE`,
+        [id]
       )
 
-    if (
-      resultado.rows.length === 0
-    ) {
-      await cliente.query(
-        'ROLLBACK'
-      )
+    if (resultadoAtual.rows.length === 0) {
+      await cliente.query('ROLLBACK')
 
       return res.status(404).json({
         mensagem:
@@ -343,28 +486,124 @@ const avaliarSolicitacao = async (req, res) => {
       })
     }
 
-    const solicitacao =
-      resultado.rows[0]
+    const solicitacaoAtual =
+      resultadoAtual.rows[0]
 
-    if (status === 'aprovado') {
-      await cliente.query(
-        `INSERT INTO produtos
-        (
-          cpf_produtor,
-          nome_produto,
-          quantidade,
-          data_disponibilidade,
-          preco
+    let solicitacao
+
+    if (status === 'contraoferta') {
+      const quantidadeProposta =
+        String(
+          quantidade_contraoferta ||
+          solicitacaoAtual.quantidade
+        ).trim()
+
+      const precoProposto =
+        preco_contraoferta !== null &&
+        preco_contraoferta !== undefined &&
+        preco_contraoferta !== ''
+          ? Number(preco_contraoferta)
+          : Number(solicitacaoAtual.preco)
+
+      if (
+        !quantidadeProposta ||
+        Number.isNaN(precoProposto) ||
+        precoProposto <= 0
+      ) {
+        await cliente.query('ROLLBACK')
+
+        return res.status(400).json({
+          mensagem:
+            'Informe valores válidos para a contraoferta.'
+        })
+      }
+
+      const quantidadeMudou =
+        quantidadeProposta !==
+        solicitacaoAtual.quantidade
+
+      const precoMudou =
+        Number(precoProposto) !==
+        Number(solicitacaoAtual.preco)
+
+      if (
+        !quantidadeMudou &&
+        !precoMudou
+      ) {
+        await cliente.query('ROLLBACK')
+
+        return res.status(400).json({
+          mensagem:
+            'Altere o preço ou a quantidade para enviar uma contraoferta.'
+        })
+      }
+
+      const resultado =
+        await cliente.query(
+          `UPDATE solicitacoes
+           SET
+             status = 'contraoferta',
+             observacao = $1,
+             quantidade_contraoferta = $2,
+             preco_contraoferta = $3,
+             data_avaliacao = NOW(),
+             data_contraoferta = NOW()
+           WHERE id = $4
+           RETURNING *`,
+          [
+            observacao.trim(),
+            quantidadeProposta,
+            precoProposto,
+            id
+          ]
         )
-        VALUES ($1, $2, $3, $4, $5)`,
-        [
-          solicitacao.cpf_produtor,
-          solicitacao.nome_produto,
-          solicitacao.quantidade,
-          solicitacao.data_disponibilidade,
-          solicitacao.preco
-        ]
-      )
+
+      solicitacao =
+        resultado.rows[0]
+    } else {
+      const resultado =
+        await cliente.query(
+          `UPDATE solicitacoes
+           SET
+             status = $1,
+             observacao = $2,
+             data_avaliacao = NOW(),
+             quantidade_contraoferta = NULL,
+             preco_contraoferta = NULL,
+             data_contraoferta = NULL,
+             data_resposta_contraoferta = NULL
+           WHERE id = $3
+           RETURNING *`,
+          [
+            status,
+            observacao.trim(),
+            id
+          ]
+        )
+
+      solicitacao =
+        resultado.rows[0]
+
+      if (status === 'aprovado') {
+        await cliente.query(
+          `INSERT INTO produtos
+          (
+            cpf_produtor,
+            nome_produto,
+            quantidade,
+            data_disponibilidade,
+            preco
+          )
+          VALUES ($1, $2, $3, $4, $5)`,
+          [
+            solicitacao.cpf_produtor,
+            solicitacao.nome_produto,
+            solicitacao.quantidade,
+            solicitacao.data_disponibilidade,
+            solicitacao.preco
+          ]
+        )
+      }
     }
 
     await cliente.query('COMMIT')
@@ -378,7 +617,7 @@ const avaliarSolicitacao = async (req, res) => {
           'solicitacao_aprovada',
 
         titulo:
-          'Solicitação aprovada',
+          'Oferta aprovada',
 
         mensagem:
           `Sua oferta de ${solicitacao.nome_produto} foi aprovada pela APOMS.`,
@@ -386,7 +625,9 @@ const avaliarSolicitacao = async (req, res) => {
         link:
           '/solicitacoes'
       })
-    } else {
+    }
+
+    if (status === 'rejeitado') {
       await criarNotificacao({
         cpf_destinatario:
           solicitacao.cpf_produtor,
@@ -395,7 +636,7 @@ const avaliarSolicitacao = async (req, res) => {
           'solicitacao_rejeitada',
 
         titulo:
-          'Solicitação rejeitada',
+          'Oferta rejeitada',
 
         mensagem:
           `Sua oferta de ${solicitacao.nome_produto} foi rejeitada. Consulte o retorno da APOMS.`,
@@ -405,11 +646,28 @@ const avaliarSolicitacao = async (req, res) => {
       })
     }
 
+    if (status === 'contraoferta') {
+      await criarNotificacao({
+        cpf_destinatario:
+          solicitacao.cpf_produtor,
+
+        tipo:
+          'contraoferta_recebida',
+
+        titulo:
+          'Nova contraoferta',
+
+        mensagem:
+          `A APOMS enviou uma contraoferta para ${solicitacao.nome_produto}.`,
+
+        link:
+          '/solicitacoes'
+      })
+    }
+
     res.json(solicitacao)
   } catch (erro) {
-    await cliente.query(
-      'ROLLBACK'
-    )
+    await cliente.query('ROLLBACK')
 
     console.error(
       'Erro ao avaliar solicitação:',
@@ -431,6 +689,7 @@ module.exports = {
   criarSolicitacao,
   editarSolicitacao,
   excluirSolicitacao,
+  responderContraoferta,
   listarTodasSolicitacoes,
   avaliarSolicitacao
 }

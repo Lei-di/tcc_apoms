@@ -9,6 +9,11 @@ function Solicitacoes() {
   const [mensagem, setMensagem] = useState('')
   const [editando, setEditando] = useState(null)
 
+  const [
+    contraofertaSelecionada,
+    setContraofertaSelecionada
+  ] = useState(null)
+
   const [form, setForm] = useState({
     nome_produto: '',
     quantidade: '',
@@ -60,11 +65,16 @@ function Solicitacoes() {
 
     const dados = {
       nome_produto: form.nome_produto,
+
       quantidade:
         `${form.quantidade} ${form.unidade}`,
+
       data_disponibilidade:
         form.data_disponibilidade,
-      preco: parseFloat(form.preco),
+
+      preco:
+        parseFloat(form.preco),
+
       observacao_produtor:
         form.observacao_produtor
     }
@@ -76,19 +86,19 @@ function Solicitacoes() {
       )
 
       setMensagem(
-        'Solicitação atualizada com sucesso!'
+        'Oferta atualizada com sucesso!'
       )
 
       cancelarEdicao()
       buscarSolicitacoes()
     } catch (err) {
       console.error(
-        'Erro ao atualizar solicitação:',
+        'Erro ao atualizar oferta:',
         err
       )
 
       setMensagem(
-        'Erro ao atualizar solicitação.'
+        'Erro ao atualizar oferta.'
       )
     }
   }
@@ -97,21 +107,29 @@ function Solicitacoes() {
     const partes =
       solicitacao.quantidade.split(' ')
 
+    setContraofertaSelecionada(null)
+
     setForm({
       nome_produto:
         solicitacao.nome_produto,
+
       quantidade:
         partes[0],
+
       unidade:
         partes.slice(1).join(' '),
+
       data_disponibilidade:
         solicitacao.data_disponibilidade
           ? solicitacao.data_disponibilidade.split('T')[0]
           : '',
+
       preco:
         solicitacao.preco,
+
       observacao_produtor:
-        solicitacao.observacao_produtor || ''
+        solicitacao.observacao_produtor ||
+        ''
     })
 
     setMensagem('')
@@ -129,6 +147,73 @@ function Solicitacoes() {
       preco: '',
       observacao_produtor: ''
     })
+  }
+
+  const abrirContraoferta = (
+    solicitacao
+  ) => {
+    setEditando(null)
+    setMensagem('')
+
+    setContraofertaSelecionada(
+      solicitacao
+    )
+  }
+
+  const fecharContraoferta = () => {
+    setContraofertaSelecionada(null)
+  }
+
+  const responderContraoferta = async (
+    resposta
+  ) => {
+    if (!contraofertaSelecionada) {
+      return
+    }
+
+    if (resposta === 'recusar') {
+      const confirmar =
+        window.confirm(
+          'Ao recusar a contraoferta, esta oferta será encerrada. Deseja continuar?'
+        )
+
+      if (!confirmar) {
+        return
+      }
+    }
+
+    try {
+      await api.patch(
+        `/solicitacoes/${contraofertaSelecionada.id}/contraoferta/responder`,
+        {
+          resposta
+        }
+      )
+
+      if (resposta === 'aceitar') {
+        setMensagem(
+          'Contraoferta aceita com sucesso!'
+        )
+      } else {
+        setMensagem(
+          'Contraoferta recusada. A oferta foi encerrada.'
+        )
+      }
+
+      setContraofertaSelecionada(null)
+
+      buscarSolicitacoes()
+    } catch (err) {
+      console.error(
+        'Erro ao responder contraoferta:',
+        err
+      )
+
+      setMensagem(
+        err.response?.data?.mensagem ||
+        'Erro ao responder contraoferta.'
+      )
+    }
   }
 
   const excluir = async (id) => {
@@ -172,6 +257,13 @@ function Solicitacoes() {
   }
 
   const formatarPreco = (preco) => {
+    if (
+      preco === null ||
+      preco === undefined
+    ) {
+      return '-'
+    }
+
     return Number(preco).toLocaleString(
       'pt-BR',
       {
@@ -190,7 +282,41 @@ function Solicitacoes() {
       return 'Rejeitada'
     }
 
+    if (status === 'contraoferta') {
+      return 'Contraoferta recebida'
+    }
+
+    if (
+      status === 'contraoferta_aceita'
+    ) {
+      return 'Contraoferta aceita'
+    }
+
+    if (
+      status === 'contraoferta_recusada'
+    ) {
+      return 'Contraoferta recusada'
+    }
+
     return 'Pendente'
+  }
+
+  const classeStatus = (status) => {
+    if (
+      status === 'aprovado' ||
+      status === 'contraoferta_aceita'
+    ) {
+      return 'status-aprovado'
+    }
+
+    if (
+      status === 'rejeitado' ||
+      status === 'contraoferta_recusada'
+    ) {
+      return 'status-rejeitado'
+    }
+
+    return 'status-pendente'
   }
 
   return (
@@ -207,6 +333,7 @@ function Solicitacoes() {
             justifyContent: 'flex-end'
           }}
         >
+
           <button
             className="btn-principal"
             type="button"
@@ -220,29 +347,172 @@ function Solicitacoes() {
 
             Nova oferta
           </button>
+
         </div>
 
         {mensagem && (
           <p
             className={`mensagem-pagina ${
-              mensagem.includes('sucesso')
-                ? 'sucesso'
-                : 'erro'
+              mensagem.includes('Erro')
+                ? 'erro'
+                : 'sucesso'
             }`}
           >
             {mensagem}
           </p>
         )}
 
+        {contraofertaSelecionada && (
+          <div
+            className="edicao-card"
+            style={{
+              maxWidth: '100%'
+            }}
+          >
+
+            <div className="edicao-titulo">
+
+              <h3>
+                Contraoferta recebida
+              </h3>
+
+              <p>
+                Analise a proposta enviada pela APOMS antes de responder.
+              </p>
+
+            </div>
+
+            <div
+              className="cadastro-produto-form"
+              style={{
+                marginBottom: '22px'
+              }}
+            >
+
+              <div className="campo">
+                <label>Produto</label>
+
+                <div style={campoInformacao}>
+                  {
+                    contraofertaSelecionada.nome_produto
+                  }
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>
+                  Quantidade original
+                </label>
+
+                <div style={campoInformacao}>
+                  {
+                    contraofertaSelecionada.quantidade
+                  }
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>
+                  Quantidade proposta
+                </label>
+
+                <div style={campoDestaque}>
+                  {
+                    contraofertaSelecionada.quantidade_contraoferta
+                  }
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>
+                  Preço original
+                </label>
+
+                <div style={campoInformacao}>
+                  {formatarPreco(
+                    contraofertaSelecionada.preco
+                  )}
+                </div>
+              </div>
+
+              <div className="campo">
+                <label>
+                  Preço proposto
+                </label>
+
+                <div style={campoDestaque}>
+                  {formatarPreco(
+                    contraofertaSelecionada.preco_contraoferta
+                  )}
+                </div>
+              </div>
+
+              <div className="campo campo-grande">
+                <label>
+                  Comentário da APOMS
+                </label>
+
+                <div style={campoInformacao}>
+                  {
+                    contraofertaSelecionada.observacao
+                  }
+                </div>
+              </div>
+
+            </div>
+
+            <div className="acoes-form">
+
+              <button
+                className="btn-voltar"
+                type="button"
+                onClick={fecharContraoferta}
+              >
+                Fechar
+              </button>
+
+              <button
+                className="btn-excluir"
+                type="button"
+                onClick={() =>
+                  responderContraoferta(
+                    'recusar'
+                  )
+                }
+              >
+                Recusar contraoferta
+              </button>
+
+              <button
+                className="btn-principal"
+                type="button"
+                onClick={() =>
+                  responderContraoferta(
+                    'aceitar'
+                  )
+                }
+              >
+                Aceitar contraoferta
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
         {editando && (
           <div className="edicao-card">
 
             <div className="edicao-titulo">
-              <h3>Editar solicitação</h3>
+
+              <h3>
+                Editar solicitação
+              </h3>
 
               <p>
-                Altere os dados necessários e envie novamente para avaliação.
+                Altere os dados enquanto a oferta ainda estiver pendente.
               </p>
+
             </div>
 
             <form
@@ -254,7 +524,9 @@ function Solicitacoes() {
                 <label>Produto</label>
 
                 <select
-                  value={form.nome_produto}
+                  value={
+                    form.nome_produto
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -272,7 +544,9 @@ function Solicitacoes() {
                     (produto) => (
                       <option
                         key={produto.id}
-                        value={produto.nome}
+                        value={
+                          produto.nome
+                        }
                       >
                         {produto.nome}
                       </option>
@@ -282,7 +556,9 @@ function Solicitacoes() {
               </div>
 
               <div className="campo">
-                <label>Quantidade</label>
+                <label>
+                  Quantidade
+                </label>
 
                 <input
                   type="number"
@@ -319,19 +595,26 @@ function Solicitacoes() {
                     Selecione a unidade
                   </option>
 
-                  <option value="kg">kg</option>
+                  <option value="kg">
+                    kg
+                  </option>
+
                   <option value="unidade">
                     unidade
                   </option>
+
                   <option value="maço">
                     maço
                   </option>
+
                   <option value="caixa">
                     caixa
                   </option>
+
                   <option value="litro">
                     litro
                   </option>
+
                   <option value="dúzia">
                     dúzia
                   </option>
@@ -360,7 +643,9 @@ function Solicitacoes() {
               </div>
 
               <div className="campo">
-                <label>Preço (R$)</label>
+                <label>
+                  Preço (R$)
+                </label>
 
                 <input
                   type="number"
@@ -379,10 +664,11 @@ function Solicitacoes() {
               </div>
 
               <div className="campo campo-grande">
-                <label>Observação</label>
+                <label>
+                  Observação
+                </label>
 
                 <textarea
-                  placeholder="Adicione alguma informação importante sobre a oferta."
                   value={
                     form.observacao_produtor
                   }
@@ -399,7 +685,8 @@ function Solicitacoes() {
                     padding: '12px',
                     border:
                       '1px solid #d7ddd9',
-                    borderRadius: '6px',
+                    borderRadius:
+                      '6px',
                     fontSize: '1rem',
                     resize: 'vertical',
                     backgroundColor:
@@ -438,10 +725,6 @@ function Solicitacoes() {
           {solicitacoes.length === 0 ? (
             <div className="estado-vazio">
 
-              <div className="estado-vazio-icone">
-                +
-              </div>
-
               <h3>
                 Nenhuma solicitação encontrada
               </h3>
@@ -457,7 +740,7 @@ function Solicitacoes() {
                   navigate('/cadastro')
                 }
               >
-                Cadastrar produto
+                Cadastrar oferta
               </button>
 
             </div>
@@ -475,6 +758,7 @@ function Solicitacoes() {
                     <th>Status</th>
                     <th>Observação</th>
                     <th>Retorno</th>
+                    <th>Contraoferta</th>
                     <th>Data de envio</th>
                     <th>Ações</th>
                   </tr>
@@ -483,7 +767,11 @@ function Solicitacoes() {
                 <tbody>
                   {solicitacoes.map(
                     (solicitacao) => (
-                      <tr key={solicitacao.id}>
+                      <tr
+                        key={
+                          solicitacao.id
+                        }
+                      >
 
                         <td>
                           <strong className="produto-nome">
@@ -513,7 +801,9 @@ function Solicitacoes() {
 
                         <td>
                           <span
-                            className={`status-badge status-${solicitacao.status}`}
+                            className={`status-badge ${classeStatus(
+                              solicitacao.status
+                            )}`}
                           >
                             {formatarStatus(
                               solicitacao.status
@@ -536,6 +826,29 @@ function Solicitacoes() {
                         </td>
 
                         <td>
+                          {solicitacao.quantidade_contraoferta ||
+                          solicitacao.preco_contraoferta ? (
+                            <div>
+                              <div>
+                                Qtd.:{' '}
+                                {
+                                  solicitacao.quantidade_contraoferta
+                                }
+                              </div>
+
+                              <div>
+                                Preço:{' '}
+                                {formatarPreco(
+                                  solicitacao.preco_contraoferta
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+
+                        <td>
                           {formatarData(
                             solicitacao.data_solicitacao
                           )}
@@ -544,40 +857,56 @@ function Solicitacoes() {
                         <td>
                           <div className="acoes-tabela">
 
-                            {(solicitacao.status ===
-                              'pendente' ||
-                              solicitacao.status ===
-                              'rejeitado') && (
+                            {solicitacao.status ===
+                              'pendente' && (
+                              <>
+                                <button
+                                  className="btn-editar"
+                                  type="button"
+                                  onClick={() =>
+                                    iniciarEdicao(
+                                      solicitacao
+                                    )
+                                  }
+                                >
+                                  Editar
+                                </button>
+
+                                <button
+                                  className="btn-excluir"
+                                  type="button"
+                                  onClick={() =>
+                                    excluir(
+                                      solicitacao.id
+                                    )
+                                  }
+                                >
+                                  Excluir
+                                </button>
+                              </>
+                            )}
+
+                            {solicitacao.status ===
+                              'contraoferta' && (
                               <button
                                 className="btn-editar"
                                 type="button"
                                 onClick={() =>
-                                  iniciarEdicao(
+                                  abrirContraoferta(
                                     solicitacao
                                   )
                                 }
                               >
-                                Editar
+                                Ver contraoferta
                               </button>
                             )}
 
-                            {solicitacao.status ===
-                              'pendente' && (
-                              <button
-                                className="btn-excluir"
-                                type="button"
-                                onClick={() =>
-                                  excluir(
-                                    solicitacao.id
-                                  )
-                                }
-                              >
-                                Excluir
-                              </button>
-                            )}
-
-                            {solicitacao.status ===
-                              'aprovado' && (
+                            {![
+                              'pendente',
+                              'contraoferta'
+                            ].includes(
+                              solicitacao.status
+                            ) && (
                               <span className="sem-acao">
                                 -
                               </span>
@@ -601,6 +930,26 @@ function Solicitacoes() {
       </section>
     </LayoutSistema>
   )
+}
+
+const campoInformacao = {
+  minHeight: '44px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 12px',
+  background: '#f7f9f8',
+  color: '#4e5752',
+  border: '1px solid #e1e6e3',
+  borderRadius: '6px',
+  fontSize: '14px'
+}
+
+const campoDestaque = {
+  ...campoInformacao,
+  background: '#fff8e8',
+  color: '#8a5a00',
+  border: '1px solid #eed8a6',
+  fontWeight: '600'
 }
 
 export default Solicitacoes
