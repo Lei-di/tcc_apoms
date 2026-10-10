@@ -60,6 +60,26 @@ function Solicitacoes() {
     }
   }
 
+  const pendentes = solicitacoes.filter(
+    (solicitacao) =>
+      solicitacao.status === 'pendente'
+  )
+
+  const contraofertas = solicitacoes.filter(
+    (solicitacao) =>
+      solicitacao.status === 'contraoferta'
+  )
+
+  const historico = solicitacoes.filter(
+    (solicitacao) =>
+      [
+        'aprovado',
+        'rejeitado',
+        'contraoferta_aceita',
+        'contraoferta_recusada'
+      ].includes(solicitacao.status)
+  )
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -128,8 +148,7 @@ function Solicitacoes() {
         solicitacao.preco,
 
       observacao_produtor:
-        solicitacao.observacao_produtor ||
-        ''
+        solicitacao.observacao_produtor || ''
     })
 
     setMensagem('')
@@ -149,9 +168,7 @@ function Solicitacoes() {
     })
   }
 
-  const abrirContraoferta = (
-    solicitacao
-  ) => {
+  const abrirContraoferta = (solicitacao) => {
     setEditando(null)
     setMensagem('')
 
@@ -279,26 +296,18 @@ function Solicitacoes() {
     }
 
     if (status === 'rejeitado') {
-      return 'Rejeitada'
+      return 'Rejeitada pela APOMS'
     }
 
-    if (status === 'contraoferta') {
-      return 'Contraoferta recebida'
-    }
-
-    if (
-      status === 'contraoferta_aceita'
-    ) {
+    if (status === 'contraoferta_aceita') {
       return 'Contraoferta aceita'
     }
 
-    if (
-      status === 'contraoferta_recusada'
-    ) {
+    if (status === 'contraoferta_recusada') {
       return 'Contraoferta recusada'
     }
 
-    return 'Pendente'
+    return status
   }
 
   const classeStatus = (status) => {
@@ -322,7 +331,7 @@ function Solicitacoes() {
   return (
     <LayoutSistema
       titulo="Minhas Solicitações"
-      subtitulo="Acompanhe as ofertas enviadas para avaliação."
+      subtitulo="Acompanhe suas ofertas e o histórico das avaliações."
       paginaAtiva="solicitacoes"
     >
       <section className="dashboard-content">
@@ -333,21 +342,6 @@ function Solicitacoes() {
             justifyContent: 'flex-end'
           }}
         >
-
-          <button
-            className="btn-principal"
-            type="button"
-            onClick={() =>
-              navigate('/cadastro')
-            }
-          >
-            <span className="btn-icone">
-              +
-            </span>
-
-            Nova oferta
-          </button>
-
         </div>
 
         {mensagem && (
@@ -371,7 +365,6 @@ function Solicitacoes() {
           >
 
             <div className="edicao-titulo">
-
               <h3>
                 Contraoferta recebida
               </h3>
@@ -379,7 +372,6 @@ function Solicitacoes() {
               <p>
                 Analise a proposta enviada pela APOMS antes de responder.
               </p>
-
             </div>
 
             <div
@@ -504,15 +496,13 @@ function Solicitacoes() {
           <div className="edicao-card">
 
             <div className="edicao-titulo">
-
               <h3>
-                Editar solicitação
+                Editar oferta
               </h3>
 
               <p>
                 Altere os dados enquanto a oferta ainda estiver pendente.
               </p>
-
             </div>
 
             <form
@@ -524,9 +514,7 @@ function Solicitacoes() {
                 <label>Produto</label>
 
                 <select
-                  value={
-                    form.nome_produto
-                  }
+                  value={form.nome_produto}
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -544,9 +532,7 @@ function Solicitacoes() {
                     (produto) => (
                       <option
                         key={produto.id}
-                        value={
-                          produto.nome
-                        }
+                        value={produto.nome}
                       >
                         {produto.nome}
                       </option>
@@ -685,8 +671,7 @@ function Solicitacoes() {
                     padding: '12px',
                     border:
                       '1px solid #d7ddd9',
-                    borderRadius:
-                      '6px',
+                    borderRadius: '6px',
                     fontSize: '1rem',
                     resize: 'vertical',
                     backgroundColor:
@@ -720,29 +705,203 @@ function Solicitacoes() {
           </div>
         )}
 
+        {/* Ofertas em andamento */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(2, minmax(0, 1fr))',
+            gap: '22px',
+            marginBottom: '32px'
+          }}
+        >
+
+          {/* Pendentes */}
+          <div className="table-card">
+
+            <div style={cabecalhoColuna}>
+              <div>
+                <h2 style={tituloColuna}>
+                  Pendentes
+                </h2>
+
+                <p style={descricaoColuna}>
+                  Aguardando avaliação da APOMS.
+                </p>
+              </div>
+            </div>
+
+            {pendentes.length === 0 ? (
+              <div style={estadoColuna}>
+                Nenhuma oferta pendente.
+              </div>
+            ) : (
+              pendentes.map(
+                (solicitacao) => (
+                  <div
+                    key={solicitacao.id}
+                    style={itemColuna}
+                  >
+
+                    <div>
+                      <strong style={nomeOferta}>
+                        {
+                          solicitacao.nome_produto
+                        }
+                      </strong>
+
+                      <span style={detalheOferta}>
+                        {solicitacao.quantidade}
+                        {' • '}
+                        {formatarPreco(
+                          solicitacao.preco
+                        )}
+                      </span>
+
+                      <span style={detalheOferta}>
+                        Enviada em{' '}
+                        {formatarData(
+                          solicitacao.data_solicitacao
+                        )}
+                      </span>
+                    </div>
+
+                    <div
+                      className="acoes-tabela"
+                      style={{
+                        marginTop: '14px'
+                      }}
+                    >
+                      <button
+                        className="btn-editar"
+                        type="button"
+                        onClick={() =>
+                          iniciarEdicao(
+                            solicitacao
+                          )
+                        }
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        className="btn-excluir"
+                        type="button"
+                        onClick={() =>
+                          excluir(
+                            solicitacao.id
+                          )
+                        }
+                      >
+                        Excluir
+                      </button>
+                    </div>
+
+                  </div>
+                )
+              )
+            )}
+
+          </div>
+
+          {/* Contraofertas */}
+          <div className="table-card">
+
+            <div style={cabecalhoColuna}>
+              <div>
+                <h2 style={tituloColuna}>
+                  Contraofertas
+                </h2>
+
+                <p style={descricaoColuna}>
+                  Aguardando sua avaliação.
+                </p>
+              </div>
+            </div>
+
+            {contraofertas.length === 0 ? (
+              <div style={estadoColuna}>
+                Nenhuma contraoferta aguardando resposta.
+              </div>
+            ) : (
+              contraofertas.map(
+                (solicitacao) => (
+                  <div
+                    key={solicitacao.id}
+                    style={itemColuna}
+                  >
+
+                    <div>
+                      <strong style={nomeOferta}>
+                        {
+                          solicitacao.nome_produto
+                        }
+                      </strong>
+
+                      <span style={detalheOferta}>
+                        Proposta:{' '}
+                        {
+                          solicitacao.quantidade_contraoferta
+                        }
+                        {' • '}
+                        {formatarPreco(
+                          solicitacao.preco_contraoferta
+                        )}
+                      </span>
+
+                      {solicitacao.observacao && (
+                        <span style={detalheOferta}>
+                          {solicitacao.observacao}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      className="btn-secundario"
+                      type="button"
+                      style={{
+                        marginTop: '14px'
+                      }}
+                      onClick={() =>
+                        abrirContraoferta(
+                          solicitacao
+                        )
+                      }
+                    >
+                      Avaliar contraoferta
+                    </button>
+
+                  </div>
+                )
+              )
+            )}
+
+          </div>
+
+        </div>
+
+        {/* Histórico */}
+        <div
+          style={{
+            marginBottom: '14px'
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              color: '#26332b',
+              fontSize: '19px'
+            }}
+          >
+            Histórico de solicitações
+          </h2>
+        </div>
+
         <div className="table-card">
 
-          {solicitacoes.length === 0 ? (
-            <div className="estado-vazio">
-
-              <h3>
-                Nenhuma solicitação encontrada
-              </h3>
-
-              <p>
-                Você ainda não enviou nenhuma oferta para avaliação.
-              </p>
-
-              <button
-                className="btn-secundario"
-                type="button"
-                onClick={() =>
-                  navigate('/cadastro')
-                }
-              >
-                Cadastrar oferta
-              </button>
-
+          {historico.length === 0 ? (
+            <div style={estadoHistorico}>
+              Nenhuma solicitação finalizada até o momento.
             </div>
           ) : (
             <div className="table-responsive">
@@ -760,17 +919,14 @@ function Solicitacoes() {
                     <th>Retorno</th>
                     <th>Contraoferta</th>
                     <th>Data de envio</th>
-                    <th>Ações</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {solicitacoes.map(
+                  {historico.map(
                     (solicitacao) => (
                       <tr
-                        key={
-                          solicitacao.id
-                        }
+                        key={solicitacao.id}
                       >
 
                         <td>
@@ -854,67 +1010,6 @@ function Solicitacoes() {
                           )}
                         </td>
 
-                        <td>
-                          <div className="acoes-tabela">
-
-                            {solicitacao.status ===
-                              'pendente' && (
-                              <>
-                                <button
-                                  className="btn-editar"
-                                  type="button"
-                                  onClick={() =>
-                                    iniciarEdicao(
-                                      solicitacao
-                                    )
-                                  }
-                                >
-                                  Editar
-                                </button>
-
-                                <button
-                                  className="btn-excluir"
-                                  type="button"
-                                  onClick={() =>
-                                    excluir(
-                                      solicitacao.id
-                                    )
-                                  }
-                                >
-                                  Excluir
-                                </button>
-                              </>
-                            )}
-
-                            {solicitacao.status ===
-                              'contraoferta' && (
-                              <button
-                                className="btn-editar"
-                                type="button"
-                                onClick={() =>
-                                  abrirContraoferta(
-                                    solicitacao
-                                  )
-                                }
-                              >
-                                Ver contraoferta
-                              </button>
-                            )}
-
-                            {![
-                              'pendente',
-                              'contraoferta'
-                            ].includes(
-                              solicitacao.status
-                            ) && (
-                              <span className="sem-acao">
-                                -
-                              </span>
-                            )}
-
-                          </div>
-                        </td>
-
                       </tr>
                     )
                   )}
@@ -950,6 +1045,83 @@ const campoDestaque = {
   color: '#8a5a00',
   border: '1px solid #eed8a6',
   fontWeight: '600'
+}
+
+const cabecalhoColuna = {
+  minHeight: '82px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '15px',
+  padding: '18px 20px',
+  borderBottom: '1px solid #e4e9e6'
+}
+
+const tituloColuna = {
+  margin: 0,
+  color: '#26332b',
+  fontSize: '17px'
+}
+
+const descricaoColuna = {
+  marginTop: '5px',
+  color: '#7b8580',
+  fontSize: '12px'
+}
+
+const contadorColuna = {
+  minWidth: '34px',
+  height: '34px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: '#edf6f1',
+  color: '#23764e',
+  borderRadius: '50%',
+  fontSize: '14px',
+  fontWeight: '700'
+}
+
+const itemColuna = {
+  padding: '18px 20px',
+  borderBottom: '1px solid #edf0ee'
+}
+
+const nomeOferta = {
+  display: 'block',
+  marginBottom: '7px',
+  color: '#26332b',
+  fontSize: '14px'
+}
+
+const detalheOferta = {
+  display: 'block',
+  marginTop: '3px',
+  color: '#7b8580',
+  fontSize: '12px',
+  lineHeight: '1.45'
+}
+
+const estadoColuna = {
+  minHeight: '130px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '25px',
+  color: '#8a938e',
+  fontSize: '13px',
+  textAlign: 'center'
+}
+
+const estadoHistorico = {
+  minHeight: '160px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '30px',
+  color: '#8a938e',
+  fontSize: '13px',
+  textAlign: 'center'
 }
 
 export default Solicitacoes

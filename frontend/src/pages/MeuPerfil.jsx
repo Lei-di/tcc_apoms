@@ -219,7 +219,7 @@ function MeuPerfil() {
   return (
     <LayoutSistema
       titulo="Meu perfil"
-      subtitulo="Consulte e mantenha seus dados atualizados."
+      subtitulo="Mantenha seus dados atualizados!!"
       paginaAtiva="perfil"
     >
       <section className="dashboard-content cadastro-produto-content">

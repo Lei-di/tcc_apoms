@@ -291,7 +291,7 @@ function CadastroProduto() {
                 className="btn-principal"
                 type="submit"
               >
-                Enviar oferta
+                Enviar
               </button>
 
             </div>
