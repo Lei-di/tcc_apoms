@@ -17,66 +17,126 @@ function ProdutoresAdmin() {
     buscarProdutores()
   }, [])
 
+  useEffect(() => {
+    const overflowAnterior =
+      document.body.style.overflow
+
+    document.body.style.overflow =
+      'hidden'
+
+    return () => {
+      document.body.style.overflow =
+        overflowAnterior
+    }
+  }, [])
+
   const buscarProdutores = async () => {
     try {
-      const resposta = await api.get('/admin/produtores')
-      setProdutores(resposta.data)
+      const resposta = await api.get(
+        '/admin/produtores'
+      )
+
+      setProdutores(
+        resposta.data
+      )
     } catch (err) {
-      console.error('Erro ao buscar produtores:', err)
+      console.error(
+        'Erro ao buscar produtores:',
+        err
+      )
     }
   }
 
   const validarCpf = (cpf) => {
-    const cpfLimpo = cpf.replace(/\D/g, '')
+    const cpfLimpo =
+      cpf.replace(/\D/g, '')
 
-    if (cpfLimpo.length !== 11) {
+    if (
+      cpfLimpo.length !== 11
+    ) {
       return false
     }
 
-    if (/^(\d)\1{10}$/.test(cpfLimpo)) {
+    if (
+      /^(\d)\1{10}$/.test(
+        cpfLimpo
+      )
+    ) {
       return false
     }
 
     let soma = 0
 
-    for (let i = 0; i < 9; i++) {
-      soma += Number(cpfLimpo[i]) * (10 - i)
+    for (
+      let i = 0;
+      i < 9;
+      i++
+    ) {
+      soma +=
+        Number(cpfLimpo[i]) *
+        (10 - i)
     }
 
-    let primeiroDigito = (soma * 10) % 11
+    let primeiroDigito =
+      (soma * 10) % 11
 
-    if (primeiroDigito === 10) {
+    if (
+      primeiroDigito === 10
+    ) {
       primeiroDigito = 0
     }
 
-    if (primeiroDigito !== Number(cpfLimpo[9])) {
+    if (
+      primeiroDigito !==
+      Number(cpfLimpo[9])
+    ) {
       return false
     }
 
     soma = 0
 
-    for (let i = 0; i < 10; i++) {
-      soma += Number(cpfLimpo[i]) * (11 - i)
+    for (
+      let i = 0;
+      i < 10;
+      i++
+    ) {
+      soma +=
+        Number(cpfLimpo[i]) *
+        (11 - i)
     }
 
-    let segundoDigito = (soma * 10) % 11
+    let segundoDigito =
+      (soma * 10) % 11
 
-    if (segundoDigito === 10) {
+    if (
+      segundoDigito === 10
+    ) {
       segundoDigito = 0
     }
 
-    return segundoDigito === Number(cpfLimpo[10])
+    return (
+      segundoDigito ===
+      Number(cpfLimpo[10])
+    )
   }
 
-  const handleCadastro = async (e) => {
+  const handleCadastro = async (
+    e
+  ) => {
     e.preventDefault()
     setMensagem('')
 
-    const cpf = novoProdutor.cpf.trim()
-    const nome = novoProdutor.nome.trim()
+    const cpf =
+      novoProdutor.cpf.trim()
+
+    const nome =
+      novoProdutor.nome.trim()
 
     if (!validarCpf(cpf)) {
-      setMensagem('CPF inválido.')
+      setMensagem(
+        'CPF inválido.'
+      )
+
       return
     }
 
@@ -84,14 +144,18 @@ function ProdutoresAdmin() {
       setMensagem(
         'Informe o nome completo do produtor.'
       )
+
       return
     }
 
     try {
-      await api.post('/admin/produtores', {
-        cpf,
-        nome
-      })
+      await api.post(
+        '/admin/produtores',
+        {
+          cpf,
+          nome
+        }
+      )
 
       setMensagem(
         'Produtor cadastrado com sucesso!'
@@ -102,16 +166,27 @@ function ProdutoresAdmin() {
         nome: ''
       })
 
-      setMostrarFormulario(false)
+      setMostrarFormulario(
+        false
+      )
+
       buscarProdutores()
     } catch (err) {
-      if (err.response?.status === 400) {
+      if (
+        err.response?.status ===
+        400
+      ) {
         setMensagem(
           err.response?.data?.mensagem ||
           'Dados inválidos.'
         )
-      } else if (err.response?.status === 409) {
-        setMensagem('CPF já cadastrado.')
+      } else if (
+        err.response?.status ===
+        409
+      ) {
+        setMensagem(
+          'CPF já cadastrado.'
+        )
       } else {
         setMensagem(
           'Erro ao cadastrar produtor.'
@@ -120,13 +195,20 @@ function ProdutoresAdmin() {
     }
   }
 
-  const selecionarProdutor = (produtor) => {
-    setProdutorSelecionado(produtor)
+  const selecionarProdutor = (
+    produtor
+  ) => {
+    setProdutorSelecionado(
+      produtor
+    )
+
     setMensagem('')
   }
 
   const fecharDetalhes = () => {
-    setProdutorSelecionado(null)
+    setProdutorSelecionado(
+      null
+    )
   }
 
   const toggleAtivo = async () => {
@@ -135,11 +217,13 @@ function ProdutoresAdmin() {
     }
 
     try {
-      const resposta = await api.patch(
-        `/admin/produtores/${produtorSelecionado.cpf}/toggle`
-      )
+      const resposta =
+        await api.patch(
+          `/admin/produtores/${produtorSelecionado.cpf}/toggle`
+        )
 
-      const novoStatus = resposta.data.ativo
+      const novoStatus =
+        resposta.data.ativo
 
       setProdutorSelecionado({
         ...produtorSelecionado,
@@ -160,8 +244,13 @@ function ProdutoresAdmin() {
     }
   }
 
-  const formatarCpf = (cpf) => {
-    if (!cpf || cpf.length !== 11) {
+  const formatarCpf = (
+    cpf
+  ) => {
+    if (
+      !cpf ||
+      cpf.length !== 11
+    ) {
       return cpf || '-'
     }
 
@@ -171,13 +260,22 @@ function ProdutoresAdmin() {
     )
   }
 
-  const formatarData = (data) => {
+  const formatarData = (
+    data
+  ) => {
     if (!data) {
       return 'Não informado'
     }
 
-    const somenteData = data.split('T')[0]
-    const [ano, mes, dia] = somenteData.split('-')
+    const somenteData =
+      data.split('T')[0]
+
+    const [
+      ano,
+      mes,
+      dia
+    ] =
+      somenteData.split('-')
 
     return `${dia}/${mes}/${ano}`
   }
@@ -189,7 +287,132 @@ function ProdutoresAdmin() {
       paginaAtiva="admin-produtores"
       tipoUsuario="admin"
     >
-      <section className="dashboard-content">
+      <style>
+        {`
+          .produtores-admin-page {
+            width: 100%;
+            height: calc(100vh - 90px);
+            min-height: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            padding: 26px 36px 28px;
+
+            overflow: hidden;
+          }
+
+          .produtores-admin-page .page-header,
+          .produtores-admin-page .mensagem-pagina,
+          .produtores-admin-formulario,
+          .produtores-admin-detalhes {
+            flex-shrink: 0;
+          }
+
+          .produtores-admin-formulario,
+          .produtores-admin-detalhes {
+            width: 100%;
+            max-width: none !important;
+          }
+
+          .produtores-admin-lista {
+            flex: 1;
+            min-height: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+          }
+
+          .produtores-admin-scroll {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+
+            overflow-y: scroll;
+            overflow-x: auto;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table {
+            width: 100%;
+            margin: 0;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+
+            background: #f7f9f8;
+          }
+
+          .produtores-admin-scroll::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+          }
+
+          .produtores-admin-scroll::-webkit-scrollbar-track {
+            background: #f0f3f1;
+          }
+
+          .produtores-admin-scroll::-webkit-scrollbar-thumb {
+            background: #b5c0b8;
+
+            border:
+              2px solid #f0f3f1;
+
+            border-radius: 10px;
+          }
+
+          .produtores-admin-scroll::-webkit-scrollbar-thumb:hover {
+            background: #96a49a;
+          }
+
+          @media (max-width: 1000px) {
+            .produtores-admin-page {
+              padding: 24px;
+            }
+          }
+
+          @media (max-width: 700px) {
+            body {
+              overflow: auto !important;
+            }
+
+            .produtores-admin-page {
+              height: auto;
+
+              min-height:
+                calc(100vh - 75px);
+
+              padding:
+                22px 16px 35px;
+
+              overflow: visible;
+            }
+
+            .produtores-admin-lista {
+              min-height: 450px;
+            }
+
+            .produtores-admin-scroll {
+              max-height: 500px;
+            }
+          }
+        `}
+      </style>
+
+      <section className="dashboard-content produtores-admin-page">
 
         <div className="page-header">
 
@@ -197,18 +420,28 @@ function ProdutoresAdmin() {
             className="btn-principal"
             type="button"
             onClick={() => {
-              setMostrarFormulario(!mostrarFormulario)
-              setProdutorSelecionado(null)
+              setMostrarFormulario(
+                !mostrarFormulario
+              )
+
+              setProdutorSelecionado(
+                null
+              )
+
               setMensagem('')
             }}
           >
+
             <span className="btn-icone">
-              {mostrarFormulario ? '×' : '+'}
+              {mostrarFormulario
+                ? '×'
+                : '+'}
             </span>
 
             {mostrarFormulario
               ? 'Cancelar'
               : 'Cadastrar produtor'}
+
           </button>
 
         </div>
@@ -216,7 +449,9 @@ function ProdutoresAdmin() {
         {mensagem && (
           <p
             className={`mensagem-pagina ${
-              mensagem.includes('sucesso')
+              mensagem.includes(
+                'sucesso'
+              )
                 ? 'sucesso'
                 : 'erro'
             }`}
@@ -227,41 +462,59 @@ function ProdutoresAdmin() {
 
         {mostrarFormulario && (
           <div
-            className="cadastro-card"
+            className="cadastro-card produtores-admin-formulario"
             style={{
-              maxWidth: '100%',
-              marginBottom: '25px'
+              maxWidth:
+                '100%',
+
+              marginBottom:
+                '20px'
             }}
           >
 
             <div
               className="edicao-titulo"
-              style={{ marginBottom: '22px' }}
+              style={{
+                marginBottom:
+                  '22px'
+              }}
             >
-              <h3>Pré-cadastrar produtor</h3>
+
+              <h3>
+                Pré-cadastrar produtor
+              </h3>
 
               <p>
                 Informe o CPF e o nome do produtor para liberar
                 posteriormente o primeiro acesso ao sistema.
               </p>
+
             </div>
 
             <form
               className="cadastro-produto-form"
-              onSubmit={handleCadastro}
+              onSubmit={
+                handleCadastro
+              }
             >
 
               <div className="campo">
-                <label>CPF</label>
+
+                <label>
+                  CPF
+                </label>
 
                 <input
                   type="text"
                   placeholder="Somente números"
-                  value={novoProdutor.cpf}
+                  value={
+                    novoProdutor.cpf
+                  }
                   maxLength="11"
                   onChange={(e) =>
                     setNovoProdutor({
                       ...novoProdutor,
+
                       cpf:
                         e.target.value.replace(
                           /\D/g,
@@ -271,23 +524,31 @@ function ProdutoresAdmin() {
                   }
                   required
                 />
+
               </div>
 
               <div className="campo">
-                <label>Nome completo</label>
+
+                <label>
+                  Nome completo
+                </label>
 
                 <input
                   type="text"
                   placeholder="Nome do produtor"
-                  value={novoProdutor.nome}
+                  value={
+                    novoProdutor.nome
+                  }
                   onChange={(e) =>
                     setNovoProdutor({
                       ...novoProdutor,
-                      nome: e.target.value
+                      nome:
+                        e.target.value
                     })
                   }
                   required
                 />
+
               </div>
 
               <div className="acoes-form campo-grande">
@@ -296,7 +557,9 @@ function ProdutoresAdmin() {
                   className="btn-voltar"
                   type="button"
                   onClick={() =>
-                    setMostrarFormulario(false)
+                    setMostrarFormulario(
+                      false
+                    )
                   }
                 >
                   Cancelar
@@ -318,37 +581,58 @@ function ProdutoresAdmin() {
 
         {produtorSelecionado && (
           <div
-            className="edicao-card"
+            className="edicao-card produtores-admin-detalhes"
             style={{
-              maxWidth: '100%'
+              maxWidth:
+                '100%',
+
+              marginBottom:
+                '20px'
             }}
           >
 
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                gap: '20px',
-                marginBottom: '25px'
+                display:
+                  'flex',
+
+                justifyContent:
+                  'space-between',
+
+                alignItems:
+                  'flex-start',
+
+                gap:
+                  '20px',
+
+                marginBottom:
+                  '25px'
               }}
             >
 
               <div
                 className="edicao-titulo"
-                style={{ margin: 0 }}
+                style={{
+                  margin: 0
+                }}
               >
-                <h3>Dados do produtor</h3>
+
+                <h3>
+                  Dados do produtor
+                </h3>
 
                 <p>
                   Consulte as informações cadastradas do produtor.
                 </p>
+
               </div>
 
               <button
                 className="btn-voltar"
                 type="button"
-                onClick={fecharDetalhes}
+                onClick={
+                  fecharDetalhes
+                }
               >
                 Fechar
               </button>
@@ -357,51 +641,72 @@ function ProdutoresAdmin() {
 
             <div
               style={{
-                display: 'grid',
+                display:
+                  'grid',
+
                 gridTemplateColumns:
                   'repeat(2, minmax(0, 1fr))',
-                gap: '22px'
+
+                gap:
+                  '22px'
               }}
             >
 
               <div className="campo">
-                <label>CPF</label>
+
+                <label>
+                  CPF
+                </label>
 
                 <div style={campoInformacao}>
                   {formatarCpf(
                     produtorSelecionado.cpf
                   )}
                 </div>
+
               </div>
 
               <div className="campo">
-                <label>Nome completo</label>
+
+                <label>
+                  Nome completo
+                </label>
 
                 <div style={campoInformacao}>
                   {produtorSelecionado.nome ||
                     'Não informado'}
                 </div>
+
               </div>
 
               <div className="campo">
-                <label>Telefone</label>
+
+                <label>
+                  Telefone
+                </label>
 
                 <div style={campoInformacao}>
                   {produtorSelecionado.telefone ||
                     'Não informado'}
                 </div>
+
               </div>
 
               <div className="campo">
-                <label>E-mail</label>
+
+                <label>
+                  E-mail
+                </label>
 
                 <div style={campoInformacao}>
                   {produtorSelecionado.email ||
                     'Não informado'}
                 </div>
+
               </div>
 
               <div className="campo">
+
                 <label>
                   Cidade / Núcleo produtivo
                 </label>
@@ -410,32 +715,47 @@ function ProdutoresAdmin() {
                   {produtorSelecionado.cidade ||
                     'Não informado'}
                 </div>
+
               </div>
 
               <div
                 className="campo"
                 style={{
-                  gridColumn: '1 / -1'
+                  gridColumn:
+                    '1 / -1'
                 }}
               >
-                <label>Endereço de retirada</label>
+
+                <label>
+                  Endereço de retirada
+                </label>
 
                 <div style={campoInformacao}>
                   {produtorSelecionado.endereco ||
                     'Não informado'}
                 </div>
+
               </div>
 
               <div className="campo">
-                <label>Status</label>
+
+                <label>
+                  Status
+                </label>
 
                 <div
                   style={{
-                    minHeight: '44px',
-                    display: 'flex',
-                    alignItems: 'center'
+                    minHeight:
+                      '44px',
+
+                    display:
+                      'flex',
+
+                    alignItems:
+                      'center'
                   }}
                 >
+
                   <span
                     className={`status-badge ${
                       produtorSelecionado.ativo
@@ -447,11 +767,16 @@ function ProdutoresAdmin() {
                       ? 'Ativo'
                       : 'Inativo'}
                   </span>
+
                 </div>
+
               </div>
 
               <div className="campo">
-                <label>Ativo desde</label>
+
+                <label>
+                  Ativo desde
+                </label>
 
                 <div style={campoInformacao}>
                   {produtorSelecionado.ativo
@@ -460,17 +785,24 @@ function ProdutoresAdmin() {
                       )
                     : 'Conta inativa'}
                 </div>
+
               </div>
 
             </div>
 
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginTop: '25px'
+                display:
+                  'flex',
+
+                justifyContent:
+                  'flex-end',
+
+                marginTop:
+                  '25px'
               }}
             >
+
               <button
                 type="button"
                 className={
@@ -478,18 +810,21 @@ function ProdutoresAdmin() {
                     ? 'btn-excluir'
                     : 'btn-editar'
                 }
-                onClick={toggleAtivo}
+                onClick={
+                  toggleAtivo
+                }
               >
                 {produtorSelecionado.ativo
                   ? 'Desativar acesso'
                   : 'Ativar acesso'}
               </button>
+
             </div>
 
           </div>
         )}
 
-        <div className="table-card">
+        <div className="table-card produtores-admin-lista">
 
           {produtores.length === 0 ? (
             <div className="estado-vazio">
@@ -504,62 +839,89 @@ function ProdutoresAdmin() {
 
             </div>
           ) : (
-            <div className="table-responsive">
+            <div className="table-responsive produtores-admin-scroll">
 
               <table className="dashboard-table">
 
                 <thead>
+
                   <tr>
-                    <th>CPF</th>
-                    <th>Nome completo</th>
-                    <th>Status</th>
+                    <th>
+                      CPF
+                    </th>
+
+                    <th>
+                      Nome completo
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {produtores.map((produtor) => (
-                    <tr
-                      key={produtor.cpf}
-                      onClick={() =>
-                        selecionarProdutor(produtor)
-                      }
-                      style={{
-                        cursor: 'pointer',
-                        backgroundColor:
-                          produtorSelecionado?.cpf ===
+
+                  {produtores.map(
+                    (produtor) => (
+                      <tr
+                        key={
                           produtor.cpf
-                            ? '#f3f8f5'
-                            : undefined
-                      }}
-                      title="Clique para visualizar os dados do produtor"
-                    >
+                        }
+                        onClick={() =>
+                          selecionarProdutor(
+                            produtor
+                          )
+                        }
+                        style={{
+                          cursor:
+                            'pointer',
 
-                      <td>
-                        {formatarCpf(produtor.cpf)}
-                      </td>
+                          backgroundColor:
+                            produtorSelecionado?.cpf ===
+                            produtor.cpf
+                              ? '#f3f8f5'
+                              : undefined
+                        }}
+                        title="Clique para visualizar os dados do produtor"
+                      >
 
-                      <td>
-                        <strong className="produto-nome">
-                          {produtor.nome || '-'}
-                        </strong>
-                      </td>
+                        <td>
+                          {formatarCpf(
+                            produtor.cpf
+                          )}
+                        </td>
 
-                      <td>
-                        <span
-                          className={`status-badge ${
-                            produtor.ativo
-                              ? 'status-aprovado'
-                              : 'status-rejeitado'
-                          }`}
-                        >
-                          {produtor.ativo
-                            ? 'Ativo'
-                            : 'Inativo'}
-                        </span>
-                      </td>
+                        <td>
 
-                    </tr>
-                  ))}
+                          <strong className="produto-nome">
+                            {produtor.nome ||
+                              '-'}
+                          </strong>
+
+                        </td>
+
+                        <td>
+
+                          <span
+                            className={`status-badge ${
+                              produtor.ativo
+                                ? 'status-aprovado'
+                                : 'status-rejeitado'
+                            }`}
+                          >
+                            {produtor.ativo
+                              ? 'Ativo'
+                              : 'Inativo'}
+                          </span>
+
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+
                 </tbody>
 
               </table>
@@ -570,20 +932,35 @@ function ProdutoresAdmin() {
         </div>
 
       </section>
+
     </LayoutSistema>
   )
 }
 
 const campoInformacao = {
   minHeight: '44px',
+
   display: 'flex',
+
   alignItems: 'center',
-  padding: '10px 12px',
-  background: '#f7f9f8',
-  color: '#4e5752',
-  border: '1px solid #e1e6e3',
-  borderRadius: '6px',
-  fontSize: '14px'
+
+  padding:
+    '10px 12px',
+
+  background:
+    '#f7f9f8',
+
+  color:
+    '#4e5752',
+
+  border:
+    '1px solid #e1e6e3',
+
+  borderRadius:
+    '6px',
+
+  fontSize:
+    '14px'
 }
 
 export default ProdutoresAdmin

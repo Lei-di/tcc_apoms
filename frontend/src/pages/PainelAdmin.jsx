@@ -9,20 +9,10 @@ function PainelAdmin() {
   const [mensagem, setMensagem] = useState('')
   const [erroModal, setErroModal] = useState('')
 
-  const [
-    solicitacaoDetalhe,
-    setSolicitacaoDetalhe
-  ] = useState(null)
+  const [solicitacaoDetalhe, setSolicitacaoDetalhe] = useState(null)
 
-  const [
-    statusAvaliacao,
-    setStatusAvaliacao
-  ] = useState('')
-
-  const [
-    retorno,
-    setRetorno
-  ] = useState('')
+  const [statusAvaliacao, setStatusAvaliacao] = useState('')
+  const [retorno, setRetorno] = useState('')
 
   const [
     quantidadeContraoferta,
@@ -39,10 +29,7 @@ function PainelAdmin() {
     setPrecoContraoferta
   ] = useState('')
 
-  const [
-    statusProduto,
-    setStatusProduto
-  ] = useState('')
+  const [statusProduto, setStatusProduto] = useState('')
 
   const [
     nomeProdutoAprovado,
@@ -77,14 +64,18 @@ function PainelAdmin() {
   }, [])
 
   useEffect(() => {
-    if (solicitacaoDetalhe) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    if (!solicitacaoDetalhe) {
+      return
     }
 
+    const overflowAnterior =
+      document.body.style.overflow
+
+    document.body.style.overflow = 'hidden'
+
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow =
+        overflowAnterior
     }
   }, [solicitacaoDetalhe])
 
@@ -120,9 +111,7 @@ function PainelAdmin() {
     }
   }
 
-  const separarQuantidade = (
-    quantidade
-  ) => {
+  const separarQuantidade = (quantidade) => {
     const texto = String(
       quantidade || ''
     ).trim()
@@ -139,14 +128,8 @@ function PainelAdmin() {
     }
 
     return {
-      valor:
-        resultado[1].replace(
-          ',',
-          '.'
-        ),
-
-      unidade:
-        resultado[2].trim()
+      valor: resultado[1].replace(',', '.'),
+      unidade: resultado[2].trim()
     }
   }
 
@@ -166,30 +149,22 @@ function PainelAdmin() {
     setErroModal('')
   }
 
-  const abrirDetalhe = (
-    solicitacao
-  ) => {
+  const abrirDetalhe = (solicitacao) => {
     limparAvaliacaoOferta()
     limparAvaliacaoProduto()
 
     setMensagem('')
-    setSolicitacaoDetalhe(
-      solicitacao
-    )
+    setSolicitacaoDetalhe(solicitacao)
   }
 
   const fecharDetalhe = () => {
     limparAvaliacaoOferta()
     limparAvaliacaoProduto()
 
-    setSolicitacaoDetalhe(
-      null
-    )
+    setSolicitacaoDetalhe(null)
   }
 
-  const iniciarAvaliacao = (
-    status
-  ) => {
+  const iniciarAvaliacao = (status) => {
     if (!solicitacaoDetalhe) {
       return
     }
@@ -198,10 +173,7 @@ function PainelAdmin() {
     setStatusAvaliacao(status)
     setRetorno('')
 
-    if (
-      status ===
-      'contraoferta'
-    ) {
+    if (status === 'contraoferta') {
       const quantidade =
         separarQuantidade(
           solicitacaoDetalhe.quantidade
@@ -216,8 +188,7 @@ function PainelAdmin() {
       )
 
       setPrecoContraoferta(
-        solicitacaoDetalhe.preco ??
-        ''
+        solicitacaoDetalhe.preco ?? ''
       )
     } else {
       setQuantidadeContraoferta('')
@@ -238,8 +209,7 @@ function PainelAdmin() {
     setErroModal('')
 
     if (
-      statusAvaliacao ===
-        'rejeitado' &&
+      statusAvaliacao === 'rejeitado' &&
       !retorno.trim()
     ) {
       setErroModal(
@@ -249,15 +219,10 @@ function PainelAdmin() {
       return
     }
 
-    if (
-      statusAvaliacao ===
-      'contraoferta'
-    ) {
+    if (statusAvaliacao === 'contraoferta') {
       if (
         quantidadeContraoferta === '' ||
-        Number(
-          quantidadeContraoferta
-        ) <= 0
+        Number(quantidadeContraoferta) <= 0
       ) {
         setErroModal(
           'Informe uma quantidade válida.'
@@ -268,9 +233,7 @@ function PainelAdmin() {
 
       if (
         precoContraoferta === '' ||
-        Number(
-          precoContraoferta
-        ) <= 0
+        Number(precoContraoferta) <= 0
       ) {
         setErroModal(
           'Informe um preço válido.'
@@ -285,20 +248,12 @@ function PainelAdmin() {
         )
 
       const quantidadeMudou =
-        Number(
-          quantidadeContraoferta
-        ) !==
-        Number(
-          quantidadeOriginal.valor
-        )
+        Number(quantidadeContraoferta) !==
+        Number(quantidadeOriginal.valor)
 
       const precoMudou =
-        Number(
-          precoContraoferta
-        ) !==
-        Number(
-          solicitacaoDetalhe.preco
-        )
+        Number(precoContraoferta) !==
+        Number(solicitacaoDetalhe.preco)
 
       if (
         !quantidadeMudou &&
@@ -316,53 +271,36 @@ function PainelAdmin() {
       await api.patch(
         `/solicitacoes/${solicitacaoDetalhe.id}/avaliar`,
         {
-          status:
-            statusAvaliacao,
+          status: statusAvaliacao,
 
           observacao:
-            retorno.trim() ||
-            null,
+            retorno.trim() || null,
 
           quantidade_contraoferta:
-            statusAvaliacao ===
-            'contraoferta'
-              ? Number(
-                  quantidadeContraoferta
-                )
+            statusAvaliacao === 'contraoferta'
+              ? Number(quantidadeContraoferta)
               : null,
 
           preco_contraoferta:
-            statusAvaliacao ===
-            'contraoferta'
-              ? Number(
-                  precoContraoferta
-                )
+            statusAvaliacao === 'contraoferta'
+              ? Number(precoContraoferta)
               : null
         }
       )
 
-      if (
-        statusAvaliacao ===
-        'aprovado'
-      ) {
+      if (statusAvaliacao === 'aprovado') {
         setMensagem(
           'Oferta aprovada com sucesso!'
         )
       }
 
-      if (
-        statusAvaliacao ===
-        'rejeitado'
-      ) {
+      if (statusAvaliacao === 'rejeitado') {
         setMensagem(
           'Oferta rejeitada com sucesso!'
         )
       }
 
-      if (
-        statusAvaliacao ===
-        'contraoferta'
-      ) {
+      if (statusAvaliacao === 'contraoferta') {
         setMensagem(
           'Contraoferta enviada ao produtor!'
         )
@@ -385,9 +323,7 @@ function PainelAdmin() {
     }
   }
 
-  const iniciarAvaliacaoProduto = (
-    status
-  ) => {
+  const iniciarAvaliacaoProduto = (status) => {
     if (!solicitacaoDetalhe) {
       return
     }
@@ -396,8 +332,7 @@ function PainelAdmin() {
     setStatusProduto(status)
 
     setNomeProdutoAprovado(
-      solicitacaoDetalhe.nome_produto ||
-      ''
+      solicitacaoDetalhe.nome_produto || ''
     )
 
     setRetornoProduto('')
@@ -407,90 +342,79 @@ function PainelAdmin() {
     limparAvaliacaoProduto()
   }
 
-  const confirmarAvaliacaoProduto =
-    async () => {
-      if (!solicitacaoDetalhe) {
-        return
-      }
-
-      setErroModal('')
-
-      if (
-        statusProduto ===
-          'aprovado' &&
-        !nomeProdutoAprovado.trim()
-      ) {
-        setErroModal(
-          'Informe o nome do produto.'
-        )
-
-        return
-      }
-
-      if (
-        statusProduto ===
-          'rejeitado' &&
-        !retornoProduto.trim()
-      ) {
-        setErroModal(
-          'Informe o motivo da rejeição.'
-        )
-
-        return
-      }
-
-      try {
-        await api.patch(
-          `/produtos/solicitacoes/${solicitacaoDetalhe.id}/avaliar`,
-          {
-            status:
-              statusProduto,
-
-            nome_produto_aprovado:
-              statusProduto ===
-              'aprovado'
-                ? nomeProdutoAprovado.trim()
-                : null,
-
-            retorno_admin:
-              retornoProduto.trim() ||
-              null
-          }
-        )
-
-        if (
-          statusProduto ===
-          'aprovado'
-        ) {
-          setMensagem(
-            'Solicitação aprovada e produto incluído no catálogo!'
-          )
-        } else {
-          setMensagem(
-            'Solicitação de produto rejeitada.'
-          )
-        }
-
-        setSolicitacaoDetalhe(null)
-        limparAvaliacaoProduto()
-
-        await buscarSolicitacoesProdutos()
-      } catch (err) {
-        console.error(
-          'Erro ao avaliar solicitação de produto:',
-          err
-        )
-
-        setErroModal(
-          err.response?.data?.mensagem ||
-          'Erro ao avaliar solicitação de produto.'
-        )
-      }
+  const confirmarAvaliacaoProduto = async () => {
+    if (!solicitacaoDetalhe) {
+      return
     }
 
-  const formatarData = (
-    data
-  ) => {
+    setErroModal('')
+
+    if (
+      statusProduto === 'aprovado' &&
+      !nomeProdutoAprovado.trim()
+    ) {
+      setErroModal(
+        'Informe o nome do produto.'
+      )
+
+      return
+    }
+
+    if (
+      statusProduto === 'rejeitado' &&
+      !retornoProduto.trim()
+    ) {
+      setErroModal(
+        'Informe o motivo da rejeição.'
+      )
+
+      return
+    }
+
+    try {
+      await api.patch(
+        `/produtos/solicitacoes/${solicitacaoDetalhe.id}/avaliar`,
+        {
+          status: statusProduto,
+
+          nome_produto_aprovado:
+            statusProduto === 'aprovado'
+              ? nomeProdutoAprovado.trim()
+              : null,
+
+          retorno_admin:
+            retornoProduto.trim() || null
+        }
+      )
+
+      if (statusProduto === 'aprovado') {
+        setMensagem(
+          'Solicitação aprovada e produto incluído no catálogo!'
+        )
+      } else {
+        setMensagem(
+          'Solicitação de produto rejeitada.'
+        )
+      }
+
+      setSolicitacaoDetalhe(null)
+      limparAvaliacaoProduto()
+
+      await buscarSolicitacoesProdutos()
+    } catch (err) {
+      console.error(
+        'Erro ao avaliar solicitação de produto:',
+        err
+      )
+
+      setErroModal(
+        err.response?.data?.mensagem ||
+        'Erro ao avaliar solicitação de produto.'
+      )
+    }
+  }
+
+  const formatarData = (data) => {
     if (!data) {
       return '-'
     }
@@ -498,19 +422,13 @@ function PainelAdmin() {
     const somenteData =
       data.split('T')[0]
 
-    const [
-      ano,
-      mes,
-      dia
-    ] =
+    const [ano, mes, dia] =
       somenteData.split('-')
 
     return `${dia}/${mes}/${ano}`
   }
 
-  const criarDataLocal = (
-    data
-  ) => {
+  const criarDataLocal = (data) => {
     if (!data) {
       return null
     }
@@ -518,11 +436,7 @@ function PainelAdmin() {
     const somenteData =
       data.split('T')[0]
 
-    const [
-      ano,
-      mes,
-      dia
-    ] =
+    const [ano, mes, dia] =
       somenteData
         .split('-')
         .map(Number)
@@ -534,9 +448,7 @@ function PainelAdmin() {
     )
   }
 
-  const formatarPreco = (
-    preco
-  ) => {
+  const formatarPreco = (preco) => {
     if (
       preco === null ||
       preco === undefined
@@ -544,9 +456,7 @@ function PainelAdmin() {
       return '-'
     }
 
-    return Number(
-      preco
-    ).toLocaleString(
+    return Number(preco).toLocaleString(
       'pt-BR',
       {
         style: 'currency',
@@ -555,60 +465,41 @@ function PainelAdmin() {
     )
   }
 
-  const formatarStatus = (
-    status
-  ) => {
-    if (
-      status === 'aprovado'
-    ) {
+  const formatarStatus = (status) => {
+    if (status === 'aprovado') {
       return 'Aprovada'
     }
 
-    if (
-      status === 'rejeitado'
-    ) {
+    if (status === 'rejeitado') {
       return 'Rejeitada'
     }
 
-    if (
-      status ===
-      'contraoferta'
-    ) {
+    if (status === 'contraoferta') {
       return 'Contraoferta enviada'
     }
 
-    if (
-      status ===
-      'contraoferta_aceita'
-    ) {
+    if (status === 'contraoferta_aceita') {
       return 'Contraoferta aceita'
     }
 
-    if (
-      status ===
-      'contraoferta_recusada'
-    ) {
+    if (status === 'contraoferta_recusada') {
       return 'Contraoferta recusada'
     }
 
     return 'Pendente'
   }
 
-  const classeStatus = (
-    status
-  ) => {
+  const classeStatus = (status) => {
     if (
       status === 'aprovado' ||
-      status ===
-        'contraoferta_aceita'
+      status === 'contraoferta_aceita'
     ) {
       return 'status-aprovado'
     }
 
     if (
       status === 'rejeitado' ||
-      status ===
-        'contraoferta_recusada'
+      status === 'contraoferta_recusada'
     ) {
       return 'status-rejeitado'
     }
@@ -616,42 +507,30 @@ function PainelAdmin() {
     return 'status-pendente'
   }
 
-  const formatarTipo = (
-    tipo
-  ) => {
-    if (
-      tipo === 'inclusao'
-    ) {
+  const formatarTipo = (tipo) => {
+    if (tipo === 'inclusao') {
       return 'Inclusão de produto'
     }
 
     return 'Oferta'
   }
 
-  const nomeProdutoExibicao = (
-    solicitacao
-  ) => {
+  const nomeProdutoExibicao = (solicitacao) => {
     if (
-      solicitacao.tipo_solicitacao ===
-        'inclusao' &&
-      solicitacao.status ===
-        'aprovado' &&
+      solicitacao.tipo_solicitacao === 'inclusao' &&
+      solicitacao.status === 'aprovado' &&
       solicitacao.nome_produto_aprovado
     ) {
-      return (
-        solicitacao.nome_produto_aprovado
-      )
+      return solicitacao.nome_produto_aprovado
     }
 
     return solicitacao.nome_produto
   }
 
-  const quantidadeExibicao = (
-    solicitacao
-  ) => {
+  const quantidadeExibicao = (solicitacao) => {
     if (
       solicitacao.status ===
-        'contraoferta_aceita'
+      'contraoferta_aceita'
     ) {
       return (
         solicitacao.quantidade_contraoferta ||
@@ -662,12 +541,10 @@ function PainelAdmin() {
     return solicitacao.quantidade
   }
 
-  const precoExibicao = (
-    solicitacao
-  ) => {
+  const precoExibicao = (solicitacao) => {
     if (
       solicitacao.status ===
-        'contraoferta_aceita'
+      'contraoferta_aceita'
     ) {
       return (
         solicitacao.preco_contraoferta ??
@@ -678,28 +555,19 @@ function PainelAdmin() {
     return solicitacao.preco
   }
 
-  const prioridadeStatus = (
-    status
-  ) => {
-    if (
-      status === 'pendente'
-    ) {
+  const prioridadeStatus = (status) => {
+    if (status === 'pendente') {
       return 0
     }
 
-    if (
-      status ===
-      'contraoferta'
-    ) {
+    if (status === 'contraoferta') {
       return 1
     }
 
     return 2
   }
 
-  const dataTimestamp = (
-    data
-  ) => {
+  const dataTimestamp = (data) => {
     if (!data) {
       return 0
     }
@@ -707,9 +575,7 @@ function PainelAdmin() {
     const valor =
       new Date(data).getTime()
 
-    if (
-      Number.isNaN(valor)
-    ) {
+    if (Number.isNaN(valor)) {
       return 0
     }
 
@@ -720,10 +586,7 @@ function PainelAdmin() {
     ...solicitacoes.map(
       (solicitacao) => ({
         ...solicitacao,
-
-        tipo_solicitacao:
-          'oferta',
-
+        tipo_solicitacao: 'oferta',
         chave_lista:
           `oferta-${solicitacao.id}`
       })
@@ -732,10 +595,7 @@ function PainelAdmin() {
     ...solicitacoesProdutos.map(
       (solicitacao) => ({
         ...solicitacao,
-
-        tipo_solicitacao:
-          'inclusao',
-
+        tipo_solicitacao: 'inclusao',
         chave_lista:
           `inclusao-${solicitacao.id}`
       })
@@ -743,23 +603,13 @@ function PainelAdmin() {
   ].sort(
     (a, b) => {
       const prioridadeA =
-        prioridadeStatus(
-          a.status
-        )
+        prioridadeStatus(a.status)
 
       const prioridadeB =
-        prioridadeStatus(
-          b.status
-        )
+        prioridadeStatus(b.status)
 
-      if (
-        prioridadeA !==
-        prioridadeB
-      ) {
-        return (
-          prioridadeA -
-          prioridadeB
-        )
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB
       }
 
       return (
@@ -787,9 +637,7 @@ function PainelAdmin() {
       solicitacoesPorTipoSelecionado
         .map(
           (solicitacao) =>
-            nomeProdutoExibicao(
-              solicitacao
-            )
+            nomeProdutoExibicao(solicitacao)
         )
         .filter(Boolean)
     )
@@ -842,10 +690,7 @@ function PainelAdmin() {
       999
     )
 
-    if (
-      periodo ===
-      'esta_semana'
-    ) {
+    if (periodo === 'esta_semana') {
       const inicioSemana =
         new Date(hoje)
 
@@ -859,7 +704,7 @@ function PainelAdmin() {
 
       inicioSemana.setDate(
         inicioSemana.getDate() -
-          diferenca
+        diferenca
       )
 
       inicioSemana.setHours(
@@ -870,16 +715,12 @@ function PainelAdmin() {
       )
 
       return (
-        dataSolicitacao >=
-          inicioSemana &&
+        dataSolicitacao >= inicioSemana &&
         dataSolicitacao <= hoje
       )
     }
 
-    if (
-      periodo ===
-      'este_mes'
-    ) {
+    if (periodo === 'este_mes') {
       const inicioMes =
         new Date(
           hoje.getFullYear(),
@@ -888,16 +729,12 @@ function PainelAdmin() {
         )
 
       return (
-        dataSolicitacao >=
-          inicioMes &&
+        dataSolicitacao >= inicioMes &&
         dataSolicitacao <= hoje
       )
     }
 
-    if (
-      periodo ===
-      'mes_passado'
-    ) {
+    if (periodo === 'mes_passado') {
       const inicioMesAtual =
         new Date(
           hoje.getFullYear(),
@@ -913,19 +750,13 @@ function PainelAdmin() {
         )
 
       return (
-        dataSolicitacao >=
-          inicioMesPassado &&
-        dataSolicitacao <
-          inicioMesAtual
+        dataSolicitacao >= inicioMesPassado &&
+        dataSolicitacao < inicioMesAtual
       )
     }
 
-    if (
-      periodo ===
-      'ultimos_3_meses'
-    ) {
-      const inicio =
-        new Date(hoje)
+    if (periodo === 'ultimos_3_meses') {
+      const inicio = new Date(hoje)
 
       inicio.setMonth(
         inicio.getMonth() - 3
@@ -944,12 +775,8 @@ function PainelAdmin() {
       )
     }
 
-    if (
-      periodo ===
-      'ultimos_6_meses'
-    ) {
-      const inicio =
-        new Date(hoje)
+    if (periodo === 'ultimos_6_meses') {
+      const inicio = new Date(hoje)
 
       inicio.setMonth(
         inicio.getMonth() - 6
@@ -977,24 +804,22 @@ function PainelAdmin() {
         const correspondeTipo =
           filtrosAplicados.tipo === '' ||
           solicitacao.tipo_solicitacao ===
-            filtrosAplicados.tipo
+          filtrosAplicados.tipo
 
         const correspondeProduto =
           filtrosAplicados.produto === '' ||
-          nomeProdutoExibicao(
-            solicitacao
-          ) ===
-            filtrosAplicados.produto
+          nomeProdutoExibicao(solicitacao) ===
+          filtrosAplicados.produto
 
         const correspondeProdutor =
           filtrosAplicados.produtor === '' ||
           solicitacao.nome_produtor ===
-            filtrosAplicados.produtor
+          filtrosAplicados.produtor
 
         const correspondeStatus =
           filtrosAplicados.status === '' ||
           solicitacao.status ===
-            filtrosAplicados.status
+          filtrosAplicados.status
 
         const correspondePeriodo =
           estaNoPeriodo(
@@ -1012,9 +837,7 @@ function PainelAdmin() {
       }
     )
 
-  const alterarFiltroTipo = (
-    tipo
-  ) => {
+  const alterarFiltroTipo = (tipo) => {
     setFiltroTipo(tipo)
     setFiltroProduto('')
 
@@ -1024,9 +847,7 @@ function PainelAdmin() {
         'contraoferta',
         'contraoferta_aceita',
         'contraoferta_recusada'
-      ].includes(
-        filtroStatus
-      )
+      ].includes(filtroStatus)
     ) {
       setFiltroStatus('')
     }
@@ -1034,20 +855,11 @@ function PainelAdmin() {
 
   const pesquisar = () => {
     setFiltrosAplicados({
-      tipo:
-        filtroTipo,
-
-      produto:
-        filtroProduto,
-
-      produtor:
-        filtroProdutor,
-
-      status:
-        filtroStatus,
-
-      periodo:
-        filtroPeriodo
+      tipo: filtroTipo,
+      produto: filtroProduto,
+      produtor: filtroProdutor,
+      status: filtroStatus,
+      periodo: filtroPeriodo
     })
   }
 
@@ -1080,24 +892,15 @@ function PainelAdmin() {
     filtrosAplicados.periodo
 
   const tituloAvaliacao = () => {
-    if (
-      statusAvaliacao ===
-      'aprovado'
-    ) {
+    if (statusAvaliacao === 'aprovado') {
       return 'Aprovar oferta'
     }
 
-    if (
-      statusAvaliacao ===
-      'rejeitado'
-    ) {
+    if (statusAvaliacao === 'rejeitado') {
       return 'Rejeitar oferta'
     }
 
-    if (
-      statusAvaliacao ===
-      'contraoferta'
-    ) {
+    if (statusAvaliacao === 'contraoferta') {
       return 'Enviar contraoferta'
     }
 
@@ -1105,17 +908,11 @@ function PainelAdmin() {
   }
 
   const textoBotaoConfirmacao = () => {
-    if (
-      statusAvaliacao ===
-      'aprovado'
-    ) {
+    if (statusAvaliacao === 'aprovado') {
       return 'Confirmar aprovação'
     }
 
-    if (
-      statusAvaliacao ===
-      'rejeitado'
-    ) {
+    if (statusAvaliacao === 'rejeitado') {
       return 'Confirmar rejeição'
     }
 
@@ -1132,9 +929,7 @@ function PainelAdmin() {
     ) {
       e.preventDefault()
 
-      abrirDetalhe(
-        solicitacao
-      )
+      abrirDetalhe(solicitacao)
     }
   }
 
@@ -1148,8 +943,72 @@ function PainelAdmin() {
       <style>
         {`
           .admin-solicitacoes-page {
-            padding-top: 24px;
-            padding-bottom: 35px;
+            width: 100%;
+            height: calc(100vh - 90px);
+            min-height: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            padding: 26px 36px;
+
+            overflow: hidden;
+          }
+
+          .admin-solicitacoes-page > .mensagem-pagina {
+            flex-shrink: 0;
+            margin-bottom: 15px;
+          }
+
+          .admin-solicitacoes-card {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+
+            display: grid;
+            grid-template-rows:
+              auto
+              auto
+              minmax(0, 1fr);
+
+            overflow: hidden;
+          }
+
+          .admin-solicitacoes-scroll {
+            width: 100%;
+            min-height: 0;
+
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable;
+          }
+
+          .admin-solicitacoes-scroll::-webkit-scrollbar {
+            width: 10px;
+          }
+
+          .admin-solicitacoes-scroll::-webkit-scrollbar-track {
+            background: #f0f3f1;
+          }
+
+          .admin-solicitacoes-scroll::-webkit-scrollbar-thumb {
+            background: #b5c0b8;
+
+            border:
+              2px solid #f0f3f1;
+
+            border-radius: 10px;
+          }
+
+          .admin-solicitacoes-scroll::-webkit-scrollbar-thumb:hover {
+            background: #96a49a;
+          }
+
+          .admin-solicitacoes-vazio {
+            min-height: 0;
+            height: 100%;
           }
 
           .admin-filtros {
@@ -1227,6 +1086,7 @@ function PainelAdmin() {
 
           .admin-lista-status {
             display: flex;
+
             align-items: center;
             justify-content: center;
           }
@@ -1243,31 +1103,38 @@ function PainelAdmin() {
 
           .admin-lista-acao {
             display: flex;
+
             align-items: center;
             justify-content: flex-end;
           }
 
           .acoes-avaliacao-esquerda {
             display: flex;
+
             align-items: center;
             flex-wrap: wrap;
+
             gap: 10px;
           }
 
           .acoes-avaliacao-direita {
             display: flex;
+
             align-items: center;
             justify-content: flex-end;
+
             margin-left: auto;
           }
 
           .btn-acao-avaliacao {
             width: 94px;
             min-width: 94px;
+
             height: 40px;
             min-height: 40px;
 
             display: inline-flex;
+
             align-items: center;
             justify-content: center;
 
@@ -1284,7 +1151,9 @@ function PainelAdmin() {
           .btn-aprovar-admin {
             background: #1b5e20;
             color: #ffffff;
-            border: 1px solid #1b5e20;
+
+            border:
+              1px solid #1b5e20;
           }
 
           .btn-aprovar-admin:hover {
@@ -1295,7 +1164,9 @@ function PainelAdmin() {
           .btn-rejeitar-admin {
             background: #d32f2f;
             color: #ffffff;
-            border: 1px solid #d32f2f;
+
+            border:
+              1px solid #d32f2f;
           }
 
           .btn-rejeitar-admin:hover {
@@ -1306,7 +1177,9 @@ function PainelAdmin() {
           .btn-contraoferta-admin {
             background: #f2c14e;
             color: #4d3900;
-            border: 1px solid #d8a93b;
+
+            border:
+              1px solid #d8a93b;
           }
 
           .btn-contraoferta-admin:hover {
@@ -1368,6 +1241,7 @@ function PainelAdmin() {
 
           .quantidade-contraoferta {
             display: flex;
+
             align-items: stretch;
 
             width: 100%;
@@ -1378,14 +1252,18 @@ function PainelAdmin() {
 
             min-width: 0;
 
-            border-top-right-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
+            border-top-right-radius:
+              0 !important;
+
+            border-bottom-right-radius:
+              0 !important;
           }
 
           .quantidade-unidade {
             min-width: 90px;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
@@ -1458,16 +1336,41 @@ function PainelAdmin() {
 
             .acoes-detalhe-modal {
               flex-direction: column;
-              align-items: stretch !important;
+
+              align-items:
+                stretch !important;
             }
 
             .acoes-avaliacao-direita {
               margin-left: 0;
-              justify-content: flex-start;
+
+              justify-content:
+                flex-start;
             }
 
             .avaliacao-inline-campos {
               grid-template-columns: 1fr;
+            }
+          }
+
+          @media (max-width: 700px) {
+            .admin-solicitacoes-page {
+              height: auto;
+              min-height: calc(100vh - 90px);
+
+              padding: 22px 16px 35px;
+
+              overflow: visible;
+            }
+
+            .admin-solicitacoes-card {
+              display: block;
+            }
+
+            .admin-solicitacoes-scroll {
+              max-height: 500px;
+
+              overflow-y: auto;
             }
           }
 
@@ -1477,7 +1380,8 @@ function PainelAdmin() {
             }
 
             .admin-botoes-filtro {
-              flex-direction: column-reverse;
+              flex-direction:
+                column-reverse;
             }
 
             .admin-botoes-filtro button {
@@ -1485,8 +1389,7 @@ function PainelAdmin() {
             }
 
             .admin-lista-item {
-              grid-template-columns:
-                1fr;
+              grid-template-columns: 1fr;
             }
 
             .acoes-avaliacao-esquerda {
@@ -1502,7 +1405,8 @@ function PainelAdmin() {
             }
 
             .avaliacao-inline-acoes {
-              flex-direction: column-reverse;
+              flex-direction:
+                column-reverse;
             }
 
             .avaliacao-inline-acoes button {
@@ -1512,9 +1416,7 @@ function PainelAdmin() {
         `}
       </style>
 
-      <section
-        className="dashboard-content admin-solicitacoes-page"
-      >
+      <section className="admin-solicitacoes-page">
 
         {mensagem && (
           <p className="mensagem-pagina sucesso">
@@ -1525,15 +1427,11 @@ function PainelAdmin() {
         {solicitacaoDetalhe && (
           <div
             style={modalOverlay}
-            onClick={
-              fecharDetalhe
-            }
+            onClick={fecharDetalhe}
           >
 
             <div
-              style={
-                modalConteudoDetalhe
-              }
+              style={modalConteudoDetalhe}
               onClick={(e) =>
                 e.stopPropagation()
               }
@@ -1549,15 +1447,20 @@ function PainelAdmin() {
                     )}
                   </span>
 
-                  <h3
-                    style={
-                      modalTituloDetalhe
-                    }
-                  >
+                  <h3 style={modalTituloDetalhe}>
                     {nomeProdutoExibicao(
                       solicitacaoDetalhe
                     )}
                   </h3>
+
+                  <p style={modalDescricao}>
+                    Solicitação enviada por{' '}
+                    <strong>
+                      {
+                        solicitacaoDetalhe.nome_produtor
+                      }
+                    </strong>
+                  </p>
 
                 </div>
 
@@ -1665,11 +1568,7 @@ function PainelAdmin() {
 
                     </div>
 
-                    <div
-                      style={
-                        blocoDetalheGrande
-                      }
-                    >
+                    <div style={blocoDetalheGrande}>
 
                       <span style={rotuloDetalhe}>
                         Observação do produtor
@@ -1686,25 +1585,13 @@ function PainelAdmin() {
 
                     {(solicitacaoDetalhe.quantidade_contraoferta ||
                       solicitacaoDetalhe.preco_contraoferta) && (
-                      <div
-                        style={
-                          contraofertaDetalhe
-                        }
-                      >
+                      <div style={contraofertaDetalhe}>
 
-                        <h4
-                          style={
-                            tituloContraofertaDetalhe
-                          }
-                        >
+                        <h4 style={tituloContraofertaDetalhe}>
                           Contraoferta
                         </h4>
 
-                        <div
-                          style={
-                            gradeContraoferta
-                          }
-                        >
+                        <div style={gradeContraoferta}>
 
                           <div>
 
@@ -1742,164 +1629,150 @@ function PainelAdmin() {
 
                   </div>
 
-                  {solicitacaoDetalhe.status ===
-                    'pendente' &&
+                  {solicitacaoDetalhe.status === 'pendente' &&
                     statusAvaliacao && (
-                    <div className="avaliacao-inline">
+                      <div className="avaliacao-inline">
 
-                      <h4>
-                        {tituloAvaliacao()}
-                      </h4>
+                        <h4>
+                          {tituloAvaliacao()}
+                        </h4>
 
-                      {statusAvaliacao ===
-                        'contraoferta' && (
-                        <div className="avaliacao-inline-campos">
+                        {statusAvaliacao === 'contraoferta' && (
+                          <div className="avaliacao-inline-campos">
 
-                          <div className="campo">
+                            <div className="campo">
 
-                            <label>
-                              Quantidade proposta
-                            </label>
+                              <label>
+                                Quantidade proposta
+                              </label>
 
-                            <div className="quantidade-contraoferta">
+                              <div className="quantidade-contraoferta">
+
+                                <input
+                                  type="number"
+                                  min="0.01"
+                                  step="0.01"
+                                  value={
+                                    quantidadeContraoferta
+                                  }
+                                  onChange={(e) =>
+                                    setQuantidadeContraoferta(
+                                      e.target.value
+                                    )
+                                  }
+                                />
+
+                                {unidadeContraoferta && (
+                                  <span className="quantidade-unidade">
+                                    {
+                                      unidadeContraoferta
+                                    }
+                                  </span>
+                                )}
+
+                              </div>
+
+                            </div>
+
+                            <div className="campo">
+
+                              <label>
+                                Preço proposto (R$)
+                              </label>
 
                               <input
                                 type="number"
                                 min="0.01"
                                 step="0.01"
                                 value={
-                                  quantidadeContraoferta
+                                  precoContraoferta
                                 }
                                 onChange={(e) =>
-                                  setQuantidadeContraoferta(
+                                  setPrecoContraoferta(
                                     e.target.value
                                   )
                                 }
                               />
 
-                              {unidadeContraoferta && (
-                                <span className="quantidade-unidade">
-                                  {
-                                    unidadeContraoferta
-                                  }
-                                </span>
-                              )}
-
                             </div>
 
                           </div>
+                        )}
 
-                          <div className="campo">
+                        <div
+                          className="campo"
+                          style={{
+                            marginTop:
+                              statusAvaliacao === 'contraoferta'
+                                ? '16px'
+                                : '0'
+                          }}
+                        >
 
-                            <label>
-                              Preço proposto (R$)
-                            </label>
+                          <label>
+                            Retorno
+                            {statusAvaliacao === 'rejeitado'
+                              ? ' (obrigatório)'
+                              : ' (opcional)'}
+                          </label>
 
-                            <input
-                              type="number"
-                              min="0.01"
-                              step="0.01"
-                              value={
-                                precoContraoferta
-                              }
-                              onChange={(e) =>
-                                setPrecoContraoferta(
-                                  e.target.value
-                                )
-                              }
-                            />
-
-                          </div>
+                          <textarea
+                            value={retorno}
+                            onChange={(e) =>
+                              setRetorno(
+                                e.target.value
+                              )
+                            }
+                            placeholder={
+                              statusAvaliacao === 'rejeitado'
+                                ? 'Informe o motivo da rejeição.'
+                                : 'Informe uma observação.'
+                            }
+                            rows="3"
+                            style={textareaStyle}
+                          />
 
                         </div>
-                      )}
 
-                      <div
-                        className="campo"
-                        style={{
-                          marginTop:
-                            statusAvaliacao ===
-                            'contraoferta'
-                              ? '16px'
-                              : '0'
-                        }}
-                      >
+                        {erroModal && (
+                          <p style={mensagemErroModal}>
+                            {erroModal}
+                          </p>
+                        )}
 
-                        <label>
-                          Retorno 
-                          {statusAvaliacao ===
-                          'rejeitado'
-                            ? ' (obrigatório)'
-                            : ' (opcional)'}
-                        </label>
+                        <div className="avaliacao-inline-acoes">
 
-                        <textarea
-                          value={retorno}
-                          onChange={(e) =>
-                            setRetorno(
-                              e.target.value
-                            )
-                          }
-                          placeholder={
-                            statusAvaliacao ===
-                              'rejeitado'
-                              ? 'Informe o motivo da rejeição.'
-                              : statusAvaliacao ===
-                                  'contraoferta'
-                                ? 'Informe uma observação.'
-                                : 'Informe uma observação.'
-                          }
-                          rows="3"
-                          style={
-                            textareaStyle
-                          }
-                        />
+                          <button
+                            className="btn-voltar"
+                            type="button"
+                            onClick={
+                              cancelarAvaliacao
+                            }
+                          >
+                            Cancelar avaliação
+                          </button>
+
+                          <button
+                            className={
+                              statusAvaliacao === 'rejeitado'
+                                ? 'btn-rejeitar-admin'
+                                : statusAvaliacao === 'contraoferta'
+                                  ? 'btn-contraoferta-admin'
+                                  : 'btn-aprovar-admin'
+                            }
+                            style={botaoConfirmarAvaliacao}
+                            type="button"
+                            onClick={
+                              confirmarAvaliacao
+                            }
+                          >
+                            {textoBotaoConfirmacao()}
+                          </button>
+
+                        </div>
 
                       </div>
-
-                      {erroModal && (
-                        <p style={mensagemErroModal}>
-                          {erroModal}
-                        </p>
-                      )}
-
-                      <div className="avaliacao-inline-acoes">
-
-                        <button
-                          className="btn-voltar"
-                          type="button"
-                          onClick={
-                            cancelarAvaliacao
-                          }
-                        >
-                          Cancelar avaliação
-                        </button>
-
-                        <button
-                          className={
-                            statusAvaliacao ===
-                              'rejeitado'
-                              ? 'btn-rejeitar-admin'
-                              : statusAvaliacao ===
-                                  'contraoferta'
-                                ? 'btn-contraoferta-admin'
-                                : 'btn-aprovar-admin'
-                          }
-                          style={
-                            botaoConfirmarAvaliacao
-                          }
-                          type="button"
-                          onClick={
-                            confirmarAvaliacao
-                          }
-                        >
-                          {textoBotaoConfirmacao()}
-                        </button>
-
-                      </div>
-
-                    </div>
-                  )}
+                    )}
 
                   <div
                     className="acoes-detalhe-modal"
@@ -1908,8 +1781,7 @@ function PainelAdmin() {
 
                     <div className="acoes-avaliacao-esquerda">
 
-                      {solicitacaoDetalhe.status ===
-                        'pendente' && (
+                      {solicitacaoDetalhe.status === 'pendente' && (
                         <>
 
                           <button
@@ -1958,9 +1830,7 @@ function PainelAdmin() {
                       <button
                         className="btn-voltar"
                         type="button"
-                        onClick={
-                          fecharDetalhe
-                        }
+                        onClick={fecharDetalhe}
                       >
                         Fechar
                       </button>
@@ -2031,11 +1901,7 @@ function PainelAdmin() {
 
                     </div>
 
-                    <div
-                      style={
-                        blocoDetalheGrande
-                      }
-                    >
+                    <div style={blocoDetalheGrande}>
 
                       <span style={rotuloDetalhe}>
                         Observação do produtor
@@ -2052,126 +1918,112 @@ function PainelAdmin() {
 
                   </div>
 
-                  {solicitacaoDetalhe.status ===
-                    'pendente' &&
+                  {solicitacaoDetalhe.status === 'pendente' &&
                     statusProduto && (
-                    <div className="avaliacao-inline">
+                      <div className="avaliacao-inline">
 
-                      <h4>
-                        {statusProduto ===
-                        'aprovado'
-                          ? 'Aprovar inclusão de produto'
-                          : 'Rejeitar inclusão de produto'}
-                      </h4>
+                        <h4>
+                          {statusProduto === 'aprovado'
+                            ? 'Aprovar inclusão de produto'
+                            : 'Rejeitar inclusão de produto'}
+                        </h4>
 
-                      {statusProduto ===
-                        'aprovado' && (
-                        <div className="campo">
+                        {statusProduto === 'aprovado' && (
+                          <div className="campo">
+
+                            <label>
+                              Nome no catálogo
+                            </label>
+
+                            <input
+                              type="text"
+                              value={
+                                nomeProdutoAprovado
+                              }
+                              onChange={(e) =>
+                                setNomeProdutoAprovado(
+                                  e.target.value
+                                )
+                              }
+                            />
+
+                          </div>
+                        )}
+
+                        <div
+                          className="campo"
+                          style={{
+                            marginTop:
+                              statusProduto === 'aprovado'
+                                ? '16px'
+                                : '0'
+                          }}
+                        >
 
                           <label>
-                            Nome no catálogo
+                            Retorno da APOMS
+                            {statusProduto === 'rejeitado'
+                              ? ' *'
+                              : ' (opcional)'}
                           </label>
 
-                          <input
-                            type="text"
-                            value={
-                              nomeProdutoAprovado
-                            }
+                          <textarea
+                            value={retornoProduto}
                             onChange={(e) =>
-                              setNomeProdutoAprovado(
+                              setRetornoProduto(
                                 e.target.value
                               )
                             }
+                            placeholder={
+                              statusProduto === 'rejeitado'
+                                ? 'Informe o motivo da rejeição.'
+                                : 'Opcional. Informe uma observação sobre a aprovação.'
+                            }
+                            rows="3"
+                            style={textareaStyle}
                           />
 
                         </div>
-                      )}
 
-                      <div
-                        className="campo"
-                        style={{
-                          marginTop:
-                            statusProduto ===
-                            'aprovado'
-                              ? '16px'
-                              : '0'
-                        }}
-                      >
+                        {erroModal && (
+                          <p style={mensagemErroModal}>
+                            {erroModal}
+                          </p>
+                        )}
 
-                        <label>
-                          Retorno da APOMS
-                          {statusProduto ===
-                          'rejeitado'
-                            ? ' *'
-                            : ' (opcional)'}
-                        </label>
+                        <div className="avaliacao-inline-acoes">
 
-                        <textarea
-                          value={
-                            retornoProduto
-                          }
-                          onChange={(e) =>
-                            setRetornoProduto(
-                              e.target.value
-                            )
-                          }
-                          placeholder={
-                            statusProduto ===
-                              'rejeitado'
-                              ? 'Informe o motivo da rejeição.'
-                              : 'Opcional. Informe uma observação sobre a aprovação.'
-                          }
-                          rows="3"
-                          style={
-                            textareaStyle
-                          }
-                        />
+                          <button
+                            className="btn-voltar"
+                            type="button"
+                            onClick={
+                              cancelarAvaliacaoProduto
+                            }
+                          >
+                            Cancelar avaliação
+                          </button>
+
+                          <button
+                            className={
+                              statusProduto === 'rejeitado'
+                                ? 'btn-rejeitar-admin'
+                                : 'btn-aprovar-admin'
+                            }
+                            style={botaoConfirmarAvaliacao}
+                            type="button"
+                            onClick={
+                              confirmarAvaliacaoProduto
+                            }
+                          >
+                            {statusProduto === 'aprovado'
+                              ? 'Aprovar e incluir'
+                              : 'Confirmar rejeição'}
+                          </button>
+
+                        </div>
 
                       </div>
-
-                      {erroModal && (
-                        <p style={mensagemErroModal}>
-                          {erroModal}
-                        </p>
-                      )}
-
-                      <div className="avaliacao-inline-acoes">
-
-                        <button
-                          className="btn-voltar"
-                          type="button"
-                          onClick={
-                            cancelarAvaliacaoProduto
-                          }
-                        >
-                          Cancelar avaliação
-                        </button>
-
-                        <button
-                          className={
-                            statusProduto ===
-                              'rejeitado'
-                              ? 'btn-rejeitar-admin'
-                              : 'btn-aprovar-admin'
-                          }
-                          style={
-                            botaoConfirmarAvaliacao
-                          }
-                          type="button"
-                          onClick={
-                            confirmarAvaliacaoProduto
-                          }
-                        >
-                          {statusProduto ===
-                            'aprovado'
-                            ? 'Aprovar e incluir'
-                            : 'Confirmar rejeição'}
-                        </button>
-
-                      </div>
-
-                    </div>
-                  )}
+                    )}
 
                   <div
                     className="acoes-detalhe-modal"
@@ -2180,8 +2032,7 @@ function PainelAdmin() {
 
                     <div className="acoes-avaliacao-esquerda">
 
-                      {solicitacaoDetalhe.status ===
-                        'pendente' && (
+                      {solicitacaoDetalhe.status === 'pendente' && (
                         <>
 
                           <button
@@ -2218,9 +2069,7 @@ function PainelAdmin() {
                       <button
                         className="btn-voltar"
                         type="button"
-                        onClick={
-                          fecharDetalhe
-                        }
+                        onClick={fecharDetalhe}
                       >
                         Fechar
                       </button>
@@ -2237,17 +2086,13 @@ function PainelAdmin() {
           </div>
         )}
 
-        <div className="table-card">
+        <div className="table-card admin-solicitacoes-card">
 
           <div style={cabecalhoLista}>
 
-            <div>
-
-              <h2 style={tituloLista}>
-                Histórico de solicitações
-              </h2>
-
-            </div>
+            <h2 style={tituloLista}>
+              Histórico de solicitações
+            </h2>
 
           </div>
 
@@ -2270,6 +2115,7 @@ function PainelAdmin() {
                   }
                   style={campoFiltro}
                 >
+
                   <option value="">
                     Todos
                   </option>
@@ -2301,6 +2147,7 @@ function PainelAdmin() {
                   }
                   style={campoFiltro}
                 >
+
                   <option value="">
                     Todos
                   </option>
@@ -2335,6 +2182,7 @@ function PainelAdmin() {
                   }
                   style={campoFiltro}
                 >
+
                   <option value="">
                     Todos
                   </option>
@@ -2369,6 +2217,7 @@ function PainelAdmin() {
                   }
                   style={campoFiltro}
                 >
+
                   <option value="">
                     Todos
                   </option>
@@ -2385,8 +2234,7 @@ function PainelAdmin() {
                     Rejeitada
                   </option>
 
-                  {filtroTipo !==
-                    'inclusao' && (
+                  {filtroTipo !== 'inclusao' && (
                     <>
                       <option value="contraoferta">
                         Contraoferta enviada
@@ -2421,6 +2269,7 @@ function PainelAdmin() {
                   }
                   style={campoFiltro}
                 >
+
                   <option value="">
                     Todo o período
                   </option>
@@ -2457,9 +2306,7 @@ function PainelAdmin() {
                 <button
                   type="button"
                   style={botaoLimpar}
-                  onClick={
-                    limparFiltros
-                  }
+                  onClick={limparFiltros}
                 >
                   Limpar filtros
                 </button>
@@ -2468,9 +2315,7 @@ function PainelAdmin() {
               <button
                 type="button"
                 style={botaoPesquisar}
-                onClick={
-                  pesquisar
-                }
+                onClick={pesquisar}
               >
                 Pesquisar
               </button>
@@ -2479,9 +2324,11 @@ function PainelAdmin() {
 
           </div>
 
-          {solicitacoesUnificadas.length ===
-          0 ? (
-            <div style={estadoVazio}>
+          {solicitacoesUnificadas.length === 0 ? (
+            <div
+              className="admin-solicitacoes-vazio"
+              style={estadoVazio}
+            >
 
               <h3>
                 Nenhuma solicitação encontrada
@@ -2492,9 +2339,11 @@ function PainelAdmin() {
               </p>
 
             </div>
-          ) : solicitacoesFiltradas.length ===
-            0 ? (
-            <div style={estadoVazio}>
+          ) : solicitacoesFiltradas.length === 0 ? (
+            <div
+              className="admin-solicitacoes-vazio"
+              style={estadoVazio}
+            >
 
               <h3>
                 Nenhuma solicitação encontrada
@@ -2506,7 +2355,7 @@ function PainelAdmin() {
 
             </div>
           ) : (
-            <div>
+            <div className="admin-solicitacoes-scroll">
 
               {solicitacoesFiltradas.map(
                 (solicitacao) => (
@@ -2515,8 +2364,7 @@ function PainelAdmin() {
                       solicitacao.chave_lista
                     }
                     className={`admin-lista-item ${
-                      solicitacao.status ===
-                      'pendente'
+                      solicitacao.status === 'pendente'
                         ? 'admin-lista-item-pendente'
                         : ''
                     }`}
@@ -2636,7 +2484,7 @@ function PainelAdmin() {
                         }
                       >
                         {solicitacao.status ===
-                          'pendente'
+                        'pendente'
                           ? 'Avaliar'
                           : 'Ver detalhes'}
 
@@ -2674,14 +2522,10 @@ const cabecalhoLista = {
 
 const tituloLista = {
   margin: 0,
-  color: '#26332b',
-  fontSize: '18px'
-}
 
-const descricaoLista = {
-  marginTop: '5px',
-  color: '#7b8580',
-  fontSize: '12px'
+  color: '#26332b',
+
+  fontSize: '18px'
 }
 
 const areaFiltros = {
@@ -2774,12 +2618,15 @@ const identificacaoLista = {
 
 const tipoLista = {
   display: 'flex',
+
   alignItems: 'center',
+
   marginBottom: '7px'
 }
 
 const badgeOferta = {
   display: 'inline-flex',
+
   alignItems: 'center',
 
   minHeight: '25px',
@@ -2796,11 +2643,13 @@ const badgeOferta = {
   borderRadius: '20px',
 
   fontSize: '11px',
+
   fontWeight: '600'
 }
 
 const badgeInclusao = {
   display: 'inline-flex',
+
   alignItems: 'center',
 
   minHeight: '25px',
@@ -2817,12 +2666,15 @@ const badgeInclusao = {
   borderRadius: '20px',
 
   fontSize: '11px',
+
   fontWeight: '600'
 }
 
 const produtoLista = {
   display: 'block',
+
   color: '#26332b',
+
   fontSize: '15px'
 }
 
@@ -2854,12 +2706,15 @@ const valorLista = {
 
 const acaoAvaliar = {
   display: 'flex',
+
   alignItems: 'center',
+
   gap: '6px',
 
   color: '#1b5e20',
 
   fontSize: '12px',
+
   fontWeight: '700',
 
   whiteSpace: 'nowrap'
@@ -2867,12 +2722,15 @@ const acaoAvaliar = {
 
 const acaoDetalhes = {
   display: 'flex',
+
   alignItems: 'center',
+
   gap: '6px',
 
   color: '#5b6e5e',
 
   fontSize: '12px',
+
   fontWeight: '600',
 
   whiteSpace: 'nowrap'
@@ -2887,9 +2745,11 @@ const estadoVazio = {
   minHeight: '180px',
 
   display: 'flex',
+
   flexDirection: 'column',
 
   alignItems: 'center',
+
   justifyContent: 'center',
 
   gap: '7px',
@@ -2923,12 +2783,15 @@ const textareaStyle = {
 
 const modalOverlay = {
   position: 'fixed',
+
   inset: 0,
 
   zIndex: 3000,
 
   display: 'flex',
+
   alignItems: 'center',
+
   justifyContent: 'center',
 
   padding: '25px',
