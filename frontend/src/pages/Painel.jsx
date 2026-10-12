@@ -3,6 +3,29 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
+function IconeCaminhao() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h11v10H3z" />
+      <path d="M14 10h4l3 3v3h-7z" />
+      <circle cx="7" cy="18" r="2" />
+      <circle cx="18" cy="18" r="2" />
+      <path d="M14 18H9" />
+      <path d="M3 18h2" />
+    </svg>
+  )
+}
+
 function Painel() {
   const [solicitacoes, setSolicitacoes] = useState([])
   const [dataSelecionada, setDataSelecionada] = useState(null)
@@ -343,8 +366,23 @@ function Painel() {
       <style>
         {`
           .painel-dashboard-content {
-            padding-top: 10px;
-            padding-bottom: 14px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+          }
+
+          .painel-layout-principal {
+            display: grid;
+            grid-template-columns:
+              minmax(0, 2.2fr)
+              minmax(240px, 0.8fr);
+            gap: 24px;
+            align-items: start;
+          }
+
+          .painel-grade-resumo {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
           }
 
           .painel-resumo-card {
@@ -389,9 +427,21 @@ function Painel() {
             color: white !important;
           }
 
+          @media (max-width: 1000px) {
+            .painel-layout-principal {
+              grid-template-columns: 1fr;
+            }
+
+            .painel-grade-resumo {
+              display: grid;
+              grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+            }
+          }
+
           @media (max-width: 700px) {
             .painel-grade-resumo {
-              grid-template-columns: 1fr !important;
+              grid-template-columns: 1fr;
             }
 
             .painel-calendario-cabecalho {
@@ -404,221 +454,208 @@ function Painel() {
 
       <section className="dashboard-content painel-dashboard-content">
 
-        {/* Resumo */}
-        <div
-          className="painel-grade-resumo"
-          style={gradeResumo}
-        >
+        <div className="painel-layout-principal">
 
           <div
-            className="table-card painel-resumo-card"
-            style={cardResumo}
-            onClick={irParaSolicitacoes}
-            onKeyDown={handleTeclado}
-            role="button"
-            tabIndex="0"
+            className="table-card"
+            style={calendarioCard}
           >
-            <span style={tituloCard}>
-              Ofertas pendentes
-            </span>
+            <div
+              className="painel-calendario-cabecalho"
+              style={calendarioCabecalho}
+            >
+              <div>
+                <h2 style={calendarioTitulo}>
+                  Calendário de retiradas
+                </h2>
 
-            <strong style={numeroCard}>
-              {pendentes.length}
-            </strong>
+                <p style={calendarioDescricao}>
+                  Consulte as datas programadas das suas ofertas aprovadas.
+                </p>
+              </div>
 
-            <span style={descricaoCard}>
-              Aguardando avaliação da APOMS
-            </span>
-          </div>
+              <div style={navegacaoMes}>
+                <button
+                  type="button"
+                  className="calendario-navegacao"
+                  style={botaoNavegacao}
+                  onClick={mesAnterior}
+                  aria-label="Mês anterior"
+                >
+                  ‹
+                </button>
 
-          <div
-            className="table-card painel-resumo-card"
-            style={cardResumo}
-            onClick={irParaSolicitacoes}
-            onKeyDown={handleTeclado}
-            role="button"
-            tabIndex="0"
-          >
-            <span style={tituloCard}>
-              Contraofertas
-            </span>
+                <strong style={nomeMesStyle}>
+                  {nomeMes}
+                </strong>
 
-            <strong style={numeroCard}>
-              {contraofertas.length}
-            </strong>
-
-            <span style={descricaoCard}>
-              Propostas aguardando sua decisão
-            </span>
-          </div>
-
-        </div>
-
-        {/* Calendário */}
-        <div
-          className="table-card"
-          style={calendarioCard}
-        >
-
-          <div
-            className="painel-calendario-cabecalho"
-            style={calendarioCabecalho}
-          >
-
-            <div>
-              <h2 style={calendarioTitulo}>
-                Calendário de retiradas
-              </h2>
-
-              <p style={calendarioDescricao}>
-                Consulte as datas programadas das suas ofertas aprovadas.
-              </p>
+                <button
+                  type="button"
+                  className="calendario-navegacao"
+                  style={botaoNavegacao}
+                  onClick={proximoMes}
+                  aria-label="Próximo mês"
+                >
+                  ›
+                </button>
+              </div>
             </div>
 
-            <div style={navegacaoMes}>
+            <div style={calendarioCorpo}>
+              <div style={calendarioGrid}>
+                {[
+                  'Dom',
+                  'Seg',
+                  'Ter',
+                  'Qua',
+                  'Qui',
+                  'Sex',
+                  'Sáb'
+                ].map(
+                  (diaSemana) => (
+                    <div
+                      key={diaSemana}
+                      style={diaSemanaStyle}
+                    >
+                      {diaSemana}
+                    </div>
+                  )
+                )}
 
-              <button
-                type="button"
-                className="calendario-navegacao"
-                style={botaoNavegacao}
-                onClick={mesAnterior}
-                aria-label="Mês anterior"
-              >
-                ‹
-              </button>
+                {diasCalendario.map(
+                  (dia, indice) => {
+                    if (!dia) {
+                      return (
+                        <div
+                          key={`vazio-${indice}`}
+                          style={diaVazio}
+                        />
+                      )
+                    }
 
-              <strong style={nomeMesStyle}>
-                {nomeMes}
-              </strong>
+                    const chave =
+                      chaveData(
+                        anoAtual,
+                        mesAtual + 1,
+                        dia
+                      )
 
-              <button
-                type="button"
-                className="calendario-navegacao"
-                style={botaoNavegacao}
-                onClick={proximoMes}
-                aria-label="Próximo mês"
-              >
-                ›
-              </button>
+                    const retiradasDoDia =
+                      retiradasPorData[chave] ||
+                      []
 
-            </div>
+                    const possuiRetirada =
+                      retiradasDoDia.length > 0
 
-          </div>
+                    const ehHoje =
+                      dia === hoje.getDate() &&
+                      mesAtual === hoje.getMonth() &&
+                      anoAtual === hoje.getFullYear()
 
-          <div style={calendarioCorpo}>
-
-            <div style={calendarioGrid}>
-
-              {[
-                'Dom',
-                'Seg',
-                'Ter',
-                'Qua',
-                'Qui',
-                'Sex',
-                'Sáb'
-              ].map(
-                (diaSemana) => (
-                  <div
-                    key={diaSemana}
-                    style={diaSemanaStyle}
-                  >
-                    {diaSemana}
-                  </div>
-                )
-              )}
-
-              {diasCalendario.map(
-                (dia, indice) => {
-                  if (!dia) {
                     return (
-                      <div
-                        key={`vazio-${indice}`}
-                        style={diaVazio}
-                      />
+                      <button
+                        key={chave}
+                        type="button"
+                        className={
+                          possuiRetirada
+                            ? 'calendario-dia-com-retirada'
+                            : ''
+                        }
+                        style={{
+                          ...diaCalendario,
+                          ...(ehHoje
+                            ? diaHoje
+                            : {}),
+                          ...(possuiRetirada
+                            ? diaComRetirada
+                            : {})
+                        }}
+                        onClick={() =>
+                          abrirRetiradas(
+                            dia
+                          )
+                        }
+                        disabled={
+                          !possuiRetirada
+                        }
+                      >
+                        <div style={cabecalhoDia}>
+                          <span style={numeroDia}>
+                            {dia}
+                          </span>
+
+                          {possuiRetirada && (
+                            <span style={iconeRetirada}>
+                              <IconeCaminhao />
+                            </span>
+                          )}
+                        </div>
+                      </button>
                     )
                   }
+                )}
+              </div>
+            </div>
+          </div>
 
-                  const chave =
-                    chaveData(
-                      anoAtual,
-                      mesAtual + 1,
-                      dia
-                    )
+          <div className="painel-grade-resumo">
+            <div
+              className="table-card painel-resumo-card"
+              style={cardResumo}
+              onClick={irParaSolicitacoes}
+              onKeyDown={handleTeclado}
+              role="button"
+              tabIndex="0"
+            >
+              <span style={tituloCard}>
+                Ofertas pendentes
+              </span>
 
-                  const retiradasDoDia =
-                    retiradasPorData[chave] ||
-                    []
+              <strong style={numeroCard}>
+                {pendentes.length}
+              </strong>
 
-                  const possuiRetirada =
-                    retiradasDoDia.length > 0
-
-                  const ehHoje =
-                    dia === hoje.getDate() &&
-                    mesAtual === hoje.getMonth() &&
-                    anoAtual === hoje.getFullYear()
-
-                  return (
-                    <button
-                      key={chave}
-                      type="button"
-                      className={
-                        possuiRetirada
-                          ? 'calendario-dia-com-retirada'
-                          : ''
-                      }
-                      style={{
-                        ...diaCalendario,
-
-                        ...(ehHoje
-                          ? diaHoje
-                          : {}),
-
-                        ...(possuiRetirada
-                          ? diaComRetirada
-                          : {})
-                      }}
-                      onClick={() =>
-                        abrirRetiradas(
-                          dia
-                        )
-                      }
-                      disabled={
-                        !possuiRetirada
-                      }
-                    >
-
-                      <span style={numeroDia}>
-                        {dia}
-                      </span>
-
-                    </button>
-                  )
-                }
-              )}
-
+              <span style={descricaoCard}>
+                Aguardando avaliação da APOMS
+              </span>
             </div>
 
+            <div
+              className="table-card painel-resumo-card"
+              style={cardResumo}
+              onClick={irParaSolicitacoes}
+              onKeyDown={handleTeclado}
+              role="button"
+              tabIndex="0"
+            >
+              <span style={tituloCard}>
+                Contraofertas
+              </span>
+
+              <strong style={numeroCard}>
+                {contraofertas.length}
+              </strong>
+
+              <span style={descricaoCard}>
+                Propostas aguardando sua decisão
+              </span>
+            </div>
           </div>
 
         </div>
 
-        {/* Modal */}
         {dataSelecionada && (
           <div
             style={modalOverlay}
             onClick={fecharRetiradas}
           >
-
             <div
               style={modalConteudo}
               onClick={(e) =>
                 e.stopPropagation()
               }
             >
-
               <div style={modalCabecalho}>
-
                 <div>
                   <h3 style={modalTitulo}>
                     Programação do dia -{' '}
@@ -636,24 +673,20 @@ function Painel() {
                 >
                   ×
                 </button>
-
               </div>
 
               <div style={listaRetiradas}>
-
                 {dataSelecionada.retiradas.map(
                   (solicitacao) => (
                     <div
                       key={solicitacao.id}
                       style={retiradaItem}
                     >
-
                       <strong style={produtoRetirada}>
                         {solicitacao.nome_produto}
                       </strong>
 
                       <div style={detalhesRetirada}>
-
                         <div>
                           <span style={rotuloDetalhe}>
                             Quantidade
@@ -679,12 +712,10 @@ function Painel() {
                             )}
                           </strong>
                         </div>
-
                       </div>
 
                       {solicitacao.observacao_produtor && (
                         <div style={observacaoRetirada}>
-
                           <span style={rotuloDetalhe}>
                             Observação
                           </span>
@@ -694,18 +725,14 @@ function Painel() {
                               solicitacao.observacao_produtor
                             }
                           </p>
-
                         </div>
                       )}
-
                     </div>
                   )
                 )}
-
               </div>
 
               <div style={acoesModal}>
-
                 <button
                   className="btn-principal"
                   type="button"
@@ -713,11 +740,8 @@ function Painel() {
                 >
                   Fechar
                 </button>
-
               </div>
-
             </div>
-
           </div>
         )}
 
@@ -726,46 +750,42 @@ function Painel() {
   )
 }
 
-const gradeResumo = {
-  display: 'grid',
-  gridTemplateColumns:
-    'repeat(2, minmax(0, 1fr))',
-  gap: '14px',
-  marginBottom: '26px'
-}
-
 const cardResumo = {
-  padding: '10px 16px',
+  minHeight: '145px',
+  padding: '22px',
   background: '#edf5ed',
-  borderColor: '#bfd8c2'
+  borderColor: '#bfd8c2',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center'
 }
 
 const tituloCard = {
   display: 'block',
-  marginBottom: '3px',
+  marginBottom: '8px',
   color: '#25682b',
-  fontSize: '13px',
+  fontSize: '14px',
   fontWeight: '600'
 }
 
 const numeroCard = {
   display: 'block',
   color: '#26332b',
-  fontSize: '23px',
+  fontSize: '32px',
   lineHeight: '1.1'
 }
 
 const descricaoCard = {
   display: 'block',
-  marginTop: '3px',
+  marginTop: '8px',
   color: '#5f7d63',
-  fontSize: '12px'
+  fontSize: '13px',
+  lineHeight: '1.4'
 }
 
 const calendarioCard = {
-  width: '90%',
-  maxWidth: '1000px',
-  margin: '0 auto',
+  width: '100%',
+  margin: 0,
   padding: 0,
   overflow: 'hidden'
 }
@@ -801,7 +821,7 @@ const navegacaoMes = {
 }
 
 const nomeMesStyle = {
-  minWidth: '150px',
+  minWidth: '145px',
   color: 'white',
   fontSize: '14px',
   textAlign: 'center',
@@ -826,7 +846,7 @@ const botaoNavegacao = {
 }
 
 const calendarioCorpo = {
-  padding: '9px 16px 12px',
+  padding: '9px 14px 12px',
   background: 'white'
 }
 
@@ -858,15 +878,22 @@ const diaCalendario = {
   height: '51px',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  padding: '6px 8px',
+  alignItems: 'stretch',
+  justifyContent: 'flex-start',
+  padding: '7px 9px',
   background: '#fafcf9',
   color: '#354538',
   border:
     '1px solid #e2e9e2',
   borderRadius: '7px',
   textAlign: 'left'
+}
+
+const cabecalhoDia = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%'
 }
 
 const diaHoje = {
@@ -882,22 +909,17 @@ const diaComRetirada = {
 }
 
 const numeroDia = {
-  fontSize: '13px',
-  fontWeight: '600'
+  fontSize: '17px',
+  fontWeight: '700',
+  lineHeight: 1
 }
 
-const marcadorRetirada = {
-  display: 'inline-flex',
+const iconeRetirada = {
+  display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  maxWidth: '100%',
-  padding: '3px 7px',
-  background: '#1b5e20',
-  color: 'white',
-  borderRadius: '11px',
-  fontSize: '10px',
-  fontWeight: '600',
-  whiteSpace: 'nowrap'
+  color: '#1b5e20',
+  flexShrink: 0
 }
 
 const modalOverlay = {
@@ -929,8 +951,7 @@ const modalConteudo = {
 const modalCabecalho = {
   display: 'flex',
   alignItems: 'flex-start',
-  justifyContent:
-    'space-between',
+  justifyContent: 'space-between',
   gap: '20px',
   marginBottom: '24px'
 }
