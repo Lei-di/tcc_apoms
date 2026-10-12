@@ -219,24 +219,154 @@ function MeuPerfil() {
   return (
     <LayoutSistema
       titulo="Meu perfil"
-      subtitulo="Mantenha seus dados atualizados!!"
+      subtitulo="Mantenha seus dados atualizados."
       paginaAtiva="perfil"
     >
-      <section className="dashboard-content cadastro-produto-content">
+      <style>
+        {`
+          .perfil-page {
+            padding-top: 18px;
+            padding-bottom: 18px;
+          }
+
+          .perfil-page .cadastro-card {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px 22px;
+
+            background: #f0f5f0;
+
+            border: 1px solid #8fb995;
+            border-radius: 10px;
+
+            box-shadow:
+              0 2px 7px rgba(27, 94, 32, 0.05);
+          }
+
+          .perfil-page .cadastro-produto-form {
+            gap: 14px 18px;
+          }
+
+          .perfil-page .campo label {
+            margin-bottom: 5px;
+            color: #304b34;
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .perfil-page .campo input,
+          .perfil-page .campo select {
+            min-height: 40px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+
+            background: #ffffff;
+            border-color: #91ad95;
+          }
+
+          .perfil-page .campo input:focus,
+          .perfil-page .campo select:focus {
+            outline: none;
+            border-color: #1b5e20;
+
+            box-shadow:
+              0 0 0 2px rgba(27, 94, 32, 0.08);
+          }
+
+          .perfil-page .campo input[readonly] {
+            background: #eef2ef;
+            color: #687169;
+            border-color: #afbeb1;
+          }
+
+          .perfil-informacao {
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+
+            background: #ffffff;
+            color: #3f4e42;
+
+            border: 1px solid #91ad95;
+            border-radius: 6px;
+
+            font-size: 14px;
+          }
+
+          .perfil-acoes {
+            margin-top: 0;
+            padding-top: 12px;
+
+            border-top:
+              1px solid rgba(27, 94, 32, 0.18);
+          }
+
+          .perfil-page .btn-principal {
+            background: #1b5e20;
+          }
+
+          .perfil-page .btn-principal:hover {
+            background: #174f1b;
+          }
+
+          .perfil-page .btn-cancelar-perfil {
+            min-width: 100px;
+
+            background: #ffffff;
+            color: #4b594d;
+
+            border:
+              1px solid #91aa95;
+
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .perfil-page .btn-cancelar-perfil:hover {
+            background: #f5f8f5;
+            color: #304533;
+            border-color: #778f7b;
+          }
+
+          .perfil-page .btn-editar-perfil {
+            min-width: 100px;
+          }
+
+          @media (max-height: 750px) and (min-width: 701px) {
+            .perfil-page {
+              padding-top: 12px;
+              padding-bottom: 12px;
+            }
+
+            .perfil-page .cadastro-card {
+              padding: 16px 20px;
+            }
+
+            .perfil-page .cadastro-produto-form {
+              gap: 10px 16px;
+            }
+
+            .perfil-page .campo input,
+            .perfil-page .campo select,
+            .perfil-informacao {
+              min-height: 38px;
+            }
+          }
+
+          @media (max-width: 700px) {
+            .perfil-page {
+              padding-top: 18px;
+              padding-bottom: 35px;
+            }
+          }
+        `}
+      </style>
+
+      <section className="dashboard-content cadastro-produto-content perfil-page">
 
         {!cadastroCompleto && (
-          <div
-            style={{
-              marginBottom: '24px',
-              padding: '15px 17px',
-              background: '#fff4df',
-              color: '#8a5a00',
-              border: '1px solid #f0d8a8',
-              borderRadius: '8px',
-              fontSize: '13px',
-              lineHeight: '1.5'
-            }}
-          >
+          <div style={avisoCadastro}>
             <strong>
               Complete seu cadastro para continuar.
             </strong>
@@ -264,30 +394,7 @@ function MeuPerfil() {
           </p>
         )}
 
-        <div
-          className="cadastro-card"
-          style={{
-            maxWidth: '900px'
-          }}
-        >
-
-          {!modoEdicao && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginBottom: '22px'
-              }}
-            >
-              <button
-                className="btn-principal"
-                type="button"
-                onClick={iniciarEdicao}
-              >
-                Editar
-              </button>
-            </div>
-          )}
+        <div className="cadastro-card">
 
           <form
             className="cadastro-produto-form"
@@ -295,27 +402,36 @@ function MeuPerfil() {
           >
 
             <div className="campo">
-              <label>CPF</label>
+
+              <label>
+                CPF
+              </label>
 
               {modoEdicao ? (
                 <input
                   type="text"
-                  value={formatarCpf(form.cpf)}
+                  value={
+                    formatarCpf(
+                      form.cpf
+                    )
+                  }
                   readOnly
-                  style={{
-                    backgroundColor: '#f3f5f4',
-                    cursor: 'not-allowed'
-                  }}
                 />
               ) : (
-                <div style={campoInformacao}>
-                  {formatarCpf(form.cpf)}
+                <div className="perfil-informacao">
+                  {formatarCpf(
+                    form.cpf
+                  )}
                 </div>
               )}
+
             </div>
 
             <div className="campo">
-              <label>Nome completo</label>
+
+              <label>
+                Nome completo
+              </label>
 
               {modoEdicao ? (
                 <input
@@ -325,26 +441,34 @@ function MeuPerfil() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      nome: e.target.value
+                      nome:
+                        e.target.value
                     })
                   }
                   required
                 />
               ) : (
-                <div style={campoInformacao}>
-                  {form.nome || 'Não informado'}
+                <div className="perfil-informacao">
+                  {form.nome ||
+                    'Não informado'}
                 </div>
               )}
+
             </div>
 
             <div className="campo">
-              <label>Telefone</label>
+
+              <label>
+                Telefone
+              </label>
 
               {modoEdicao ? (
                 <input
                   type="text"
                   placeholder="Ex: 67999999999"
-                  value={form.telefone}
+                  value={
+                    form.telefone
+                  }
                   maxLength="11"
                   onChange={(e) =>
                     setForm({
@@ -359,14 +483,20 @@ function MeuPerfil() {
                   required
                 />
               ) : (
-                <div style={campoInformacao}>
-                  {formatarTelefone(form.telefone)}
+                <div className="perfil-informacao">
+                  {formatarTelefone(
+                    form.telefone
+                  )}
                 </div>
               )}
+
             </div>
 
             <div className="campo">
-              <label>E-mail</label>
+
+              <label>
+                E-mail
+              </label>
 
               {modoEdicao ? (
                 <input
@@ -376,19 +506,23 @@ function MeuPerfil() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      email: e.target.value
+                      email:
+                        e.target.value
                     })
                   }
                   required
                 />
               ) : (
-                <div style={campoInformacao}>
-                  {form.email || 'Não informado'}
+                <div className="perfil-informacao">
+                  {form.email ||
+                    'Não informado'}
                 </div>
               )}
+
             </div>
 
             <div className="campo campo-grande">
+
               <label>
                 Núcleo produtivo
               </label>
@@ -399,7 +533,8 @@ function MeuPerfil() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      cidade: e.target.value
+                      cidade:
+                        e.target.value
                     })
                   }
                   required
@@ -412,8 +547,14 @@ function MeuPerfil() {
                     !nucleosProdutivos.includes(
                       form.cidade
                     ) && (
-                      <option value={form.cidade}>
-                        {form.cidade}
+                      <option
+                        value={
+                          form.cidade
+                        }
+                      >
+                        {
+                          form.cidade
+                        }
                       </option>
                     )}
 
@@ -427,15 +568,19 @@ function MeuPerfil() {
                       </option>
                     )
                   )}
+
                 </select>
               ) : (
-                <div style={campoInformacao}>
-                  {form.cidade || 'Não informado'}
+                <div className="perfil-informacao">
+                  {form.cidade ||
+                    'Não informado'}
                 </div>
               )}
+
             </div>
 
             <div className="campo campo-grande">
+
               <label>
                 Endereço de retirada
               </label>
@@ -444,78 +589,88 @@ function MeuPerfil() {
                 <input
                   type="text"
                   placeholder="Informe o endereço para retirada dos produtos"
-                  value={form.endereco}
+                  value={
+                    form.endereco
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      endereco: e.target.value
+                      endereco:
+                        e.target.value
                     })
                   }
                   required
                 />
               ) : (
-                <div style={campoInformacao}>
-                  {form.endereco || 'Não informado'}
+                <div className="perfil-informacao">
+                  {form.endereco ||
+                    'Não informado'}
                 </div>
               )}
+
             </div>
 
-            {modoEdicao && (
-              <div className="acoes-form campo-grande">
+            <div className="acoes-form campo-grande perfil-acoes">
 
-                {cadastroCompleto && (
+              {modoEdicao ? (
+                <>
+                  {cadastroCompleto && (
+                    <button
+                      className="btn-cancelar-perfil"
+                      type="button"
+                      onClick={
+                        cancelarEdicao
+                      }
+                    >
+                      Cancelar
+                    </button>
+                  )}
+
                   <button
-                    className="btn-voltar"
-                    type="button"
-                    onClick={cancelarEdicao}
+                    className="btn-principal"
+                    type="submit"
                   >
-                    Cancelar
+                    {cadastroCompleto
+                      ? 'Salvar alterações'
+                      : 'Salvar dados'}
                   </button>
-                )}
-
+                </>
+              ) : (
                 <button
-                  className="btn-principal"
-                  type="submit"
+                  className="btn-principal btn-editar-perfil"
+                  type="button"
+                  onClick={
+                    iniciarEdicao
+                  }
                 >
-                  {cadastroCompleto
-                    ? 'Salvar alterações'
-                    : 'Salvar dados'}
+                  Editar
                 </button>
+              )}
 
-              </div>
-            )}
+            </div>
 
           </form>
 
         </div>
 
-        {!modoEdicao && (
-          <div
-            style={{
-              maxWidth: '900px',
-              marginTop: '18px',
-              display: 'flex',
-              justifyContent: 'flex-end'
-            }}
-          >
-          </div>
-        )}
-
       </section>
+
     </LayoutSistema>
   )
 }
 
-const campoInformacao = {
-  minHeight: '44px',
-  display: 'flex',
-  alignItems: 'center',
-  padding: '10px 12px',
-  background: '#f7f9f8',
-  color: '#4e5752',
-  border: '1px solid #e1e6e3',
-  borderRadius: '6px',
-  fontSize: '14px'
+const avisoCadastro = {
+  width: '100%',
+  maxWidth: '900px',
+  marginBottom: '18px',
+  padding: '13px 16px',
+  background: '#fff4df',
+  color: '#8a5a00',
+  border:
+    '1px solid #f0d8a8',
+  borderRadius: '8px',
+  fontSize: '13px',
+  lineHeight: '1.5'
 }
 
 export default MeuPerfil
