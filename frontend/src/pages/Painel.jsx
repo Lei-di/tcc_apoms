@@ -128,27 +128,6 @@ function Painel() {
             tabIndex="0"
           >
             <span style={tituloCard}>
-              Ofertas aprovadas
-            </span>
-
-            <strong style={numeroCard}>
-              {aprovadas.length}
-            </strong>
-
-            <span style={descricaoCard}>
-              Ofertas finalizadas com aprovação
-            </span>
-          </div>
-
-          <div
-            className="table-card painel-resumo-card"
-            style={cardResumo}
-            onClick={irParaSolicitacoes}
-            onKeyDown={handleTeclado}
-            role="button"
-            tabIndex="0"
-          >
-            <span style={tituloCard}>
               Contraofertas
             </span>
 
