@@ -182,6 +182,12 @@ function Painel() {
       dias.push(dia)
     }
 
+    while (
+      dias.length % 7 !== 0
+    ) {
+      dias.push(null)
+    }
+
     return dias
   }, [
     mesAtual,
@@ -191,7 +197,6 @@ function Painel() {
   const mesAnterior = () => {
     if (mesAtual === 0) {
       setMesAtual(11)
-
       setAnoAtual(
         anoAtual - 1
       )
@@ -205,7 +210,6 @@ function Painel() {
   const proximoMes = () => {
     if (mesAtual === 11) {
       setMesAtual(0)
-
       setAnoAtual(
         anoAtual + 1
       )
@@ -338,6 +342,11 @@ function Painel() {
     >
       <style>
         {`
+          .painel-dashboard-content {
+            padding-top: 10px;
+            padding-bottom: 14px;
+          }
+
           .painel-resumo-card {
             cursor: pointer;
             transition:
@@ -348,14 +357,14 @@ function Painel() {
           }
 
           .painel-resumo-card:hover {
-            background-color: #f0f7f3;
-            border-color: #bdd8c6;
-            box-shadow: 0 5px 15px rgba(27, 94, 32, 0.08);
+            background-color: #e0eee1 !important;
+            border-color: #96bd9b !important;
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.10);
             transform: translateY(-2px);
           }
 
           .painel-resumo-card:focus-visible {
-            outline: 2px solid #23764e;
+            outline: 2px solid #1b5e20;
             outline-offset: 2px;
           }
 
@@ -364,36 +373,48 @@ function Painel() {
             transition:
               background-color 0.2s ease,
               border-color 0.2s ease,
+              box-shadow 0.2s ease,
               transform 0.15s ease;
           }
 
           .calendario-dia-com-retirada:hover {
-            background-color: #edf7f0 !important;
-            border-color: #a9cfb6 !important;
+            background-color: #c5dfc8 !important;
+            border-color: #4f8d58 !important;
+            box-shadow: 0 3px 8px rgba(27, 94, 32, 0.12);
             transform: translateY(-1px);
           }
 
           .calendario-navegacao:hover {
-            background-color: #edf6f1 !important;
-            color: #1b5e20 !important;
+            background-color: rgba(255, 255, 255, 0.22) !important;
+            color: white !important;
+          }
+
+          @media (max-width: 700px) {
+            .painel-grade-resumo {
+              grid-template-columns: 1fr !important;
+            }
+
+            .painel-calendario-cabecalho {
+              flex-direction: column;
+              align-items: flex-start !important;
+            }
           }
         `}
       </style>
 
-      <section className="dashboard-content">
+      <section className="dashboard-content painel-dashboard-content">
 
         {/* Resumo */}
-        <div style={gradeResumo}>
+        <div
+          className="painel-grade-resumo"
+          style={gradeResumo}
+        >
 
           <div
             className="table-card painel-resumo-card"
             style={cardResumo}
-            onClick={
-              irParaSolicitacoes
-            }
-            onKeyDown={
-              handleTeclado
-            }
+            onClick={irParaSolicitacoes}
+            onKeyDown={handleTeclado}
             role="button"
             tabIndex="0"
           >
@@ -413,12 +434,8 @@ function Painel() {
           <div
             className="table-card painel-resumo-card"
             style={cardResumo}
-            onClick={
-              irParaSolicitacoes
-            }
-            onKeyDown={
-              handleTeclado
-            }
+            onClick={irParaSolicitacoes}
+            onKeyDown={handleTeclado}
             role="button"
             tabIndex="0"
           >
@@ -443,7 +460,10 @@ function Painel() {
           style={calendarioCard}
         >
 
-          <div style={calendarioCabecalho}>
+          <div
+            className="painel-calendario-cabecalho"
+            style={calendarioCabecalho}
+          >
 
             <div>
               <h2 style={calendarioTitulo}>
@@ -485,109 +505,99 @@ function Painel() {
 
           </div>
 
-          <div style={calendarioGrid}>
+          <div style={calendarioCorpo}>
 
-            {[
-              'Dom',
-              'Seg',
-              'Ter',
-              'Qua',
-              'Qui',
-              'Sex',
-              'Sáb'
-            ].map(
-              (diaSemana) => (
-                <div
-                  key={diaSemana}
-                  style={diaSemanaStyle}
-                >
-                  {diaSemana}
-                </div>
-              )
-            )}
+            <div style={calendarioGrid}>
 
-            {diasCalendario.map(
-              (dia, indice) => {
-                if (!dia) {
+              {[
+                'Dom',
+                'Seg',
+                'Ter',
+                'Qua',
+                'Qui',
+                'Sex',
+                'Sáb'
+              ].map(
+                (diaSemana) => (
+                  <div
+                    key={diaSemana}
+                    style={diaSemanaStyle}
+                  >
+                    {diaSemana}
+                  </div>
+                )
+              )}
+
+              {diasCalendario.map(
+                (dia, indice) => {
+                  if (!dia) {
+                    return (
+                      <div
+                        key={`vazio-${indice}`}
+                        style={diaVazio}
+                      />
+                    )
+                  }
+
+                  const chave =
+                    chaveData(
+                      anoAtual,
+                      mesAtual + 1,
+                      dia
+                    )
+
+                  const retiradasDoDia =
+                    retiradasPorData[chave] ||
+                    []
+
+                  const possuiRetirada =
+                    retiradasDoDia.length > 0
+
+                  const ehHoje =
+                    dia === hoje.getDate() &&
+                    mesAtual === hoje.getMonth() &&
+                    anoAtual === hoje.getFullYear()
+
                   return (
-                    <div
-                      key={`vazio-${indice}`}
-                      style={diaVazio}
-                    />
+                    <button
+                      key={chave}
+                      type="button"
+                      className={
+                        possuiRetirada
+                          ? 'calendario-dia-com-retirada'
+                          : ''
+                      }
+                      style={{
+                        ...diaCalendario,
+
+                        ...(ehHoje
+                          ? diaHoje
+                          : {}),
+
+                        ...(possuiRetirada
+                          ? diaComRetirada
+                          : {})
+                      }}
+                      onClick={() =>
+                        abrirRetiradas(
+                          dia
+                        )
+                      }
+                      disabled={
+                        !possuiRetirada
+                      }
+                    >
+
+                      <span style={numeroDia}>
+                        {dia}
+                      </span>
+
+                    </button>
                   )
                 }
+              )}
 
-                const chave =
-                  chaveData(
-                    anoAtual,
-                    mesAtual + 1,
-                    dia
-                  )
-
-                const retiradasDoDia =
-                  retiradasPorData[chave] ||
-                  []
-
-                const possuiRetirada =
-                  retiradasDoDia.length > 0
-
-                const ehHoje =
-                  dia === hoje.getDate() &&
-                  mesAtual === hoje.getMonth() &&
-                  anoAtual === hoje.getFullYear()
-
-                return (
-                  <button
-                    key={chave}
-                    type="button"
-                    className={
-                      possuiRetirada
-                        ? 'calendario-dia-com-retirada'
-                        : ''
-                    }
-                    style={{
-                      ...diaCalendario,
-
-                      ...(ehHoje
-                        ? diaHoje
-                        : {}),
-
-                      ...(possuiRetirada
-                        ? diaComRetirada
-                        : {})
-                    }}
-                    onClick={() =>
-                      abrirRetiradas(
-                        dia
-                      )
-                    }
-                    disabled={
-                      !possuiRetirada
-                    }
-                  >
-
-                    <span style={numeroDia}>
-                      {dia}
-                    </span>
-
-                    {possuiRetirada && (
-                      <div style={marcadorRetirada}>
-
-                        <span style={pontoRetirada} />
-
-                        <span>
-                          {retiradasDoDia.length === 1
-                            ? '1 produto'
-                            : `${retiradasDoDia.length} produtos`}
-                        </span>
-
-                      </div>
-                    )}
-
-                  </button>
-                )
-              }
-            )}
+            </div>
 
           </div>
 
@@ -597,9 +607,7 @@ function Painel() {
         {dataSelecionada && (
           <div
             style={modalOverlay}
-            onClick={
-              fecharRetiradas
-            }
+            onClick={fecharRetiradas}
           >
 
             <div
@@ -623,9 +631,7 @@ function Painel() {
                 <button
                   type="button"
                   style={botaoFecharModal}
-                  onClick={
-                    fecharRetiradas
-                  }
+                  onClick={fecharRetiradas}
                   aria-label="Fechar"
                 >
                   ×
@@ -638,16 +644,12 @@ function Painel() {
                 {dataSelecionada.retiradas.map(
                   (solicitacao) => (
                     <div
-                      key={
-                        solicitacao.id
-                      }
+                      key={solicitacao.id}
                       style={retiradaItem}
                     >
 
                       <strong style={produtoRetirada}>
-                        {
-                          solicitacao.nome_produto
-                        }
+                        {solicitacao.nome_produto}
                       </strong>
 
                       <div style={detalhesRetirada}>
@@ -707,9 +709,7 @@ function Painel() {
                 <button
                   className="btn-principal"
                   type="button"
-                  onClick={
-                    fecharRetiradas
-                  }
+                  onClick={fecharRetiradas}
                 >
                   Fechar
                 </button>
@@ -730,154 +730,174 @@ const gradeResumo = {
   display: 'grid',
   gridTemplateColumns:
     'repeat(2, minmax(0, 1fr))',
-  gap: '18px',
-  marginBottom: '28px'
+  gap: '14px',
+  marginBottom: '26px'
 }
 
 const cardResumo = {
-  padding: '22px'
+  padding: '10px 16px',
+  background: '#edf5ed',
+  borderColor: '#bfd8c2'
 }
 
 const tituloCard = {
   display: 'block',
-  marginBottom: '10px',
-  color: '#7b8580',
-  fontSize: '14px'
+  marginBottom: '3px',
+  color: '#25682b',
+  fontSize: '13px',
+  fontWeight: '600'
 }
 
 const numeroCard = {
   display: 'block',
   color: '#26332b',
-  fontSize: '30px'
+  fontSize: '23px',
+  lineHeight: '1.1'
 }
 
 const descricaoCard = {
   display: 'block',
-  marginTop: '7px',
-  color: '#8a938e',
-  fontSize: '13px'
+  marginTop: '3px',
+  color: '#5f7d63',
+  fontSize: '12px'
 }
 
 const calendarioCard = {
-  padding: '26px'
+  width: '90%',
+  maxWidth: '1000px',
+  margin: '0 auto',
+  padding: 0,
+  overflow: 'hidden'
 }
 
 const calendarioCabecalho = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: '25px',
-  marginBottom: '24px'
+  gap: '18px',
+  padding: '11px 18px',
+  background: '#1b5e20',
+  borderBottom:
+    '1px solid #154d19'
 }
 
 const calendarioTitulo = {
   margin: 0,
-  color: '#26332b',
-  fontSize: '21px'
+  color: 'white',
+  fontSize: '18px'
 }
 
 const calendarioDescricao = {
-  marginTop: '7px',
-  color: '#7b8580',
-  fontSize: '14px'
+  marginTop: '3px',
+  color:
+    'rgba(255, 255, 255, 0.82)',
+  fontSize: '12px'
 }
 
 const navegacaoMes = {
   display: 'flex',
   alignItems: 'center',
-  gap: '14px'
+  gap: '8px'
 }
 
 const nomeMesStyle = {
-  minWidth: '175px',
-  color: '#354139',
-  fontSize: '16px',
+  minWidth: '150px',
+  color: 'white',
+  fontSize: '14px',
   textAlign: 'center',
   textTransform: 'capitalize'
 }
 
 const botaoNavegacao = {
-  width: '36px',
-  height: '36px',
+  width: '30px',
+  height: '30px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: 0,
-  background: 'white',
-  color: '#4e5752',
+  background:
+    'rgba(255, 255, 255, 0.12)',
+  color: 'white',
   border:
-    '1px solid #d7ddd9',
-  borderRadius: '7px',
-  fontSize: '22px',
+    '1px solid rgba(255, 255, 255, 0.35)',
+  borderRadius: '6px',
+  fontSize: '19px',
   lineHeight: 1
+}
+
+const calendarioCorpo = {
+  padding: '9px 16px 12px',
+  background: 'white'
 }
 
 const calendarioGrid = {
   display: 'grid',
   gridTemplateColumns:
     'repeat(7, minmax(0, 1fr))',
-  gap: '7px'
+  gridAutoRows: '51px',
+  gap: '5px'
 }
 
 const diaSemanaStyle = {
-  padding: '9px 5px',
-  color: '#69736d',
-  fontSize: '13px',
-  fontWeight: '600',
-  textAlign: 'center'
+  height: '25px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#526b55',
+  fontSize: '12px',
+  fontWeight: '600'
 }
 
 const diaVazio = {
-  minHeight: '82px'
+  width: '100%',
+  height: '51px'
 }
 
 const diaCalendario = {
-  minHeight: '82px',
+  width: '100%',
+  height: '51px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   justifyContent: 'space-between',
-  padding: '10px',
-  background: '#fafcfb',
-  color: '#4e5752',
+  padding: '6px 8px',
+  background: '#fafcf9',
+  color: '#354538',
   border:
-    '1px solid #edf0ee',
-  borderRadius: '8px',
+    '1px solid #e2e9e2',
+  borderRadius: '7px',
   textAlign: 'left'
 }
 
 const diaHoje = {
   border:
-    '1px solid #94bfa2'
+    '1px solid #72a878'
 }
 
 const diaComRetirada = {
-  background: '#f7fbf8',
+  background: '#d5ead6',
   border:
-    '1px solid #cfe3d7',
+    '1px solid #6fa879',
   cursor: 'pointer'
 }
 
 const numeroDia = {
-  fontSize: '14px',
+  fontSize: '13px',
   fontWeight: '600'
 }
 
 const marcadorRetirada = {
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  color: '#23764e',
-  fontSize: '12px',
-  fontWeight: '600'
-}
-
-const pontoRetirada = {
-  width: '7px',
-  height: '7px',
-  flexShrink: 0,
-  background: '#2e7d32',
-  borderRadius: '50%'
+  justifyContent: 'center',
+  maxWidth: '100%',
+  padding: '3px 7px',
+  background: '#1b5e20',
+  color: 'white',
+  borderRadius: '11px',
+  fontSize: '10px',
+  fontWeight: '600',
+  whiteSpace: 'nowrap'
 }
 
 const modalOverlay = {
@@ -921,12 +941,6 @@ const modalTitulo = {
   fontSize: '21px'
 }
 
-const modalDescricao = {
-  marginTop: '7px',
-  color: '#7b8580',
-  fontSize: '14px'
-}
-
 const botaoFecharModal = {
   width: '36px',
   height: '36px',
@@ -952,9 +966,9 @@ const listaRetiradas = {
 
 const retiradaItem = {
   padding: '18px',
-  background: '#f9fbfa',
+  background: '#f8fbf8',
   border:
-    '1px solid #e4e9e6',
+    '1px solid #dfe8df',
   borderRadius: '9px'
 }
 
@@ -968,19 +982,19 @@ const produtoRetirada = {
 const detalhesRetirada = {
   display: 'grid',
   gridTemplateColumns:
-    'repeat(3, minmax(0, 1fr))',
+    'repeat(2, minmax(0, 1fr))',
   gap: '16px'
 }
 
 const rotuloDetalhe = {
   display: 'block',
   marginBottom: '5px',
-  color: '#7b8580',
+  color: '#6e7d70',
   fontSize: '12px'
 }
 
 const valorDetalhe = {
-  color: '#3f4943',
+  color: '#334536',
   fontSize: '14px'
 }
 
@@ -988,8 +1002,8 @@ const observacaoRetirada = {
   marginTop: '16px',
   paddingTop: '14px',
   borderTop:
-    '1px solid #e8ece9',
-  color: '#4e5752',
+    '1px solid #e2e9e2',
+  color: '#405343',
   fontSize: '14px',
   lineHeight: '1.5'
 }
