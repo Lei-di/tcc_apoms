@@ -395,8 +395,8 @@ function Painel() {
           }
 
           .painel-resumo-card:hover {
-            background-color: #e0eee1 !important;
-            border-color: #96bd9b !important;
+            background-color: #e7f1e8 !important;
+            border-color: #9fc5a4 !important;
             box-shadow: 0 4px 12px rgba(27, 94, 32, 0.10);
             transform: translateY(-2px);
           }
@@ -416,8 +416,8 @@ function Painel() {
           }
 
           .calendario-dia-com-retirada:hover {
-            background-color: #c5dfc8 !important;
-            border-color: #4f8d58 !important;
+            background-color: #c4dfc7 !important;
+            border-color: #4e8d56 !important;
             box-shadow: 0 3px 8px rgba(27, 94, 32, 0.12);
             transform: translateY(-1px);
           }
@@ -460,6 +460,7 @@ function Painel() {
             className="table-card"
             style={calendarioCard}
           >
+
             <div
               className="painel-calendario-cabecalho"
               style={calendarioCabecalho}
@@ -502,7 +503,9 @@ function Painel() {
             </div>
 
             <div style={calendarioCorpo}>
+
               <div style={calendarioGrid}>
+
                 {[
                   'Dom',
                   'Seg',
@@ -594,11 +597,15 @@ function Painel() {
                     )
                   }
                 )}
+
               </div>
+
             </div>
+
           </div>
 
           <div className="painel-grade-resumo">
+
             <div
               className="table-card painel-resumo-card"
               style={cardResumo}
@@ -640,6 +647,7 @@ function Painel() {
                 Propostas aguardando sua decisão
               </span>
             </div>
+
           </div>
 
         </div>
@@ -656,6 +664,7 @@ function Painel() {
               }
             >
               <div style={modalCabecalho}>
+
                 <div>
                   <h3 style={modalTitulo}>
                     Programação do dia -{' '}
@@ -673,20 +682,24 @@ function Painel() {
                 >
                   ×
                 </button>
+
               </div>
 
               <div style={listaRetiradas}>
+
                 {dataSelecionada.retiradas.map(
                   (solicitacao) => (
                     <div
                       key={solicitacao.id}
                       style={retiradaItem}
                     >
+
                       <strong style={produtoRetirada}>
                         {solicitacao.nome_produto}
                       </strong>
 
                       <div style={detalhesRetirada}>
+
                         <div>
                           <span style={rotuloDetalhe}>
                             Quantidade
@@ -712,10 +725,12 @@ function Painel() {
                             )}
                           </strong>
                         </div>
+
                       </div>
 
                       {solicitacao.observacao_produtor && (
                         <div style={observacaoRetirada}>
+
                           <span style={rotuloDetalhe}>
                             Observação
                           </span>
@@ -725,14 +740,18 @@ function Painel() {
                               solicitacao.observacao_produtor
                             }
                           </p>
+
                         </div>
                       )}
+
                     </div>
                   )
                 )}
+
               </div>
 
               <div style={acoesModal}>
+
                 <button
                   className="btn-principal"
                   type="button"
@@ -740,7 +759,9 @@ function Painel() {
                 >
                   Fechar
                 </button>
+
               </div>
+
             </div>
           </div>
         )}
@@ -753,8 +774,8 @@ function Painel() {
 const cardResumo = {
   minHeight: '145px',
   padding: '22px',
-  background: '#edf5ed',
-  borderColor: '#bfd8c2',
+  background: '#eef5ef',
+  borderColor: '#c9ddcb',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center'
@@ -778,7 +799,7 @@ const numeroCard = {
 const descricaoCard = {
   display: 'block',
   marginTop: '8px',
-  color: '#5f7d63',
+  color: '#637766',
   fontSize: '13px',
   lineHeight: '1.4'
 }
@@ -847,7 +868,7 @@ const botaoNavegacao = {
 
 const calendarioCorpo = {
   padding: '9px 14px 12px',
-  background: 'white'
+  background: '#ffffff'
 }
 
 const calendarioGrid = {
@@ -863,7 +884,7 @@ const diaSemanaStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#526b55',
+  color: '#626b65',
   fontSize: '12px',
   fontWeight: '600'
 }
@@ -881,10 +902,14 @@ const diaCalendario = {
   alignItems: 'stretch',
   justifyContent: 'flex-start',
   padding: '7px 9px',
-  background: '#fafcf9',
-  color: '#354538',
+
+  // Dia comum: cinza neutro
+  background: '#f4f6f5',
+  color: '#36413a',
+
   border:
-    '1px solid #e2e9e2',
+    '1px solid #dce2de',
+
   borderRadius: '7px',
   textAlign: 'left'
 }
@@ -898,11 +923,12 @@ const cabecalhoDia = {
 
 const diaHoje = {
   border:
-    '1px solid #72a878'
+    '1px solid #78977d'
 }
 
 const diaComRetirada = {
-  background: '#d5ead6',
+  // Verde somente para datas com retirada
+  background: '#d7ead9',
   border:
     '1px solid #6fa879',
   cursor: 'pointer'
@@ -911,7 +937,8 @@ const diaComRetirada = {
 const numeroDia = {
   fontSize: '17px',
   fontWeight: '700',
-  lineHeight: 1
+  lineHeight: 1,
+  color: '#36413a'
 }
 
 const iconeRetirada = {

@@ -71,6 +71,21 @@ function CadastroProduto() {
     }
   }
 
+  const limparFormulario = () => {
+    setNomeProduto('')
+    setQuantidade('')
+    setUnidade('')
+    setDataDisponibilidade('')
+    setPreco('')
+    setObservacao('')
+    setMensagem('')
+    setCadastroSucesso(false)
+  }
+
+  const handleCancelar = () => {
+    limparFormulario()
+  }
+
   const handleCadastro = async (e) => {
     e.preventDefault()
 
@@ -78,18 +93,13 @@ function CadastroProduto() {
       await api.post(
         '/solicitacoes',
         {
-          nome_produto:
-            nomeProduto,
-
+          nome_produto: nomeProduto,
           quantidade:
             `${quantidade} ${unidade}`,
-
           data_disponibilidade:
             dataDisponibilidade,
-
           preco:
             parseFloat(preco),
-
           observacao_produtor:
             observacao
         }
@@ -191,7 +201,127 @@ function CadastroProduto() {
       subtitulo="Informe os dados da oferta que deseja enviar."
       paginaAtiva="cadastro"
     >
-      <section className="dashboard-content cadastro-produto-content">
+      <style>
+        {`
+          .cadastro-oferta-page {
+            padding-top: 18px;
+            padding-bottom: 18px;
+          }
+
+          .cadastro-oferta-page .cadastro-card {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px 22px;
+
+            background: #d1e6d3;
+
+            border: 1px solid #8fb995;
+            border-radius: 10px;
+
+            box-shadow:
+              0 2px 7px rgba(27, 94, 32, 0.05);
+          }
+
+          .cadastro-oferta-page .cadastro-produto-form {
+            gap: 14px 18px;
+          }
+
+          .cadastro-oferta-page .campo label {
+            margin-bottom: 5px;
+            color: #304b34;
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .cadastro-oferta-page .campo input,
+          .cadastro-oferta-page .campo select,
+          .cadastro-oferta-page .campo textarea {
+            background: #ffffff;
+            border-color: #91ad95;
+          }
+
+          .cadastro-oferta-page .campo input,
+          .cadastro-oferta-page .campo select {
+            min-height: 40px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+          }
+
+          .cadastro-oferta-page .campo input:focus,
+          .cadastro-oferta-page .campo select:focus,
+          .cadastro-oferta-page .campo textarea:focus {
+            outline: none;
+            border-color: #1b5e20;
+
+            box-shadow:
+              0 0 0 2px rgba(27, 94, 32, 0.08);
+          }
+
+          .cadastro-acoes {
+            margin-top: 0;
+            padding-top: 12px;
+
+            border-top:
+              1px solid rgba(27, 94, 32, 0.18);
+          }
+
+          .cadastro-oferta-page .btn-principal {
+            background: #1b5e20;
+          }
+
+          .cadastro-oferta-page .btn-principal:hover {
+            background: #174f1b;
+          }
+
+          .cadastro-oferta-page .btn-cancelar-oferta {
+            min-width: 100px;
+
+            background: #ffffff;
+            color: #4b594d;
+
+            border:
+              1px solid #91aa95;
+
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .cadastro-oferta-page .btn-cancelar-oferta:hover {
+            background: #f5f8f5;
+            color: #304533;
+            border-color: #778f7b;
+          }
+
+          @media (max-height: 750px) and (min-width: 701px) {
+            .cadastro-oferta-page {
+              padding-top: 12px;
+              padding-bottom: 12px;
+            }
+
+            .cadastro-oferta-page .cadastro-card {
+              padding: 16px 20px;
+            }
+
+            .cadastro-oferta-page .cadastro-produto-form {
+              gap: 10px 16px;
+            }
+
+            .cadastro-oferta-page .campo input,
+            .cadastro-oferta-page .campo select {
+              min-height: 38px;
+            }
+          }
+
+          @media (max-width: 700px) {
+            .cadastro-oferta-page {
+              padding-top: 18px;
+              padding-bottom: 35px;
+            }
+          }
+        `}
+      </style>
+
+      <section className="dashboard-content cadastro-produto-content cadastro-oferta-page">
 
         {mostrarSolicitacaoProduto && (
           <div
@@ -261,7 +391,7 @@ function CadastroProduto() {
                 <div
                   className="campo"
                   style={{
-                    marginTop: '20px'
+                    marginTop: '18px'
                   }}
                 >
                   <label>
@@ -279,7 +409,7 @@ function CadastroProduto() {
                       )
                     }
                     rows="4"
-                    style={textareaStyle}
+                    style={textareaModalStyle}
                   />
                 </div>
 
@@ -297,7 +427,7 @@ function CadastroProduto() {
                 <div
                   className="acoes-form"
                   style={{
-                    marginTop: '22px'
+                    marginTop: '20px'
                   }}
                 >
 
@@ -326,7 +456,6 @@ function CadastroProduto() {
               </form>
 
             </div>
-
           </div>
         )}
 
@@ -499,7 +628,7 @@ function CadastroProduto() {
                     e.target.value
                   )
                 }
-                rows="4"
+                rows="3"
                 style={textareaStyle}
               />
             </div>
@@ -534,16 +663,14 @@ function CadastroProduto() {
               </div>
             )}
 
-            <div className="acoes-form campo-grande">
+            <div className="acoes-form campo-grande cadastro-acoes">
 
               <button
-                className="btn-voltar"
+                className="btn-cancelar-oferta"
                 type="button"
-                onClick={() =>
-                  navigate('/painel')
-                }
+                onClick={handleCancelar}
               >
-                Voltar
+                Cancelar
               </button>
 
               <button
@@ -565,8 +692,9 @@ function CadastroProduto() {
 }
 
 const textoSolicitacaoProduto = {
-  marginTop: '10px',
-  color: '#7b8580',
+  marginTop: '7px',
+  marginBottom: 0,
+  color: '#435a46',
   fontSize: '12px'
 }
 
@@ -574,11 +702,11 @@ const linkSolicitacaoProduto = {
   display: 'inline',
   padding: 0,
   background: 'transparent',
-  color: '#23764e',
+  color: '#1b5e20',
   border: 'none',
   borderRadius: 0,
   fontSize: '12px',
-  fontWeight: '600',
+  fontWeight: '700',
   textDecoration: 'underline',
   textUnderlineOffset: '2px',
   cursor: 'pointer'
@@ -586,11 +714,27 @@ const linkSolicitacaoProduto = {
 
 const textareaStyle = {
   width: '100%',
+  minHeight: '74px',
+  maxHeight: '90px',
+  padding: '10px 12px',
+
+  border:
+    '1px solid #91ad95',
+
+  borderRadius: '6px',
+  background: '#ffffff',
+  fontSize: '14px',
+  resize: 'vertical'
+}
+
+const textareaModalStyle = {
+  width: '100%',
   padding: '12px',
   border:
-    '1px solid #d7ddd9',
+    '1px solid #d7e1d8',
   borderRadius: '6px',
-  fontSize: '1rem',
+  background: 'white',
+  fontSize: '14px',
   resize: 'vertical'
 }
 
@@ -612,9 +756,9 @@ const modalConteudo = {
   maxHeight: '90vh',
   overflowY: 'auto',
   padding: '28px',
-  background: 'white',
+  background: '#ffffff',
   border:
-    '1px solid #e1e6e3',
+    '1px solid #dfe8df',
   borderRadius: '10px',
   boxShadow:
     '0 18px 50px rgba(0, 0, 0, 0.20)'
@@ -630,13 +774,13 @@ const modalCabecalho = {
 
 const modalTitulo = {
   margin: 0,
-  color: '#26332b',
+  color: '#314a34',
   fontSize: '20px'
 }
 
 const modalDescricao = {
   marginTop: '6px',
-  color: '#7b8580',
+  color: '#768178',
   fontSize: '13px',
   lineHeight: '1.5'
 }
@@ -650,9 +794,9 @@ const botaoFecharModal = {
   flexShrink: 0,
   padding: 0,
   background: 'transparent',
-  color: '#657069',
+  color: '#677269',
   border:
-    '1px solid #d7ddd9',
+    '1px solid #d4ddd5',
   borderRadius: '6px',
   fontSize: '22px'
 }
