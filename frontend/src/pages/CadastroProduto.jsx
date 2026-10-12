@@ -213,7 +213,7 @@ function CadastroProduto() {
             max-width: 900px;
             padding: 20px 22px;
 
-            background: #d1e6d3;
+            background: #f0f5f0;
 
             border: 1px solid #8fb995;
             border-radius: 10px;

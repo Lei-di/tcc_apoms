@@ -498,15 +498,6 @@ function MeuPerfil() {
               justifyContent: 'flex-end'
             }}
           >
-            <button
-              className="btn-voltar"
-              type="button"
-              onClick={() =>
-                navigate('/painel')
-              }
-            >
-              Voltar ao painel
-            </button>
           </div>
         )}
 
