@@ -16,10 +16,13 @@ function LayoutSistema({
   paginaAtiva,
   tipoUsuario
 }) {
-  const navigate = useNavigate()
+  const navigate =
+    useNavigate()
 
-  const [notificacoes, setNotificacoes] =
-    useState([])
+  const [
+    notificacoes,
+    setNotificacoes
+  ] = useState([])
 
   const [
     mostrarNotificacoes,
@@ -27,11 +30,15 @@ function LayoutSistema({
   ] = useState(false)
 
   const nome =
-    localStorage.getItem('nome')
+    localStorage.getItem(
+      'nome'
+    )
 
   const tipo =
     tipoUsuario ||
-    localStorage.getItem('tipo') ||
+    localStorage.getItem(
+      'tipo'
+    ) ||
     'produtor'
 
   const ehAdmin =
@@ -45,31 +52,37 @@ function LayoutSistema({
   useEffect(() => {
     buscarNotificacoes()
 
-    const intervalo = setInterval(
-      buscarNotificacoes,
-      30000
-    )
+    const intervalo =
+      setInterval(
+        buscarNotificacoes,
+        30000
+      )
 
     return () => {
-      clearInterval(intervalo)
+      clearInterval(
+        intervalo
+      )
     }
   }, [])
 
-  const buscarNotificacoes = async () => {
-    try {
-      const resposta =
-        await api.get('/notificacoes')
+  const buscarNotificacoes =
+    async () => {
+      try {
+        const resposta =
+          await api.get(
+            '/notificacoes'
+          )
 
-      setNotificacoes(
-        resposta.data
-      )
-    } catch (err) {
-      console.error(
-        'Erro ao buscar notificações:',
-        err
-      )
+        setNotificacoes(
+          resposta.data
+        )
+      } catch (err) {
+        console.error(
+          'Erro ao buscar notificações:',
+          err
+        )
+      }
     }
-  }
 
   const naoLidas =
     notificacoes.filter(
@@ -84,22 +97,25 @@ function LayoutSistema({
       return ''
     }
 
-    return new Date(data)
-      .toLocaleString(
-        'pt-BR',
-        {
-          day: '2-digit',
-          month: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      )
+    return new Date(
+      data
+    ).toLocaleString(
+      'pt-BR',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    )
   }
 
   const abrirNotificacao =
     async (notificacao) => {
       try {
-        if (!notificacao.lida) {
+        if (
+          !notificacao.lida
+        ) {
           await api.patch(
             `/notificacoes/${notificacao.id}/lida`
           )
@@ -118,9 +134,13 @@ function LayoutSistema({
           )
         }
 
-        setMostrarNotificacoes(false)
+        setMostrarNotificacoes(
+          false
+        )
 
-        if (notificacao.link) {
+        if (
+          notificacao.link
+        ) {
           navigate(
             notificacao.link
           )
@@ -142,7 +162,9 @@ function LayoutSistema({
 
         setNotificacoes(
           notificacoes.map(
-            (notificacao) => ({
+            (
+              notificacao
+            ) => ({
               ...notificacao,
               lida: true
             })
@@ -156,14 +178,22 @@ function LayoutSistema({
       }
     }
 
-  const irParaCadastroProduto = () => {
-    if (!cadastroCompleto) {
-      navigate('/perfil')
-      return
-    }
+  const irParaCadastroProduto =
+    () => {
+      if (
+        !cadastroCompleto
+      ) {
+        navigate(
+          '/perfil'
+        )
 
-    navigate('/cadastro')
-  }
+        return
+      }
+
+      navigate(
+        '/cadastro'
+      )
+    }
 
   const sair = () => {
     localStorage.removeItem(
@@ -203,14 +233,21 @@ function LayoutSistema({
           .notificacao-botao {
             width: 42px;
             height: 42px;
+
             position: relative;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             padding: 0;
+
             background: transparent;
             color: #56625b;
-            border: 1px solid #e1e6e3;
+
+            border:
+              1px solid #e1e6e3;
+
             border-radius: 50%;
           }
 
@@ -222,17 +259,25 @@ function LayoutSistema({
           .notificacao-badge {
             min-width: 18px;
             height: 18px;
+
             position: absolute;
             top: -5px;
             right: -4px;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             padding: 0 5px;
+
             background: #c62828;
             color: white;
-            border: 2px solid white;
+
+            border:
+              2px solid white;
+
             border-radius: 20px;
+
             font-size: 10px;
             font-weight: 700;
           }
@@ -240,14 +285,22 @@ function LayoutSistema({
           .notificacoes-caixa {
             width: 360px;
             max-height: 460px;
+
             position: absolute;
             top: 52px;
             right: 0;
+
             z-index: 1000;
+
             overflow: hidden;
+
             background: white;
-            border: 1px solid #e1e6e3;
+
+            border:
+              1px solid #e1e6e3;
+
             border-radius: 10px;
+
             box-shadow:
               0 10px 30px
               rgba(0, 0, 0, 0.12);
@@ -256,10 +309,14 @@ function LayoutSistema({
           .notificacoes-cabecalho {
             display: flex;
             align-items: center;
+
             justify-content:
               space-between;
+
             gap: 15px;
+
             padding: 15px 17px;
+
             border-bottom:
               1px solid #edf0ee;
           }
@@ -271,15 +328,22 @@ function LayoutSistema({
 
           .notificacoes-marcar {
             padding: 0;
-            background: transparent;
+
+            background:
+              transparent;
+
             color: #23764e;
+
             border: none;
+
             font-size: 11px;
             font-weight: 600;
           }
 
           .notificacoes-marcar:hover {
-            background: transparent;
+            background:
+              transparent;
+
             color: #174f1b;
           }
 
@@ -291,13 +355,19 @@ function LayoutSistema({
           .notificacao-item {
             width: 100%;
             display: block;
+
             padding: 14px 17px;
+
             background: white;
             color: inherit;
+
             border: none;
+
             border-bottom:
               1px solid #edf0ee;
+
             border-radius: 0;
+
             text-align: left;
           }
 
@@ -315,28 +385,38 @@ function LayoutSistema({
 
           .notificacao-item strong {
             display: block;
+
             margin-bottom: 4px;
+
             color: #26332b;
+
             font-size: 13px;
           }
 
           .notificacao-item p {
             margin: 0;
+
             color: #68736d;
+
             font-size: 12px;
             line-height: 1.45;
           }
 
           .notificacao-data {
             display: block;
+
             margin-top: 7px;
+
             color: #9aa19d;
+
             font-size: 10px;
           }
 
           .notificacoes-vazio {
             padding: 30px 20px;
+
             color: #8a938e;
+
             font-size: 12px;
             text-align: center;
           }
@@ -360,10 +440,15 @@ function LayoutSistema({
         <div className="sidebar-logo">
 
           <div className="logo-texto">
-            <strong>APOMS</strong>
+
+            <strong>
+              APOMS
+            </strong>
+
             <span>
               Sistema de Gestão
             </span>
+
           </div>
 
         </div>
@@ -372,6 +457,34 @@ function LayoutSistema({
 
           {ehAdmin ? (
             <>
+
+              {/* Painel administrador */}
+              <button
+                className={`sidebar-item ${
+                  paginaAtiva ===
+                  'admin-painel'
+                    ? 'ativo'
+                    : ''
+                }`}
+                type="button"
+                onClick={() =>
+                  navigate(
+                    '/admin/painel'
+                  )
+                }
+              >
+
+                <span className="sidebar-icon">
+                  ▦
+                </span>
+
+                <span>
+                  Painel
+                </span>
+
+              </button>
+
+              {/* Solicitações */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -381,9 +494,12 @@ function LayoutSistema({
                 }`}
                 type="button"
                 onClick={() =>
-                  navigate('/admin')
+                  navigate(
+                    '/admin'
+                  )
                 }
               >
+
                 <span className="sidebar-icon">
                   ≡
                 </span>
@@ -391,8 +507,10 @@ function LayoutSistema({
                 <span>
                   Solicitações
                 </span>
+
               </button>
 
+              {/* Produtos */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -407,6 +525,7 @@ function LayoutSistema({
                   )
                 }
               >
+
                 <span className="sidebar-icon">
 
                   <svg
@@ -419,11 +538,13 @@ function LayoutSistema({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
+
                     <path d="M5 10h14l-1.4 9H6.4L5 10Z" />
                     <path d="M8 10l2-5" />
                     <path d="M16 10l-2-5" />
                     <path d="M8 14h8" />
                     <path d="M9 17h6" />
+
                   </svg>
 
                 </span>
@@ -431,8 +552,10 @@ function LayoutSistema({
                 <span>
                   Produtos
                 </span>
+
               </button>
 
+              {/* Produtores */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -447,6 +570,7 @@ function LayoutSistema({
                   )
                 }
               >
+
                 <span className="sidebar-icon">
 
                   <svg
@@ -459,6 +583,7 @@ function LayoutSistema({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
+
                     <circle
                       cx="9"
                       cy="8"
@@ -474,6 +599,7 @@ function LayoutSistema({
                     <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
 
                     <path d="M14 15c.8-.7 1.9-1 3-1 2.3 0 4 1.5 4 3.5" />
+
                   </svg>
 
                 </span>
@@ -481,8 +607,10 @@ function LayoutSistema({
                 <span>
                   Produtores cadastrados
                 </span>
+
               </button>
 
+              {/* Relatórios */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -497,6 +625,7 @@ function LayoutSistema({
                   )
                 }
               >
+
                 <span className="sidebar-icon">
 
                   <svg
@@ -509,11 +638,13 @@ function LayoutSistema({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
+
                     <path d="M4 19V10" />
                     <path d="M10 19V5" />
                     <path d="M16 19v-7" />
                     <path d="M22 19V8" />
                     <path d="M2 19h22" />
+
                   </svg>
 
                 </span>
@@ -521,10 +652,14 @@ function LayoutSistema({
                 <span>
                   Relatórios
                 </span>
+
               </button>
+
             </>
           ) : (
             <>
+
+              {/* Painel produtor */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -534,9 +669,12 @@ function LayoutSistema({
                 }`}
                 type="button"
                 onClick={() =>
-                  navigate('/painel')
+                  navigate(
+                    '/painel'
+                  )
                 }
               >
+
                 <span className="sidebar-icon">
                   ▦
                 </span>
@@ -544,8 +682,10 @@ function LayoutSistema({
                 <span>
                   Painel
                 </span>
+
               </button>
 
+              {/* Cadastrar oferta */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -558,6 +698,7 @@ function LayoutSistema({
                   irParaCadastroProduto
                 }
               >
+
                 <span className="sidebar-icon">
                   +
                 </span>
@@ -565,8 +706,10 @@ function LayoutSistema({
                 <span>
                   Cadastrar oferta
                 </span>
+
               </button>
 
+              {/* Solicitações */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -581,6 +724,7 @@ function LayoutSistema({
                   )
                 }
               >
+
                 <span className="sidebar-icon">
                   ≡
                 </span>
@@ -588,8 +732,10 @@ function LayoutSistema({
                 <span>
                   Minhas solicitações
                 </span>
+
               </button>
 
+              {/* Perfil */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -599,9 +745,12 @@ function LayoutSistema({
                 }`}
                 type="button"
                 onClick={() =>
-                  navigate('/perfil')
+                  navigate(
+                    '/perfil'
+                  )
                 }
               >
+
                 <span className="sidebar-icon">
 
                   <svg
@@ -614,6 +763,7 @@ function LayoutSistema({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
+
                     <circle
                       cx="12"
                       cy="8"
@@ -621,6 +771,7 @@ function LayoutSistema({
                     />
 
                     <path d="M5 20c0-3.7 3-6 7-6s7 2.3 7 6" />
+
                   </svg>
 
                 </span>
@@ -628,7 +779,9 @@ function LayoutSistema({
                 <span>
                   Meu perfil
                 </span>
+
               </button>
+
             </>
           )}
 
@@ -639,13 +792,19 @@ function LayoutSistema({
           <button
             className="sidebar-item sidebar-sair"
             type="button"
-            onClick={sair}
+            onClick={
+              sair
+            }
           >
+
             <span className="sidebar-icon">
               ↪
             </span>
 
-            <span>Sair</span>
+            <span>
+              Sair
+            </span>
+
           </button>
 
         </div>
@@ -658,8 +817,15 @@ function LayoutSistema({
         <header className="topbar">
 
           <div className="topbar-titulo">
-            <h1>{titulo}</h1>
-            <p>{subtitulo}</p>
+
+            <h1>
+              {titulo}
+            </h1>
+
+            <p>
+              {subtitulo}
+            </p>
+
           </div>
 
           <div className="topbar-acoes">
@@ -682,6 +848,7 @@ function LayoutSistema({
                   }
                 }}
               >
+
                 <svg
                   width="20"
                   height="20"
@@ -692,8 +859,11 @@ function LayoutSistema({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
+
                   <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+
                   <path d="M10 21h4" />
+
                 </svg>
 
                 {naoLidas > 0 && (
@@ -731,13 +901,16 @@ function LayoutSistema({
 
                   <div className="notificacoes-lista">
 
-                    {notificacoes.length === 0 ? (
+                    {notificacoes.length ===
+                    0 ? (
                       <div className="notificacoes-vazio">
                         Nenhuma notificação.
                       </div>
                     ) : (
                       notificacoes.map(
-                        (notificacao) => (
+                        (
+                          notificacao
+                        ) => (
                           <button
                             key={
                               notificacao.id
@@ -754,6 +927,7 @@ function LayoutSistema({
                               )
                             }
                           >
+
                             <strong>
                               {
                                 notificacao.titulo
@@ -787,6 +961,7 @@ function LayoutSistema({
             <div className="usuario">
 
               <div className="usuario-avatar">
+
                 {nome
                   ? nome
                       .charAt(0)
@@ -794,6 +969,7 @@ function LayoutSistema({
                   : ehAdmin
                     ? 'A'
                     : 'P'}
+
               </div>
 
               <div className="usuario-dados">
@@ -805,7 +981,8 @@ function LayoutSistema({
                 </span>
 
                 <strong>
-                  {nome || 'Usuário'}
+                  {nome ||
+                    'Usuário'}
                 </strong>
 
               </div>

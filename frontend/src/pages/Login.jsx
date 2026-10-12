@@ -14,10 +14,13 @@ function Login() {
     setErro('')
 
     try {
-      const resposta = await api.post('/auth/login', {
-        cpf,
-        senha
-      })
+      const resposta = await api.post(
+        '/auth/login',
+        {
+          cpf,
+          senha
+        }
+      )
 
       localStorage.setItem(
         'token',
@@ -36,41 +39,65 @@ function Login() {
 
       localStorage.setItem(
         'cadastroCompleto',
-        String(resposta.data.cadastro_completo)
+        String(
+          resposta.data.cadastro_completo
+        )
       )
 
-      if (resposta.data.tipo === 'admin') {
-        navigate('/admin')
+      if (
+        resposta.data.tipo ===
+        'admin'
+      ) {
+        navigate(
+          '/admin/painel'
+        )
+
         return
       }
 
-      if (!resposta.data.cadastro_completo) {
-        navigate('/perfil', {
-          replace: true
-        })
+      if (
+        !resposta.data.cadastro_completo
+      ) {
+        navigate(
+          '/perfil',
+          {
+            replace: true
+          }
+        )
 
         return
       }
 
       navigate('/painel')
     } catch (err) {
-      if (err.response?.status === 403) {
+      if (
+        err.response?.status ===
+        403
+      ) {
         setErro(
           'Conta ainda não ativada. Utilize a opção "Primeiro acesso".'
         )
       } else {
-        setErro('CPF ou senha inválidos.')
+        setErro(
+          'CPF ou senha inválidos.'
+        )
       }
     }
   }
 
-  const irParaPrimeiroAcesso = () => {
-    setErro('')
+  const irParaPrimeiroAcesso =
+    () => {
+      setErro('')
 
-    navigate('/primeiro-acesso', {
-      state: { cpf }
-    })
-  }
+      navigate(
+        '/primeiro-acesso',
+        {
+          state: {
+            cpf
+          }
+        }
+      )
+    }
 
   return (
     <>
@@ -193,7 +220,10 @@ function Login() {
           .login-campo input:focus {
             outline: none;
             border-color: #1b5e20;
-            box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.08);
+
+            box-shadow:
+              0 0 0 3px
+              rgba(27, 94, 32, 0.08);
           }
 
           .login-erro {
@@ -295,7 +325,8 @@ function Login() {
             }
 
             .login-box-header {
-              margin: 0 24px 28px;
+              margin:
+                0 24px 28px;
             }
           }
         `}
@@ -306,8 +337,15 @@ function Login() {
         <section className="login-brand">
 
           <div className="login-brand-nome">
-            <strong>APOMS</strong>
-            <span>Sistema de Gestão</span>
+
+            <strong>
+              APOMS
+            </strong>
+
+            <span>
+              Sistema de Gestão
+            </span>
+
           </div>
 
           <h1>
@@ -328,11 +366,16 @@ function Login() {
 
             <form
               className="login-form"
-              onSubmit={handleLogin}
+              onSubmit={
+                handleLogin
+              }
             >
 
               <div className="login-campo">
-                <label>CPF</label>
+
+                <label>
+                  CPF
+                </label>
 
                 <input
                   type="text"
@@ -349,20 +392,27 @@ function Login() {
                   }
                   required
                 />
+
               </div>
 
               <div className="login-campo">
-                <label>Senha</label>
+
+                <label>
+                  Senha
+                </label>
 
                 <input
                   type="password"
                   placeholder="Digite sua senha"
                   value={senha}
                   onChange={(e) =>
-                    setSenha(e.target.value)
+                    setSenha(
+                      e.target.value
+                    )
                   }
                   required
                 />
+
               </div>
 
               {erro && (
@@ -387,7 +437,9 @@ function Login() {
                 <button
                   className="primeiro-acesso-btn"
                   type="button"
-                  onClick={irParaPrimeiroAcesso}
+                  onClick={
+                    irParaPrimeiroAcesso
+                  }
                 >
                   Primeiro acesso
                 </button>
