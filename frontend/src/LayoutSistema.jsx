@@ -49,6 +49,21 @@ function LayoutSistema({
       'cadastroCompleto'
     ) === 'true'
 
+  const tiposAcionaveis = [
+    'nova_solicitacao',
+    'solicitacao_atualizada',
+    'solicitacao_inclusao_produto',
+    'contraoferta_recebida'
+  ]
+
+  const ehNotificacaoAcionavel = (
+    notificacao
+  ) => {
+    return tiposAcionaveis.includes(
+      notificacao.tipo
+    )
+  }
+
   useEffect(() => {
     buscarNotificacoes()
 
@@ -111,7 +126,9 @@ function LayoutSistema({
   }
 
   const abrirNotificacao =
-    async (notificacao) => {
+    async (
+      notificacao
+    ) => {
       try {
         if (
           !notificacao.lida
@@ -120,18 +137,38 @@ function LayoutSistema({
             `/notificacoes/${notificacao.id}/lida`
           )
 
-          setNotificacoes(
-            notificacoes.map(
-              (item) =>
-                item.id ===
-                notificacao.id
-                  ? {
-                      ...item,
-                      lida: true
-                    }
-                  : item
+          if (
+            ehNotificacaoAcionavel(
+              notificacao
             )
-          )
+          ) {
+            setNotificacoes(
+              (
+                notificacoesAtuais
+              ) =>
+                notificacoesAtuais.map(
+                  (item) =>
+                    item.id ===
+                    notificacao.id
+                      ? {
+                          ...item,
+                          lida: true
+                        }
+                      : item
+                )
+            )
+          } else {
+            setNotificacoes(
+              (
+                notificacoesAtuais
+              ) =>
+                notificacoesAtuais.filter(
+                  (item) =>
+                    item.id !==
+                    notificacao.id
+                )
+            )
+          }
         }
 
         setMostrarNotificacoes(
@@ -161,14 +198,26 @@ function LayoutSistema({
         )
 
         setNotificacoes(
-          notificacoes.map(
-            (
-              notificacao
-            ) => ({
-              ...notificacao,
-              lida: true
-            })
-          )
+          (
+            notificacoesAtuais
+          ) =>
+            notificacoesAtuais
+              .filter(
+                (
+                  notificacao
+                ) =>
+                  ehNotificacaoAcionavel(
+                    notificacao
+                  )
+              )
+              .map(
+                (
+                  notificacao
+                ) => ({
+                  ...notificacao,
+                  lida: true
+                })
+              )
         )
       } catch (err) {
         console.error(
@@ -434,7 +483,6 @@ function LayoutSistema({
         `}
       </style>
 
-      {/* Menu lateral */}
       <aside className="sidebar">
 
         <div className="sidebar-logo">
@@ -458,7 +506,6 @@ function LayoutSistema({
           {ehAdmin ? (
             <>
 
-              {/* Painel administrador */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -484,7 +531,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Solicitações */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -510,7 +556,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Produtos */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -555,7 +600,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Produtores */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -610,7 +654,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Relatórios */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -659,7 +702,6 @@ function LayoutSistema({
           ) : (
             <>
 
-              {/* Painel produtor */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -685,7 +727,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Cadastrar oferta */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -709,7 +750,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Solicitações */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -735,7 +775,6 @@ function LayoutSistema({
 
               </button>
 
-              {/* Perfil */}
               <button
                 className={`sidebar-item ${
                   paginaAtiva ===
@@ -811,7 +850,6 @@ function LayoutSistema({
 
       </aside>
 
-      {/* Área principal */}
       <main className="main-content">
 
         <header className="topbar">
@@ -837,12 +875,15 @@ function LayoutSistema({
                 type="button"
                 title="Notificações"
                 onClick={() => {
-                  setMostrarNotificacoes(
+                  const vaiAbrir =
                     !mostrarNotificacoes
+
+                  setMostrarNotificacoes(
+                    vaiAbrir
                   )
 
                   if (
-                    !mostrarNotificacoes
+                    vaiAbrir
                   ) {
                     buscarNotificacoes()
                   }
@@ -904,7 +945,7 @@ function LayoutSistema({
                     {notificacoes.length ===
                     0 ? (
                       <div className="notificacoes-vazio">
-                        Nenhuma notificação.
+                        Nenhuma notificação pendente.
                       </div>
                     ) : (
                       notificacoes.map(

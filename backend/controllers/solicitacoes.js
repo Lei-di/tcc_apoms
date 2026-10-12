@@ -2,7 +2,8 @@ const pool = require('../models/db')
 
 const {
   criarNotificacao,
-  notificarAdministradores
+  notificarAdministradores,
+  resolverNotificacoesRelacionadas
 } = require('./notificacoes')
 
 // Produtor
@@ -87,6 +88,18 @@ const separarQuantidade = (
     unidade:
       resultado[2].trim()
   }
+}
+
+const linkOfertaAdmin = (
+  id
+) => {
+  return `/admin?tipo=oferta&id=${id}`
+}
+
+const linkOfertaProdutor = (
+  id
+) => {
+  return `/solicitacoes?tipo=oferta&id=${id}`
 }
 
 const listarSolicitacoesProdutor =
@@ -183,6 +196,9 @@ const criarSolicitacao =
           ]
         )
 
+      const solicitacao =
+        resultado.rows[0]
+
       await notificarAdministradores({
         tipo:
           'nova_solicitacao',
@@ -194,11 +210,13 @@ const criarSolicitacao =
           `${situacaoProdutor.nome} enviou uma nova oferta de ${nome_produto}.`,
 
         link:
-          '/admin'
+          linkOfertaAdmin(
+            solicitacao.id
+          )
       })
 
       res.status(201).json(
-        resultado.rows[0]
+        solicitacao
       )
     } catch (erro) {
       console.error(
@@ -217,7 +235,8 @@ const criarSolicitacao =
 
 const editarSolicitacao =
   async (req, res) => {
-    const { id } = req.params
+    const { id } =
+      req.params
 
     const {
       nome_produto,
@@ -280,6 +299,20 @@ const editarSolicitacao =
         produtor.rows[0]?.nome ||
         'Um produtor'
 
+      const link =
+        linkOfertaAdmin(
+          id
+        )
+
+      await resolverNotificacoesRelacionadas({
+        link,
+
+        tipos: [
+          'nova_solicitacao',
+          'solicitacao_atualizada'
+        ]
+      })
+
       await notificarAdministradores({
         tipo:
           'solicitacao_atualizada',
@@ -290,8 +323,7 @@ const editarSolicitacao =
         mensagem:
           `${nomeProdutor} atualizou a oferta de ${nome_produto}.`,
 
-        link:
-          '/admin'
+        link
       })
 
       res.json(
@@ -309,7 +341,8 @@ const editarSolicitacao =
 
 const excluirSolicitacao =
   async (req, res) => {
-    const { id } = req.params
+    const { id } =
+      req.params
 
     const cpf_produtor =
       req.produtor.cpf
@@ -338,6 +371,18 @@ const excluirSolicitacao =
         })
       }
 
+      await resolverNotificacoesRelacionadas({
+        link:
+          linkOfertaAdmin(
+            id
+          ),
+
+        tipos: [
+          'nova_solicitacao',
+          'solicitacao_atualizada'
+        ]
+      })
+
       res.json({
         mensagem:
           'Solicitação excluída com sucesso.'
@@ -354,8 +399,11 @@ const excluirSolicitacao =
 
 const responderContraoferta =
   async (req, res) => {
-    const { id } = req.params
-    const { resposta } = req.body
+    const { id } =
+      req.params
+
+    const { resposta } =
+      req.body
 
     const cpf_produtor =
       req.produtor.cpf
@@ -364,7 +412,9 @@ const responderContraoferta =
       ![
         'aceitar',
         'recusar'
-      ].includes(resposta)
+      ].includes(
+        resposta
+      )
     ) {
       return res.status(400).json({
         mensagem:
@@ -426,7 +476,8 @@ const responderContraoferta =
         'Produtor'
 
       if (
-        resposta === 'aceitar'
+        resposta ===
+        'aceitar'
       ) {
         const quantidadeFinal =
           solicitacao.quantidade_contraoferta ||
@@ -470,6 +521,17 @@ const responderContraoferta =
           'COMMIT'
         )
 
+        await resolverNotificacoesRelacionadas({
+          link:
+            linkOfertaProdutor(
+              id
+            ),
+
+          tipos: [
+            'contraoferta_recebida'
+          ]
+        })
+
         await notificarAdministradores({
           tipo:
             'contraoferta_aceita',
@@ -481,7 +543,9 @@ const responderContraoferta =
             `${nomeProdutor} aceitou a contraoferta de ${solicitacao.nome_produto}.`,
 
           link:
-            '/admin'
+            linkOfertaAdmin(
+              id
+            )
         })
 
         return res.json({
@@ -505,6 +569,17 @@ const responderContraoferta =
         'COMMIT'
       )
 
+      await resolverNotificacoesRelacionadas({
+        link:
+          linkOfertaProdutor(
+            id
+          ),
+
+        tipos: [
+          'contraoferta_recebida'
+        ]
+      })
+
       await notificarAdministradores({
         tipo:
           'contraoferta_recusada',
@@ -516,7 +591,9 @@ const responderContraoferta =
           `${nomeProdutor} recusou a contraoferta de ${solicitacao.nome_produto}.`,
 
         link:
-          '/admin'
+          linkOfertaAdmin(
+            id
+          )
       })
 
       res.json({
@@ -577,7 +654,8 @@ const listarTodasSolicitacoes =
 
 const avaliarSolicitacao =
   async (req, res) => {
-    const { id } = req.params
+    const { id } =
+      req.params
 
     const {
       status,
@@ -591,7 +669,9 @@ const avaliarSolicitacao =
         'aprovado',
         'rejeitado',
         'contraoferta'
-      ].includes(status)
+      ].includes(
+        status
+      )
     ) {
       return res.status(400).json({
         mensagem:
@@ -851,8 +931,21 @@ const avaliarSolicitacao =
         'COMMIT'
       )
 
+      await resolverNotificacoesRelacionadas({
+        link:
+          linkOfertaAdmin(
+            id
+          ),
+
+        tipos: [
+          'nova_solicitacao',
+          'solicitacao_atualizada'
+        ]
+      })
+
       if (
-        status === 'aprovado'
+        status ===
+        'aprovado'
       ) {
         await criarNotificacao({
           cpf_destinatario:
@@ -868,12 +961,15 @@ const avaliarSolicitacao =
             `Sua oferta de ${solicitacao.nome_produto} foi aprovada pela APOMS.`,
 
           link:
-            '/solicitacoes'
+            linkOfertaProdutor(
+              id
+            )
         })
       }
 
       if (
-        status === 'rejeitado'
+        status ===
+        'rejeitado'
       ) {
         await criarNotificacao({
           cpf_destinatario:
@@ -889,7 +985,9 @@ const avaliarSolicitacao =
             `Sua oferta de ${solicitacao.nome_produto} foi rejeitada. Consulte o retorno da APOMS.`,
 
           link:
-            '/solicitacoes'
+            linkOfertaProdutor(
+              id
+            )
         })
       }
 
@@ -911,7 +1009,9 @@ const avaliarSolicitacao =
             `A APOMS enviou uma contraoferta para ${solicitacao.nome_produto}.`,
 
           link:
-            '/solicitacoes'
+            linkOfertaProdutor(
+              id
+            )
         })
       }
 
