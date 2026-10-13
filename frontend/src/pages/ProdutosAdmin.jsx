@@ -32,9 +32,7 @@ function ProdutosAdmin() {
         '/produtos/disponiveis'
       )
 
-      setProdutos(
-        resposta.data
-      )
+      setProdutos(resposta.data)
     } catch (err) {
       console.error(
         'Erro ao buscar produtos:',
@@ -88,8 +86,7 @@ function ProdutosAdmin() {
       buscarProdutos()
     } catch (err) {
       if (
-        err.response?.status ===
-        409
+        err.response?.status === 409
       ) {
         setMensagem(
           'Esse produto já está cadastrado.'
@@ -185,20 +182,21 @@ function ProdutosAdmin() {
             flex-shrink: 0;
           }
 
+          /* Formulário */
+
           .produtos-admin-formulario {
             width: 100%;
-            max-width: none;
+            max-width: 900px;
 
             flex-shrink: 0;
 
-            margin-bottom: 18px;
+            margin-bottom: 20px;
 
-            padding: 18px 20px;
+            padding: 20px 22px;
 
             background: #f0f5f0;
 
-            border:
-              1px solid #8fb995;
+            border: 1px solid #8fb995;
 
             border-radius: 10px;
 
@@ -209,23 +207,15 @@ function ProdutosAdmin() {
 
           .produtos-admin-formulario form {
             display: grid;
+            grid-template-columns: 1fr;
 
-            grid-template-columns:
-              minmax(0, 1fr)
-              auto;
-
-            gap: 18px;
-
-            align-items: end;
-          }
-
-          .produtos-admin-formulario
-          .campo {
-            min-width: 0;
+            gap: 14px;
           }
 
           .produtos-admin-formulario
           .campo label {
+            display: block;
+
             margin-bottom: 5px;
 
             color: #304b34;
@@ -236,20 +226,28 @@ function ProdutosAdmin() {
 
           .produtos-admin-formulario
           .campo input {
+            width: 100%;
+
             min-height: 40px;
+
+            padding: 8px 12px;
 
             background: #ffffff;
 
-            border:
-              1px solid #91ad95;
+            color: #3f4e42;
+
+            border: 1px solid #91ad95;
+
+            border-radius: 6px;
+
+            font-size: 14px;
           }
 
           .produtos-admin-formulario
           .campo input:focus {
             outline: none;
 
-            border-color:
-              #1b5e20;
+            border-color: #1b5e20;
 
             box-shadow:
               0 0 0 2px
@@ -260,15 +258,39 @@ function ProdutosAdmin() {
           .acoes-form {
             display: flex;
 
+            justify-content: flex-end;
             align-items: center;
 
-            justify-content:
-              flex-end;
+            gap: 12px;
 
-            gap: 10px;
+            margin-top: 0;
+            padding-top: 12px;
 
-            padding: 0;
+            border-top:
+              1px solid rgba(27, 94, 32, 0.18);
           }
+
+          .btn-cancelar-admin {
+            min-width: 100px;
+            min-height: 40px;
+
+            padding: 8px 15px;
+
+            background: #ffffff;
+
+            color: #4b594d;
+
+            border: 1px solid #91aa95;
+
+            border-radius: 6px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+          }
+
+          /* Painel da lista */
 
           .produtos-admin-lista {
             flex: 1;
@@ -280,16 +302,15 @@ function ProdutosAdmin() {
 
             overflow: hidden;
 
-            background: #ffffff;
+            background: #f0f5f0;
 
-            border:
-              1px solid #e4e9e6;
+            border: 1px solid #8fb995;
 
             border-radius: 10px;
 
             box-shadow:
-              0 1px 3px
-              rgba(0, 0, 0, 0.03);
+              0 2px 7px
+              rgba(27, 94, 32, 0.05);
           }
 
           .produtos-admin-scroll {
@@ -310,6 +331,8 @@ function ProdutosAdmin() {
             margin: 0;
 
             table-layout: fixed;
+
+            background: transparent;
           }
 
           .produtos-admin-scroll
@@ -329,7 +352,34 @@ function ProdutosAdmin() {
 
             z-index: 10;
 
-            background: #f7f9f8;
+            padding: 16px 20px;
+
+            background: #f0f5f0;
+
+            color: #304b34;
+
+            border-bottom:
+              1px solid #b7cfba;
+          }
+
+          .produtos-admin-scroll
+          .dashboard-table td {
+            padding: 17px 20px;
+
+            background: #ffffff;
+
+            border-bottom:
+              1px solid #dce6dd;
+          }
+
+          .produtos-admin-scroll
+          .dashboard-table tr:last-child td {
+            border-bottom: none;
+          }
+
+          .produtos-admin-scroll
+          .dashboard-table tbody tr:hover td {
+            background: #f8fbf8;
           }
 
           .produtos-admin-scroll
@@ -351,20 +401,20 @@ function ProdutosAdmin() {
           }
 
           .produtos-admin-scroll::-webkit-scrollbar-track {
-            background: #f0f3f1;
+            background: #e8efe9;
           }
 
           .produtos-admin-scroll::-webkit-scrollbar-thumb {
-            background: #b5c0b8;
+            background: #a7bbaa;
 
             border-radius: 10px;
 
             border:
-              2px solid #f0f3f1;
+              2px solid #e8efe9;
           }
 
           .produtos-admin-scroll::-webkit-scrollbar-thumb:hover {
-            background: #96a49a;
+            background: #879d8b;
           }
 
           .produtos-admin-vazio {
@@ -393,15 +443,14 @@ function ProdutosAdmin() {
           .produtos-admin-vazio p {
             margin-top: 7px;
 
-            color: #89928d;
+            color: #708074;
 
             font-size: 13px;
           }
 
           @media (max-width: 1000px) {
             .produtos-admin-page {
-              padding:
-                24px;
+              padding: 24px;
             }
           }
 
@@ -422,9 +471,8 @@ function ProdutosAdmin() {
               overflow: visible;
             }
 
-            .produtos-admin-formulario form {
-              grid-template-columns:
-                1fr;
+            .produtos-admin-formulario {
+              max-width: none;
             }
 
             .produtos-admin-formulario
@@ -457,15 +505,10 @@ function ProdutosAdmin() {
             className="btn-principal"
             type="button"
             onClick={() => {
-              if (
-                mostrarFormulario
-              ) {
+              if (mostrarFormulario) {
                 limparFormulario()
               } else {
-                setMostrarFormulario(
-                  true
-                )
-
+                setMostrarFormulario(true)
                 setMensagem('')
               }
             }}
@@ -533,7 +576,7 @@ function ProdutosAdmin() {
               <div className="acoes-form">
 
                 <button
-                  className="btn-voltar"
+                  className="btn-cancelar-admin"
                   type="button"
                   onClick={
                     limparFormulario
@@ -560,8 +603,7 @@ function ProdutosAdmin() {
 
         <div className="produtos-admin-lista">
 
-          {produtos.length ===
-          0 ? (
+          {produtos.length === 0 ? (
             <div className="produtos-admin-vazio">
 
               <h3>

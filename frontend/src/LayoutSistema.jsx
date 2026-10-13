@@ -595,7 +595,7 @@ function LayoutSistema({
                 </span>
 
                 <span>
-                  Produtos
+                  Catálogo
                 </span>
 
               </button>

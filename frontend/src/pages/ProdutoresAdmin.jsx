@@ -120,9 +120,7 @@ function ProdutoresAdmin() {
     )
   }
 
-  const handleCadastro = async (
-    e
-  ) => {
+  const handleCadastro = async (e) => {
     e.preventDefault()
     setMensagem('')
 
@@ -173,16 +171,14 @@ function ProdutoresAdmin() {
       buscarProdutores()
     } catch (err) {
       if (
-        err.response?.status ===
-        400
+        err.response?.status === 400
       ) {
         setMensagem(
           err.response?.data?.mensagem ||
           'Dados inválidos.'
         )
       } else if (
-        err.response?.status ===
-        409
+        err.response?.status === 409
       ) {
         setMensagem(
           'CPF já cadastrado.'
@@ -244,9 +240,7 @@ function ProdutoresAdmin() {
     }
   }
 
-  const formatarCpf = (
-    cpf
-  ) => {
+  const formatarCpf = (cpf) => {
     if (
       !cpf ||
       cpf.length !== 11
@@ -260,9 +254,7 @@ function ProdutoresAdmin() {
     )
   }
 
-  const formatarData = (
-    data
-  ) => {
+  const formatarData = (data) => {
     if (!data) {
       return 'Não informado'
     }
@@ -292,6 +284,7 @@ function ProdutoresAdmin() {
           .produtores-admin-page {
             width: 100%;
             height: calc(100vh - 90px);
+
             min-height: 0;
 
             display: flex;
@@ -302,8 +295,10 @@ function ProdutoresAdmin() {
             overflow: hidden;
           }
 
-          .produtores-admin-page .page-header,
-          .produtores-admin-page .mensagem-pagina,
+          .produtores-admin-page
+          .page-header,
+          .produtores-admin-page
+          .mensagem-pagina,
           .produtores-admin-formulario,
           .produtores-admin-detalhes {
             flex-shrink: 0;
@@ -312,22 +307,143 @@ function ProdutoresAdmin() {
           .produtores-admin-formulario,
           .produtores-admin-detalhes {
             width: 100%;
-            max-width: none !important;
+
+            max-width:
+              900px !important;
           }
+
+          /* Formulário */
+
+          .produtores-admin-formulario {
+            margin-bottom: 20px;
+
+            padding:
+              20px 22px !important;
+
+            background:
+              #f0f5f0 !important;
+
+            border:
+              1px solid #8fb995 !important;
+
+            border-radius:
+              10px !important;
+
+            box-shadow:
+              0 2px 7px
+              rgba(27, 94, 32, 0.05) !important;
+          }
+
+          .produtores-admin-formulario
+          .cadastro-produto-form {
+            gap: 14px 18px;
+          }
+
+          .produtores-admin-formulario
+          .campo label {
+            margin-bottom: 5px;
+
+            color: #304b34;
+
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .produtores-admin-formulario
+          .campo input {
+            min-height: 40px;
+
+            padding:
+              8px 12px;
+
+            background: #ffffff;
+
+            border:
+              1px solid #91ad95;
+          }
+
+          .produtores-admin-formulario
+          .acoes-form {
+            margin-top: 0;
+
+            padding-top: 12px;
+
+            border-top:
+              1px solid
+              rgba(27, 94, 32, 0.18);
+          }
+
+          .btn-cancelar-admin {
+            min-width: 100px;
+
+            min-height: 40px;
+
+            padding: 8px 15px;
+
+            background: #ffffff;
+
+            color: #4b594d;
+
+            border:
+              1px solid #91aa95;
+
+            border-radius: 6px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+          }
+
+          /* Painel de detalhes */
+
+          .produtores-admin-detalhes {
+            margin-bottom: 20px;
+
+            padding:
+              20px 22px !important;
+
+            background:
+              #f0f5f0 !important;
+
+            border:
+              1px solid #8fb995 !important;
+
+            border-radius:
+              10px !important;
+
+            box-shadow:
+              0 2px 7px
+              rgba(27, 94, 32, 0.05) !important;
+          }
+
+          /* Painel da lista */
 
           .produtores-admin-lista {
             flex: 1;
+
             min-height: 0;
 
             display: flex;
             flex-direction: column;
 
             overflow: hidden;
+
+            background: #f0f5f0;
+
+            border: 1px solid #8fb995;
+
+            border-radius: 10px;
+
+            box-shadow:
+              0 2px 7px
+              rgba(27, 94, 32, 0.05);
           }
 
           .produtores-admin-scroll {
             width: 100%;
             flex: 1;
+
             min-height: 0;
 
             overflow-y: scroll;
@@ -337,23 +453,57 @@ function ProdutoresAdmin() {
           .produtores-admin-scroll
           .dashboard-table {
             width: 100%;
+
             margin: 0;
+
+            background: transparent;
           }
 
           .produtores-admin-scroll
           .dashboard-table thead {
             position: sticky;
+
             top: 0;
+
             z-index: 10;
           }
 
           .produtores-admin-scroll
           .dashboard-table th {
             position: sticky;
+
             top: 0;
+
             z-index: 10;
 
-            background: #f7f9f8;
+            padding: 16px 20px;
+
+            background: #f0f5f0;
+
+            color: #304b34;
+
+            border-bottom:
+              1px solid #b7cfba;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table td {
+            padding: 17px 20px;
+
+            background: #ffffff;
+
+            border-bottom:
+              1px solid #dce6dd;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table tr:last-child td {
+            border-bottom: none;
+          }
+
+          .produtores-admin-scroll
+          .dashboard-table tbody tr:hover td {
+            background: #f8fbf8;
           }
 
           .produtores-admin-scroll::-webkit-scrollbar {
@@ -362,20 +512,20 @@ function ProdutoresAdmin() {
           }
 
           .produtores-admin-scroll::-webkit-scrollbar-track {
-            background: #f0f3f1;
+            background: #e8efe9;
           }
 
           .produtores-admin-scroll::-webkit-scrollbar-thumb {
-            background: #b5c0b8;
+            background: #a7bbaa;
 
             border:
-              2px solid #f0f3f1;
+              2px solid #e8efe9;
 
             border-radius: 10px;
           }
 
           .produtores-admin-scroll::-webkit-scrollbar-thumb:hover {
-            background: #96a49a;
+            background: #879d8b;
           }
 
           @media (max-width: 1000px) {
@@ -399,6 +549,29 @@ function ProdutoresAdmin() {
                 22px 16px 35px;
 
               overflow: visible;
+            }
+
+            .produtores-admin-formulario,
+            .produtores-admin-detalhes {
+              max-width:
+                none !important;
+            }
+
+            .produtores-admin-formulario
+            .cadastro-produto-form {
+              grid-template-columns:
+                1fr;
+            }
+
+            .produtores-admin-formulario
+            .acoes-form {
+              flex-direction:
+                column-reverse;
+            }
+
+            .produtores-admin-formulario
+            .acoes-form button {
+              width: 100%;
             }
 
             .produtores-admin-lista {
@@ -461,35 +634,7 @@ function ProdutoresAdmin() {
         )}
 
         {mostrarFormulario && (
-          <div
-            className="cadastro-card produtores-admin-formulario"
-            style={{
-              maxWidth:
-                '100%',
-
-              marginBottom:
-                '20px'
-            }}
-          >
-
-            <div
-              className="edicao-titulo"
-              style={{
-                marginBottom:
-                  '22px'
-              }}
-            >
-
-              <h3>
-                Pré-cadastrar produtor
-              </h3>
-
-              <p>
-                Informe o CPF e o nome do produtor para liberar
-                posteriormente o primeiro acesso ao sistema.
-              </p>
-
-            </div>
+          <div className="cadastro-card produtores-admin-formulario">
 
             <form
               className="cadastro-produto-form"
@@ -542,6 +687,7 @@ function ProdutoresAdmin() {
                   onChange={(e) =>
                     setNovoProdutor({
                       ...novoProdutor,
+
                       nome:
                         e.target.value
                     })
@@ -554,13 +700,18 @@ function ProdutoresAdmin() {
               <div className="acoes-form campo-grande">
 
                 <button
-                  className="btn-voltar"
+                  className="btn-cancelar-admin"
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     setMostrarFormulario(
                       false
                     )
-                  }
+
+                    setNovoProdutor({
+                      cpf: '',
+                      nome: ''
+                    })
+                  }}
                 >
                   Cancelar
                 </button>
@@ -580,21 +731,11 @@ function ProdutoresAdmin() {
         )}
 
         {produtorSelecionado && (
-          <div
-            className="edicao-card produtores-admin-detalhes"
-            style={{
-              maxWidth:
-                '100%',
-
-              marginBottom:
-                '20px'
-            }}
-          >
+          <div className="edicao-card produtores-admin-detalhes">
 
             <div
               style={{
-                display:
-                  'flex',
+                display: 'flex',
 
                 justifyContent:
                   'space-between',
@@ -602,11 +743,10 @@ function ProdutoresAdmin() {
                 alignItems:
                   'flex-start',
 
-                gap:
-                  '20px',
+                gap: '20px',
 
                 marginBottom:
-                  '25px'
+                  '20px'
               }}
             >
 
@@ -641,14 +781,12 @@ function ProdutoresAdmin() {
 
             <div
               style={{
-                display:
-                  'grid',
+                display: 'grid',
 
                 gridTemplateColumns:
                   'repeat(2, minmax(0, 1fr))',
 
-                gap:
-                  '22px'
+                gap: '14px 18px'
               }}
             >
 
@@ -705,7 +843,13 @@ function ProdutoresAdmin() {
 
               </div>
 
-              <div className="campo">
+              <div
+                className="campo"
+                style={{
+                  gridColumn:
+                    '1 / -1'
+                }}
+              >
 
                 <label>
                   Cidade / Núcleo produtivo
@@ -746,10 +890,9 @@ function ProdutoresAdmin() {
                 <div
                   style={{
                     minHeight:
-                      '44px',
+                      '40px',
 
-                    display:
-                      'flex',
+                    display: 'flex',
 
                     alignItems:
                       'center'
@@ -792,14 +935,19 @@ function ProdutoresAdmin() {
 
             <div
               style={{
-                display:
-                  'flex',
+                display: 'flex',
 
                 justifyContent:
                   'flex-end',
 
                 marginTop:
-                  '25px'
+                  '14px',
+
+                paddingTop:
+                  '12px',
+
+                borderTop:
+                  '1px solid rgba(27, 94, 32, 0.18)'
               }}
             >
 
@@ -824,7 +972,7 @@ function ProdutoresAdmin() {
           </div>
         )}
 
-        <div className="table-card produtores-admin-lista">
+        <div className="produtores-admin-lista">
 
           {produtores.length === 0 ? (
             <div className="estado-vazio">
@@ -846,6 +994,7 @@ function ProdutoresAdmin() {
                 <thead>
 
                   <tr>
+
                     <th>
                       CPF
                     </th>
@@ -857,6 +1006,7 @@ function ProdutoresAdmin() {
                     <th>
                       Status
                     </th>
+
                   </tr>
 
                 </thead>
@@ -876,13 +1026,7 @@ function ProdutoresAdmin() {
                         }
                         style={{
                           cursor:
-                            'pointer',
-
-                          backgroundColor:
-                            produtorSelecionado?.cpf ===
-                            produtor.cpf
-                              ? '#f3f8f5'
-                              : undefined
+                            'pointer'
                         }}
                         title="Clique para visualizar os dados do produtor"
                       >
@@ -938,29 +1082,24 @@ function ProdutoresAdmin() {
 }
 
 const campoInformacao = {
-  minHeight: '44px',
+  minHeight: '40px',
 
   display: 'flex',
 
   alignItems: 'center',
 
-  padding:
-    '10px 12px',
+  padding: '8px 12px',
 
-  background:
-    '#f7f9f8',
+  background: '#ffffff',
 
-  color:
-    '#4e5752',
+  color: '#3f4e42',
 
   border:
-    '1px solid #e1e6e3',
+    '1px solid #91ad95',
 
-  borderRadius:
-    '6px',
+  borderRadius: '6px',
 
-  fontSize:
-    '14px'
+  fontSize: '14px'
 }
 
 export default ProdutoresAdmin
