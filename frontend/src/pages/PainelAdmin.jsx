@@ -972,6 +972,18 @@ function PainelAdmin() {
               minmax(0, 1fr);
 
             overflow: hidden;
+
+            background: #f0f5f0 !important;
+
+            border:
+              1px solid #8fb995 !important;
+
+            border-radius:
+              10px !important;
+
+            box-shadow:
+              0 2px 7px
+              rgba(27, 94, 32, 0.05) !important;
           }
 
           .admin-solicitacoes-scroll {
@@ -990,20 +1002,20 @@ function PainelAdmin() {
           }
 
           .admin-solicitacoes-scroll::-webkit-scrollbar-track {
-            background: #f0f3f1;
+            background: #e8efe9;
           }
 
           .admin-solicitacoes-scroll::-webkit-scrollbar-thumb {
-            background: #b5c0b8;
+            background: #a7bbaa;
 
             border:
-              2px solid #f0f3f1;
+              2px solid #e8efe9;
 
             border-radius: 10px;
           }
 
           .admin-solicitacoes-scroll::-webkit-scrollbar-thumb:hover {
-            background: #96a49a;
+            background: #879d8b;
           }
 
           .admin-solicitacoes-vazio {
@@ -1031,6 +1043,22 @@ function PainelAdmin() {
             gap: 10px;
 
             margin-top: 14px;
+
+            padding-top: 13px;
+
+            border-top:
+              1px solid
+              rgba(27, 94, 32, 0.18);
+          }
+
+          .admin-filtros select:focus {
+            outline: none;
+
+            border-color: #1b5e20 !important;
+
+            box-shadow:
+              0 0 0 2px
+              rgba(27, 94, 32, 0.08);
           }
 
           .admin-lista-item {
@@ -2514,10 +2542,10 @@ function PainelAdmin() {
 const cabecalhoLista = {
   padding: '18px 20px',
 
-  background: '#f8fbf8',
+  background: '#f0f5f0',
 
   borderBottom:
-    '1px solid #e2e9e3'
+    '1px solid rgba(27, 94, 32, 0.18)'
 }
 
 const tituloLista = {
@@ -2534,7 +2562,7 @@ const areaFiltros = {
   background: '#ffffff',
 
   borderBottom:
-    '1px solid #e6ebe7'
+    '1px solid rgba(27, 94, 32, 0.18)'
 }
 
 const labelFiltro = {
@@ -2542,9 +2570,9 @@ const labelFiltro = {
 
   marginBottom: '6px',
 
-  color: '#5e6961',
+  color: '#304b34',
 
-  fontSize: '12px',
+  fontSize: '13px',
 
   fontWeight: '600'
 }
@@ -2561,9 +2589,9 @@ const campoFiltro = {
   color: '#39443d',
 
   border:
-    '1px solid #d5ded6',
+    '1px solid #91ad95',
 
-  borderRadius: '7px',
+  borderRadius: '6px',
 
   fontSize: '13px'
 }
