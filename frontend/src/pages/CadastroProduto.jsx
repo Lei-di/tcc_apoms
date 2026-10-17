@@ -566,6 +566,10 @@ function CadastroProduto() {
                   caixa
                 </option>
 
+                <option value="bandeja">
+                  bandeja
+                </option>
+
                 <option value="litro">
                   litro
                 </option>

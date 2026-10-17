@@ -1704,6 +1704,10 @@ function Solicitacoes() {
                       caixa
                     </option>
 
+                    <option value="bandeja">
+                      bandeja
+                    </option>
+
                     <option value="litro">
                       litro
                     </option>
@@ -2207,7 +2211,6 @@ function Solicitacoes() {
                     }
                   >
 
-                    {/* Tipo e produto */}
                     <div style={identificacaoLista}>
 
                       <div style={tipoLista}>
@@ -2235,7 +2238,6 @@ function Solicitacoes() {
 
                     </div>
 
-                    {/* Status */}
                     <div className="historico-status">
 
                       <span
@@ -2253,7 +2255,6 @@ function Solicitacoes() {
                     {solicitacao.tipo_solicitacao ===
                     'oferta' ? (
                       <>
-                        {/* Quantidade */}
                         <div
                           className="historico-informacao"
                           style={informacaoLista}
@@ -2271,7 +2272,6 @@ function Solicitacoes() {
 
                         </div>
 
-                        {/* Valor */}
                         <div
                           className="historico-informacao historico-valor"
                           style={informacaoLista}
@@ -2291,7 +2291,6 @@ function Solicitacoes() {
 
                         </div>
 
-                        {/* Disponibilidade */}
                         <div
                           className="historico-informacao historico-disponibilidade"
                           style={informacaoLista}
@@ -2311,7 +2310,6 @@ function Solicitacoes() {
                       </>
                     ) : (
                       <>
-                        {/* Data da avaliação */}
                         <div
                           className="historico-informacao historico-inclusao-data"
                           style={informacaoLista}
@@ -2335,7 +2333,6 @@ function Solicitacoes() {
                       </>
                     )}
 
-                    {/* Detalhes */}
                     <div
                       className="historico-ver-detalhes"
                       style={verDetalhesLista}
