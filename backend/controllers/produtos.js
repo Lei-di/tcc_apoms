@@ -504,7 +504,7 @@ const listarMinhasSolicitacoesProdutos =
     try {
       const resultado =
         await pool.query(
-          `SELECT *
+          `SELECT *, xmin::text AS versao
            FROM solicitacoes_produtos
            WHERE cpf_produtor = $1
            ORDER BY data_solicitacao DESC`,
@@ -535,7 +535,7 @@ const listarSolicitacoesProdutosAdmin =
       const resultado =
         await pool.query(
           `SELECT
-             s.*,
+             s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor
            FROM solicitacoes_produtos s
            JOIN produtores p
@@ -613,16 +613,18 @@ const avaliarSolicitacaoProduto =
       const resultadoSolicitacao =
         await cliente.query(
           `SELECT
-             s.*,
+             s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor
            FROM solicitacoes_produtos s
            JOIN produtores p
              ON p.cpf = s.cpf_produtor
            WHERE s.id = $1
              AND s.status = 'pendente'
+             AND s.xmin::text = $2
            FOR UPDATE OF s`,
           [
-            id
+            id,
+            req.body.versao
           ]
         )
 
@@ -634,9 +636,9 @@ const avaliarSolicitacaoProduto =
           'ROLLBACK'
         )
 
-        return res.status(404).json({
+        return res.status(409).json({
           mensagem:
-            'Solicitação não encontrada ou já avaliada.'
+            'Esta solicitação foi alterada, excluída ou avaliada. Confira os dados atualizados.'
         })
       }
 

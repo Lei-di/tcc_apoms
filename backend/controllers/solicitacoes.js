@@ -107,7 +107,7 @@ const listarSolicitacoesProdutor =
     try {
       const resultado =
         await pool.query(
-          `SELECT *
+          `SELECT *, xmin::text AS versao
            FROM solicitacoes
            WHERE cpf_produtor = $1
            ORDER BY data_solicitacao DESC`,
@@ -262,7 +262,8 @@ const editarSolicitacao =
            WHERE id = $6
              AND cpf_produtor = $7
              AND status = 'pendente'
-           RETURNING *`,
+             AND xmin::text = $8
+           RETURNING *, xmin::text AS versao`,
           [
             nome_produto,
             quantidade,
@@ -271,7 +272,8 @@ const editarSolicitacao =
             observacao_produtor ||
             null,
             id,
-            cpf_produtor
+            cpf_produtor,
+            req.body.versao
           ]
         )
 
@@ -279,9 +281,9 @@ const editarSolicitacao =
         resultado.rows.length ===
         0
       ) {
-        return res.status(404).json({
+        return res.status(409).json({
           mensagem:
-            'Solicitação não encontrada ou não pode mais ser editada.'
+            'Esta oferta foi alterada, excluída ou avaliada. Confira os dados atualizados antes de tentar novamente.'
         })
       }
 
@@ -354,10 +356,12 @@ const excluirSolicitacao =
            WHERE id = $1
              AND cpf_produtor = $2
              AND status = 'pendente'
+             AND xmin::text = $3
            RETURNING *`,
           [
             id,
-            cpf_produtor
+            cpf_produtor,
+            req.body.versao
           ]
         )
 
@@ -365,9 +369,9 @@ const excluirSolicitacao =
         resultado.rows.length ===
         0
       ) {
-        return res.status(404).json({
+        return res.status(409).json({
           mensagem:
-            'Solicitação não encontrada ou já avaliada.'
+            'Esta oferta foi alterada, excluída ou avaliada. Confira os dados atualizados antes de tentar novamente.'
         })
       }
 
@@ -432,15 +436,17 @@ const responderContraoferta =
 
       const resultado =
         await cliente.query(
-          `SELECT *
+          `SELECT *, xmin::text AS versao
            FROM solicitacoes
            WHERE id = $1
              AND cpf_produtor = $2
              AND status = 'contraoferta'
+             AND xmin::text = $3
            FOR UPDATE`,
           [
             id,
-            cpf_produtor
+            cpf_produtor,
+            req.body.versao
           ]
         )
 
@@ -452,9 +458,9 @@ const responderContraoferta =
           'ROLLBACK'
         )
 
-        return res.status(404).json({
+        return res.status(409).json({
           mensagem:
-            'Contraoferta não encontrada ou já respondida.'
+            'Esta contraoferta foi alterada ou já respondida. Confira os dados atualizados.'
         })
       }
 
@@ -479,13 +485,20 @@ const responderContraoferta =
         resposta ===
         'aceitar'
       ) {
-        const quantidadeFinal =
-          solicitacao.quantidade_contraoferta ||
-          solicitacao.quantidade
+        const quantidadeFinal = solicitacao.quantidade_contraoferta
+        const precoFinal = solicitacao.preco_contraoferta
+        const quantidadeNumero = separarQuantidade(quantidadeFinal).valor
+        const precoNumero = Number(String(precoFinal))
 
-        const precoFinal =
-          solicitacao.preco_contraoferta ||
-          solicitacao.preco
+        if (
+          !Number.isFinite(quantidadeNumero) || quantidadeNumero <= 0 ||
+          !Number.isFinite(precoNumero) || precoNumero <= 0
+        ) {
+          await cliente.query('ROLLBACK')
+          return res.status(409).json({
+            mensagem: 'A contraoferta está com quantidade ou preço inválidos. Solicite a correção ao administrador.'
+          })
+        }
 
         await cliente.query(
           `UPDATE solicitacoes
@@ -630,7 +643,7 @@ const listarTodasSolicitacoes =
       const resultado =
         await pool.query(
           `SELECT
-             s.*,
+             s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor,
              p.cidade AS nucleo_produtivo
            FROM solicitacoes s
@@ -704,13 +717,15 @@ const avaliarSolicitacao =
 
       const resultadoAtual =
         await cliente.query(
-          `SELECT *
+          `SELECT *, xmin::text AS versao
            FROM solicitacoes
            WHERE id = $1
              AND status = 'pendente'
+             AND xmin::text = $2
            FOR UPDATE`,
           [
-            id
+            id,
+            req.body.versao
           ]
         )
 
@@ -722,9 +737,9 @@ const avaliarSolicitacao =
           'ROLLBACK'
         )
 
-        return res.status(404).json({
+        return res.status(409).json({
           mensagem:
-            'Solicitação não encontrada ou já avaliada.'
+            'Esta oferta foi alterada, excluída ou avaliada. Confira os dados atualizados antes de tentar novamente.'
         })
       }
 
@@ -756,39 +771,11 @@ const avaliarSolicitacao =
           })
         }
 
-        const quantidadeNumero =
-          quantidade_contraoferta !==
-            null &&
-          quantidade_contraoferta !==
-            undefined &&
-          quantidade_contraoferta !==
-            ''
-            ? Number(
-                String(
-                  quantidade_contraoferta
-                ).replace(
-                  ',',
-                  '.'
-                )
-              )
-            : quantidadeOriginal.valor
-
-        const precoProposto =
-          preco_contraoferta !==
-            null &&
-          preco_contraoferta !==
-            undefined &&
-          preco_contraoferta !==
-            ''
-            ? Number(
-                preco_contraoferta
-              )
-            : Number(
-                solicitacaoAtual.preco
-              )
+        const quantidadeNumero = Number(String(quantidade_contraoferta).replace(',', '.'))
+        const precoProposto = Number(String(preco_contraoferta))
 
         if (
-          Number.isNaN(
+          !Number.isFinite(
             quantidadeNumero
           ) ||
           quantidadeNumero <= 0
@@ -804,7 +791,7 @@ const avaliarSolicitacao =
         }
 
         if (
-          Number.isNaN(
+          !Number.isFinite(
             precoProposto
           ) ||
           precoProposto <= 0

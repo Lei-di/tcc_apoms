@@ -320,6 +320,31 @@ button:active {
   border-bottom: 1px solid #e5e9e6;
 }
 
+.botao-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  margin: 0 0 10px;
+  padding: 7px 12px;
+  border: 1px solid #8fb995;
+  border-radius: 6px;
+  background: #fff;
+  color: #245332;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao-voltar:hover {
+  background: #edf5ee;
+}
+
+.botao-voltar:focus-visible {
+  outline: 2px solid #245332;
+  outline-offset: 3px;
+}
+
 .topbar-titulo h1 {
   margin: 0;
   color: #26332b;
@@ -634,7 +659,16 @@ button:active {
 
 .table-responsive {
   width: 100%;
-  overflow-x: auto;
+  max-height: 60vh;
+  max-height: 60dvh;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.table-responsive .dashboard-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .dashboard-table {

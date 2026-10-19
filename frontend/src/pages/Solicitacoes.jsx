@@ -1,3 +1,6 @@
+import { dataHoje, erroDataOferta } from '../utils/dataOferta'
+import useValorAtual from '../hooks/useValorAtual'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -10,6 +13,7 @@ function Solicitacoes() {
 
   const [mensagem, setMensagem] = useState('')
   const [editando, setEditando] = useState(null)
+  const [versaoEdicao, setVersaoEdicao] = useState(null)
 
   const [
     contraofertaSelecionada,
@@ -45,13 +49,9 @@ function Solicitacoes() {
     observacao_produtor: ''
   })
 
+  const selecaoAtual = useValorAtual({ editando, versaoEdicao, contraofertaSelecionada })
   const navigate = useNavigate()
 
-  useEffect(() => {
-    buscarSolicitacoes()
-    buscarSolicitacoesProdutos()
-    buscarListaProdutos()
-  }, [])
 
   useEffect(() => {
     if (
@@ -73,52 +73,80 @@ function Solicitacoes() {
     solicitacaoDetalhe
   ])
 
-  const buscarSolicitacoes = async () => {
+  const conferirOfertaAberta = (dados) => {
+    const { editando, versaoEdicao, contraofertaSelecionada } = selecaoAtual.current
+    const mudou = (id, versao) => dados.find(item => item.id === id)?.versao !== versao
+    if (editando && mudou(editando, versaoEdicao)) {
+      setEditando(null)
+      setMensagem('A oferta em edição foi alterada ou removida. Reabra a oferta para conferir os dados atuais.')
+    }
+    if (contraofertaSelecionada && mudou(contraofertaSelecionada.id, contraofertaSelecionada.versao)) {
+      setContraofertaSelecionada(null)
+      setMensagem('A contraoferta foi atualizada ou encerrada. Confira a lista atualizada.')
+    }
+    setSolicitacaoDetalhe(aberta => {
+      if (!aberta || aberta.tipo_solicitacao === 'inclusao') return aberta
+      const atual = dados.find(item => item.id === aberta.id)
+      return atual ? { ...aberta, ...atual } : null
+    })
+  }
+
+  const buscarSolicitacoes = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/solicitacoes/minhas'
-      )
+      const resposta = await api.get('/solicitacoes/minhas', { signal })
+
+      if (signal?.aborted) return
 
       setSolicitacoes(resposta.data)
+      conferirOfertaAberta(resposta.data)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar solicitações:',
         err
       )
 
-      navigate('/')
+      if ([401, 403].includes(err.response?.status)) navigate('/')
+      return { erro: err }
     }
   }
 
-  const buscarSolicitacoesProdutos = async () => {
+  const buscarSolicitacoesProdutos = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/produtos/solicitacoes/minhas'
-      )
+      const resposta = await api.get('/produtos/solicitacoes/minhas', { signal })
 
-      setSolicitacoesProdutos(
-        resposta.data
-      )
+      if (signal?.aborted) return
+
+      setSolicitacoesProdutos(resposta.data)
+      setSolicitacaoDetalhe(aberta => {
+        if (!aberta || aberta.tipo_solicitacao !== 'inclusao') return aberta
+        const atual = resposta.data.find(item => item.id === aberta.id)
+        return atual ? { ...aberta, ...atual } : null
+      })
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar solicitações de produtos:',
         err
       )
+      return { erro: err }
     }
   }
 
-  const buscarListaProdutos = async () => {
+  const buscarListaProdutos = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/produtos/disponiveis'
-      )
+      const resposta = await api.get('/produtos/disponiveis', { signal })
+
+      if (signal?.aborted) return
 
       setListaProdutos(resposta.data)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar lista de produtos:',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -294,7 +322,14 @@ function Solicitacoes() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    const erroData = erroDataOferta(form.data_disponibilidade)
+    if (erroData) {
+      setMensagem(erroData)
+      return
+    }
+
     const dados = {
+      versao: versaoEdicao,
       nome_produto:
         form.nome_produto,
 
@@ -326,13 +361,17 @@ function Solicitacoes() {
       cancelarEdicao()
       buscarSolicitacoes()
     } catch (err) {
+      if ([409, 428].includes(err.response?.status)) {
+        setEditando(null)
+        await buscarSolicitacoes()
+      }
       console.error(
         'Erro ao atualizar oferta:',
         err
       )
 
       setMensagem(
-        'Erro ao atualizar oferta.'
+        err.response?.data?.mensagem || 'Erro ao atualizar oferta.'
       )
     }
   }
@@ -380,6 +419,7 @@ function Solicitacoes() {
 
     setMensagem('')
 
+    setVersaoEdicao(solicitacao.versao)
     setEditando(
       solicitacao.id
     )
@@ -455,7 +495,8 @@ function Solicitacoes() {
         await api.patch(
           `/solicitacoes/${contraofertaSelecionada.id}/contraoferta/responder`,
           {
-            resposta
+            resposta,
+            versao: contraofertaSelecionada.versao
           }
         )
 
@@ -477,6 +518,10 @@ function Solicitacoes() {
 
         buscarSolicitacoes()
       } catch (err) {
+        if ([409, 428].includes(err.response?.status)) {
+          setContraofertaSelecionada(null)
+          await buscarSolicitacoes()
+        }
         console.error(
           'Erro ao responder contraoferta:',
           err
@@ -500,7 +545,8 @@ function Solicitacoes() {
 
     try {
       await api.delete(
-        `/solicitacoes/${id}`
+        `/solicitacoes/${id}`,
+        { data: { versao: solicitacoes.find(item => item.id === id)?.versao } }
       )
 
       setMensagem(
@@ -513,9 +559,8 @@ function Solicitacoes() {
 
       buscarSolicitacoes()
     } catch (err) {
-      alert(
-        'Erro ao excluir. A solicitação pode já ter sido avaliada.'
-      )
+      await buscarSolicitacoes()
+      alert(err.response?.data?.mensagem || 'Não foi possível excluir a oferta.')
     }
   }
 
@@ -932,8 +977,11 @@ function Solicitacoes() {
     }
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarSolicitacoes(signal), buscarSolicitacoesProdutos(signal), buscarListaProdutos(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Minhas Solicitações"
       subtitulo="Acompanhe suas ofertas e o histórico das avaliações."
       paginaAtiva="solicitacoes"
@@ -1725,6 +1773,7 @@ function Solicitacoes() {
 
                   <input
                     type="date"
+                    min={dataHoje()}
                     value={
                       form.data_disponibilidade
                     }

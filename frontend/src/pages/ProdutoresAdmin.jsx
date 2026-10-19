@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
+import { useState } from 'react'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
@@ -13,37 +14,24 @@ function ProdutoresAdmin() {
     nome: ''
   })
 
-  useEffect(() => {
-    buscarProdutores()
-  }, [])
 
-  useEffect(() => {
-    const overflowAnterior =
-      document.body.style.overflow
-
-    document.body.style.overflow =
-      'hidden'
-
-    return () => {
-      document.body.style.overflow =
-        overflowAnterior
-    }
-  }, [])
-
-  const buscarProdutores = async () => {
+  const buscarProdutores = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/admin/produtores'
-      )
+      const resposta = await api.get('/admin/produtores', { signal })
 
-      setProdutores(
-        resposta.data
-      )
+      if (signal?.aborted) return
+
+      setProdutores(resposta.data)
+      setProdutorSelecionado(atual => atual
+        ? resposta.data.find(item => item.cpf === atual.cpf) || null
+        : null)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar produtores:',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -235,7 +223,7 @@ function ProdutoresAdmin() {
       buscarProdutores()
     } catch (err) {
       setMensagem(
-        'Erro ao atualizar status do produtor.'
+        err.response?.data?.mensagem || 'Erro ao atualizar status do produtor.'
       )
     }
   }
@@ -272,8 +260,11 @@ function ProdutoresAdmin() {
     return `${dia}/${mes}/${ano}`
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarProdutores(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Produtores cadastrados"
       subtitulo="Gerencie os produtores cadastrados no sistema."
       paginaAtiva="admin-produtores"
@@ -283,7 +274,7 @@ function ProdutoresAdmin() {
         {`
           .produtores-admin-page {
             width: 100%;
-            height: calc(100vh - 90px);
+            height: auto;
 
             min-height: 0;
 
@@ -292,7 +283,7 @@ function ProdutoresAdmin() {
 
             padding: 26px 36px 28px;
 
-            overflow: hidden;
+            overflow: visible;
           }
 
           .produtores-admin-page
@@ -420,7 +411,7 @@ function ProdutoresAdmin() {
           /* Painel da lista */
 
           .produtores-admin-lista {
-            flex: 1;
+            flex: none;
 
             min-height: 0;
 
@@ -441,12 +432,15 @@ function ProdutoresAdmin() {
           }
 
           .produtores-admin-scroll {
+            max-height: 60vh;
+            max-height: 60dvh;
+            scrollbar-gutter: stable;
             width: 100%;
-            flex: 1;
+            flex: none;
 
             min-height: 0;
 
-            overflow-y: scroll;
+            overflow-y: auto;
             overflow-x: auto;
           }
 
@@ -535,10 +529,6 @@ function ProdutoresAdmin() {
           }
 
           @media (max-width: 700px) {
-            body {
-              overflow: auto !important;
-            }
-
             .produtores-admin-page {
               height: auto;
 
@@ -575,11 +565,12 @@ function ProdutoresAdmin() {
             }
 
             .produtores-admin-lista {
-              min-height: 450px;
+              min-height: 0;
             }
 
             .produtores-admin-scroll {
-              max-height: 500px;
+              max-height: 60vh;
+              max-height: 60dvh;
             }
           }
         `}

@@ -1,5 +1,7 @@
+import useAtualizacaoAutomatica from './hooks/useAtualizacaoAutomatica'
+import { useVoltar } from './hooks/useNavegacao'
 import {
-  useEffect,
+  useSyncExternalStore,
   useState
 } from 'react'
 
@@ -8,14 +10,17 @@ import {
 } from 'react-router-dom'
 
 import api from './services/api'
+import { assinarStatusAtualizacao, obterStatusAtualizacao } from './services/atualizacoes'
 
 function LayoutSistema({
   children,
   titulo,
   subtitulo,
   paginaAtiva,
-  tipoUsuario
+  tipoUsuario,
+  carregamento
 }) {
+  const statusAtualizacao = useSyncExternalStore(assinarStatusAtualizacao, obterStatusAtualizacao)
   const navigate =
     useNavigate()
 
@@ -43,6 +48,7 @@ function LayoutSistema({
 
   const ehAdmin =
     tipo === 'admin'
+  const voltar = useVoltar(ehAdmin)
 
   const cadastroCompleto =
     localStorage.getItem(
@@ -64,34 +70,21 @@ function LayoutSistema({
     )
   }
 
-  useEffect(() => {
-    buscarNotificacoes()
-
-    const intervalo =
-      setInterval(
-        buscarNotificacoes,
-        30000
-      )
-
-    return () => {
-      clearInterval(
-        intervalo
-      )
-    }
-  }, [])
 
   const buscarNotificacoes =
-    async () => {
+    async (signal) => {
       try {
         const resposta =
           await api.get(
-            '/notificacoes'
+            '/notificacoes', { signal }
           )
 
+        if (signal?.aborted) return
         setNotificacoes(
           resposta.data
         )
       } catch (err) {
+        if (signal?.aborted) return
         console.error(
           'Erro ao buscar notificações:',
           err
@@ -263,6 +256,8 @@ function LayoutSistema({
 
     navigate('/')
   }
+
+  useAtualizacaoAutomatica(signal => buscarNotificacoes(signal))
 
   return (
     <div className="app-layout">
@@ -856,6 +851,10 @@ function LayoutSistema({
 
           <div className="topbar-titulo">
 
+            <button type="button" className="botao-voltar" onClick={voltar}>
+              <span aria-hidden="true">←</span> Voltar
+            </button>
+
             <h1>
               {titulo}
             </h1>
@@ -1034,7 +1033,26 @@ function LayoutSistema({
 
         </header>
 
-        {children}
+        {statusAtualizacao === 'offline' && (
+          <p role="status" className="mensagem-pagina">
+            Conexão interrompida. Os dados podem estar desatualizados; tentando reconectar automaticamente.
+          </p>
+        )}
+        {statusAtualizacao === 'expirada' && (
+          <p role="alert" className="mensagem-pagina">
+            Sua sessão expirou. Entre novamente para continuar recebendo atualizações.
+          </p>
+        )}
+        {carregamento?.erro && (
+          <div role="alert" className="mensagem-pagina">
+            <p>{carregamento.erro}</p>
+            {carregamento.carregado && <p>Alguns dados abaixo podem estar desatualizados.</p>}
+            <button type="button" onClick={carregamento.tentarNovamente}>Tentar novamente</button>
+          </div>
+        )}
+        {carregamento?.carregando ? (
+          <p role="status" className="estado-vazio">Carregando dados…</p>
+        ) : (!carregamento || carregamento.carregado) ? children : null}
 
       </main>
 

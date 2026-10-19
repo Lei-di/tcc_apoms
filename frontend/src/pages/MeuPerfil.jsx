@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import useValorAtual from '../hooks/useValorAtual'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
+import { useState } from 'react'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
 function MeuPerfil() {
-  const navigate = useNavigate()
 
   const [carregando, setCarregando] = useState(true)
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const [cadastroCompleto, setCadastroCompleto] = useState(false)
   const [modoEdicao, setModoEdicao] = useState(false)
+  const editandoAgora = useValorAtual(modoEdicao)
 
   const [form, setForm] = useState({
     cpf: '',
@@ -43,13 +44,10 @@ function MeuPerfil() {
     'Terenos'
   ]
 
-  useEffect(() => {
-    buscarPerfil()
-  }, [])
 
-  const buscarPerfil = async () => {
+  const buscarPerfil = async (signal) => {
     try {
-      const resposta = await api.get('/produtores/me')
+      const resposta = await api.get('/produtores/me', { signal })
 
       const dados = {
         cpf: resposta.data.cpf || '',
@@ -60,7 +58,9 @@ function MeuPerfil() {
         endereco: resposta.data.endereco || ''
       }
 
-      setForm(dados)
+      if (signal?.aborted) return
+      if (!editandoAgora.current) setForm(dados)
+
       setDadosOriginais(dados)
 
       const completo = resposta.data.cadastro_completo
@@ -76,6 +76,7 @@ function MeuPerfil() {
         setModoEdicao(true)
       }
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar perfil:',
         err
@@ -84,8 +85,9 @@ function MeuPerfil() {
       setErro(
         'Não foi possível carregar seus dados.'
       )
+      return { erro: err }
     } finally {
-      setCarregando(false)
+      if (!signal?.aborted) setCarregando(false)
     }
   }
 
@@ -196,9 +198,12 @@ function MeuPerfil() {
     return telefone
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarPerfil(signal)]))
+
   if (carregando) {
     return (
       <LayoutSistema
+      carregamento={carregamento}
         titulo="Meu perfil"
         subtitulo="Consulte e mantenha seus dados atualizados."
         paginaAtiva="perfil"
@@ -218,6 +223,7 @@ function MeuPerfil() {
 
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Meu perfil"
       subtitulo="Mantenha seus dados atualizados."
       paginaAtiva="perfil"

@@ -1,3 +1,5 @@
+import { dataHoje, erroDataOferta } from '../utils/dataOferta'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -41,9 +43,6 @@ function CadastroProduto() {
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    buscarListaProdutos()
-  }, [])
 
   useEffect(() => {
     if (mostrarSolicitacaoProduto) {
@@ -57,17 +56,21 @@ function CadastroProduto() {
     }
   }, [mostrarSolicitacaoProduto])
 
-  const buscarListaProdutos = async () => {
+  const buscarListaProdutos = async (signal) => {
     try {
       const resposta =
-        await api.get('/produtos/disponiveis')
+        await api.get('/produtos/disponiveis', { signal })
+
+      if (signal?.aborted) return
 
       setListaProdutos(resposta.data)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar lista de produtos',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -88,6 +91,13 @@ function CadastroProduto() {
 
   const handleCadastro = async (e) => {
     e.preventDefault()
+
+    const erroData = erroDataOferta(dataDisponibilidade)
+    if (erroData) {
+      setMensagem(erroData)
+      setCadastroSucesso(false)
+      return
+    }
 
     try {
       await api.post(
@@ -195,8 +205,11 @@ function CadastroProduto() {
       }
     }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarListaProdutos(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Cadastrar oferta"
       subtitulo="Informe os dados da oferta que deseja enviar."
       paginaAtiva="cadastro"
@@ -587,6 +600,7 @@ function CadastroProduto() {
 
               <input
                 type="date"
+                    min={dataHoje()}
                 value={
                   dataDisponibilidade
                 }

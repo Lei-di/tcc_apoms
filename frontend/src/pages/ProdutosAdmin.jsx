@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
+import { useState } from 'react'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
@@ -9,35 +10,21 @@ function ProdutosAdmin() {
   const [mensagem, setMensagem] = useState('')
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  useEffect(() => {
-    buscarProdutos()
-  }, [])
 
-  useEffect(() => {
-    const overflowAnterior =
-      document.body.style.overflow
-
-    document.body.style.overflow =
-      'hidden'
-
-    return () => {
-      document.body.style.overflow =
-        overflowAnterior
-    }
-  }, [])
-
-  const buscarProdutos = async () => {
+  const buscarProdutos = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/produtos/disponiveis'
-      )
+      const resposta = await api.get('/produtos/disponiveis', { signal })
+
+      if (signal?.aborted) return
 
       setProdutos(resposta.data)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar produtos:',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -141,13 +128,16 @@ function ProdutosAdmin() {
       buscarProdutos()
     } catch (err) {
       setMensagem(
-        'Erro ao excluir produto.'
+        err.response?.data?.mensagem || 'Erro ao excluir produto.'
       )
     }
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarProdutos(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Lista de produtos"
       subtitulo="Gerencie os produtos disponíveis para cadastro de ofertas."
       paginaAtiva="admin-produtos"
@@ -157,7 +147,7 @@ function ProdutosAdmin() {
         {`
           .produtos-admin-page {
             width: 100%;
-            height: calc(100vh - 90px);
+            height: auto;
 
             display: flex;
             flex-direction: column;
@@ -166,7 +156,7 @@ function ProdutosAdmin() {
 
             padding: 26px 36px;
 
-            overflow: hidden;
+            overflow: visible;
           }
 
           .produtos-admin-topo {
@@ -293,7 +283,7 @@ function ProdutosAdmin() {
           /* Painel da lista */
 
           .produtos-admin-lista {
-            flex: 1;
+            flex: none;
 
             min-height: 0;
 
@@ -314,14 +304,17 @@ function ProdutosAdmin() {
           }
 
           .produtos-admin-scroll {
+            max-height: 60vh;
+            max-height: 60dvh;
+            scrollbar-gutter: stable;
             width: 100%;
 
-            flex: 1;
+            flex: none;
 
             min-height: 0;
 
-            overflow-y: scroll;
-            overflow-x: hidden;
+            overflow-y: auto;
+            overflow-x: auto;
           }
 
           .produtos-admin-scroll
@@ -455,10 +448,6 @@ function ProdutosAdmin() {
           }
 
           @media (max-width: 700px) {
-            body {
-              overflow: auto !important;
-            }
-
             .produtos-admin-page {
               height: auto;
 
@@ -487,11 +476,12 @@ function ProdutosAdmin() {
             }
 
             .produtos-admin-lista {
-              min-height: 450px;
+              min-height: 0;
             }
 
             .produtos-admin-scroll {
-              max-height: 500px;
+              max-height: 60vh;
+              max-height: 60dvh;
             }
           }
         `}

@@ -15,10 +15,17 @@ import RelatoriosAdmin from './pages/RelatoriosAdmin'
 import PrimeiroAcesso from './pages/PrimeiroAcesso'
 import Solicitacoes from './pages/Solicitacoes'
 import MeuPerfil from './pages/MeuPerfil'
+import { useRegistrarNavegacao } from './hooks/useNavegacao'
+
+function RegistrarNavegacao() {
+  useRegistrarNavegacao()
+  return null
+}
 
 function App() {
   return (
     <BrowserRouter>
+      <RegistrarNavegacao />
 
       <Routes>
 

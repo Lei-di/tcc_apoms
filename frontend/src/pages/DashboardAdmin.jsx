@@ -1,3 +1,4 @@
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import {
   useEffect,
   useMemo,
@@ -62,9 +63,6 @@ function DashboardAdmin() {
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    buscarDados()
-  }, [])
 
   useEffect(() => {
     if (dataSelecionada) {
@@ -81,20 +79,18 @@ function DashboardAdmin() {
     }
   }, [dataSelecionada])
 
-  const buscarDados = async () => {
+  const buscarDados = async (signal) => {
     try {
       const [
         respostaSolicitacoes,
         respostaProdutos
       ] = await Promise.all([
-        api.get(
-          '/solicitacoes/todas'
-        ),
+        api.get('/solicitacoes/todas', { signal }),
 
-        api.get(
-          '/produtos/solicitacoes'
-        )
+        api.get('/produtos/solicitacoes', { signal })
       ])
+
+      if (signal?.aborted) return
 
       setSolicitacoes(
         respostaSolicitacoes.data
@@ -104,10 +100,12 @@ function DashboardAdmin() {
         respostaProdutos.data
       )
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao carregar painel do administrador:',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -204,7 +202,7 @@ function DashboardAdmin() {
   }
 
   const retiradasPorData =
-    useMemo(() => {
+    (() => {
       const agrupadas = {}
 
       retiradas.forEach(
@@ -236,7 +234,11 @@ function DashboardAdmin() {
       )
 
       return agrupadas
-    }, [solicitacoes])
+    })()
+
+  const retiradasSelecionadas = dataSelecionada
+    ? retiradasPorData[dataSelecionada.chave] || []
+    : []
 
   const diasCalendario =
     useMemo(() => {
@@ -427,8 +429,11 @@ function DashboardAdmin() {
       )
     )
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarDados(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Painel do Administrador"
       subtitulo="Acompanhe solicitações e retiradas programadas."
       paginaAtiva="admin-painel"
@@ -878,7 +883,7 @@ function DashboardAdmin() {
 
               <div style={listaRetiradas}>
 
-                {dataSelecionada.retiradas.map(
+                {retiradasSelecionadas.map(
                   (solicitacao) => (
                     <div
                       key={

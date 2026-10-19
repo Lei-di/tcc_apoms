@@ -1,3 +1,5 @@
+import useValorAtual from '../hooks/useValorAtual'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
@@ -10,6 +12,7 @@ function PainelAdmin() {
   const [erroModal, setErroModal] = useState('')
 
   const [solicitacaoDetalhe, setSolicitacaoDetalhe] = useState(null)
+  const detalheAtual = useValorAtual(solicitacaoDetalhe)
 
   const [statusAvaliacao, setStatusAvaliacao] = useState('')
   const [retorno, setRetorno] = useState('')
@@ -58,10 +61,6 @@ function PainelAdmin() {
     periodo: ''
   })
 
-  useEffect(() => {
-    buscarSolicitacoes()
-    buscarSolicitacoesProdutos()
-  }, [])
 
   useEffect(() => {
     if (!solicitacaoDetalhe) {
@@ -79,35 +78,50 @@ function PainelAdmin() {
     }
   }, [solicitacaoDetalhe])
 
-  const buscarSolicitacoes = async () => {
+  const conferirDetalhe = (dados, tipo) => {
+    const aberta = detalheAtual.current
+    if (!aberta || aberta.tipo_solicitacao !== tipo) return
+    const atual = dados.find(item => item.id === aberta.id)
+    if (atual && atual.versao === aberta.versao) return
+    setSolicitacaoDetalhe(null)
+    setMensagem('A solicitação aberta foi alterada ou removida. Reabra os detalhes para conferir os dados atuais.')
+    limparAvaliacaoOferta()
+    limparAvaliacaoProduto()
+  }
+
+  const buscarSolicitacoes = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/solicitacoes/todas'
-      )
+      const resposta = await api.get('/solicitacoes/todas', { signal })
+
+      if (signal?.aborted) return
 
       setSolicitacoes(resposta.data)
+      conferirDetalhe(resposta.data, 'oferta')
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar solicitações:',
         err
       )
+      return { erro: err }
     }
   }
 
-  const buscarSolicitacoesProdutos = async () => {
+  const buscarSolicitacoesProdutos = async (signal) => {
     try {
-      const resposta = await api.get(
-        '/produtos/solicitacoes'
-      )
+      const resposta = await api.get('/produtos/solicitacoes', { signal })
 
-      setSolicitacoesProdutos(
-        resposta.data
-      )
+      if (signal?.aborted) return
+
+      setSolicitacoesProdutos(resposta.data)
+      conferirDetalhe(resposta.data, 'inclusao')
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar solicitações de produtos:',
         err
       )
+      return { erro: err }
     }
   }
 
@@ -271,6 +285,7 @@ function PainelAdmin() {
       await api.patch(
         `/solicitacoes/${solicitacaoDetalhe.id}/avaliar`,
         {
+          versao: solicitacaoDetalhe.versao,
           status: statusAvaliacao,
 
           observacao:
@@ -311,6 +326,12 @@ function PainelAdmin() {
 
       await buscarSolicitacoes()
     } catch (err) {
+      if ([409, 428].includes(err.response?.status)) {
+        setSolicitacaoDetalhe(null)
+        setMensagem(err.response.data.mensagem)
+        await Promise.all([buscarSolicitacoes(), buscarSolicitacoesProdutos()])
+        return
+      }
       console.error(
         'Erro ao avaliar solicitação:',
         err
@@ -375,6 +396,7 @@ function PainelAdmin() {
       await api.patch(
         `/produtos/solicitacoes/${solicitacaoDetalhe.id}/avaliar`,
         {
+          versao: solicitacaoDetalhe.versao,
           status: statusProduto,
 
           nome_produto_aprovado:
@@ -402,6 +424,12 @@ function PainelAdmin() {
 
       await buscarSolicitacoesProdutos()
     } catch (err) {
+      if ([409, 428].includes(err.response?.status)) {
+        setSolicitacaoDetalhe(null)
+        setMensagem(err.response.data.mensagem)
+        await Promise.all([buscarSolicitacoes(), buscarSolicitacoesProdutos()])
+        return
+      }
       console.error(
         'Erro ao avaliar solicitação de produto:',
         err
@@ -933,8 +961,11 @@ function PainelAdmin() {
     }
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarSolicitacoes(signal), buscarSolicitacoesProdutos(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Solicitações"
       subtitulo="Analise as solicitações enviadas pelos produtores."
       paginaAtiva="admin-solicitacoes"
@@ -944,7 +975,7 @@ function PainelAdmin() {
         {`
           .admin-solicitacoes-page {
             width: 100%;
-            height: calc(100vh - 90px);
+            height: auto;
             min-height: 0;
 
             display: flex;
@@ -952,7 +983,7 @@ function PainelAdmin() {
 
             padding: 26px 36px;
 
-            overflow: hidden;
+            overflow: visible;
           }
 
           .admin-solicitacoes-page > .mensagem-pagina {
@@ -962,7 +993,7 @@ function PainelAdmin() {
 
           .admin-solicitacoes-card {
             width: 100%;
-            flex: 1;
+            flex: none;
             min-height: 0;
 
             display: grid;
@@ -987,14 +1018,16 @@ function PainelAdmin() {
           }
 
           .admin-solicitacoes-scroll {
+            max-height: 60vh;
+            max-height: 60dvh;
+            scrollbar-gutter: stable;
             width: 100%;
             min-height: 0;
 
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
 
             overscroll-behavior: contain;
-            scrollbar-gutter: stable;
           }
 
           .admin-solicitacoes-scroll::-webkit-scrollbar {
@@ -1396,7 +1429,8 @@ function PainelAdmin() {
             }
 
             .admin-solicitacoes-scroll {
-              max-height: 500px;
+              max-height: 60vh;
+              max-height: 60dvh;
 
               overflow-y: auto;
             }

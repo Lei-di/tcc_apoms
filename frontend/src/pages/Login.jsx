@@ -70,17 +70,20 @@ function Login() {
 
       navigate('/painel')
     } catch (err) {
-      if (
-        err.response?.status ===
-        403
-      ) {
+      const status = err.response?.status
+
+      if (!err.response || status >= 500) {
+        setErro('Sistema offline. Tente novamente mais tarde.')
+      } else if (status === 403) {
         setErro(
           'Conta ainda não ativada. Utilize a opção "Primeiro acesso".'
         )
-      } else {
+      } else if (status === 401) {
         setErro(
           'CPF ou senha inválidos.'
         )
+      } else {
+        setErro('Não foi possível entrar no sistema. Tente novamente.')
       }
     }
   }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
+import { useState } from 'react'
 import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
@@ -28,16 +29,17 @@ function RelatoriosAdmin() {
 
   const [pesquisaRealizada, setPesquisaRealizada] = useState(false)
 
-  useEffect(() => {
-    buscarSolicitacoes()
-  }, [])
 
-  const buscarSolicitacoes = async () => {
+  const buscarSolicitacoes = async (signal) => {
     try {
-      const resposta = await api.get('/solicitacoes/todas')
+      const resposta = await api.get('/solicitacoes/todas', { signal })
+
+      if (signal?.aborted) return
 
       setSolicitacoes(resposta.data)
+      setErro('')
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar dados do relatório:',
         err
@@ -46,8 +48,9 @@ function RelatoriosAdmin() {
       setErro(
         'Erro ao carregar os dados do relatório.'
       )
+      return { erro: err }
     } finally {
-      setCarregando(false)
+      if (!signal?.aborted) setCarregando(false)
     }
   }
 
@@ -851,8 +854,11 @@ function RelatoriosAdmin() {
       '600'
   }
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarSolicitacoes(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Relatórios"
       subtitulo="Consulte e analise as informações registradas no sistema."
       paginaAtiva="admin-relatorios"

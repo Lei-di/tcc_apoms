@@ -1,3 +1,5 @@
+const { validarDataOferta } = require('../middlewares/dataOferta')
+const { exigirVersao } = require('../middlewares/versao')
 const express = require('express')
 const router = express.Router()
 
@@ -72,6 +74,7 @@ router.get(
 router.patch(
   '/solicitacoes/:id/avaliar',
   verificarAdmin,
+  exigirVersao,
   avaliarSolicitacaoProduto
 )
 
@@ -87,6 +90,7 @@ router.get(
 router.post(
   '/',
   verificarToken,
+  validarDataOferta,
   cadastrarProduto
 )
 

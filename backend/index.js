@@ -6,6 +6,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+const { verificarToken } = require('./middlewares/auth');
+const { observarAlteracoes, aguardarAtualizacoes } = require('./services/atualizacoes');
+app.use(observarAlteracoes);
+app.get('/atualizacoes', verificarToken, aguardarAtualizacoes);
 
 // conexão
 const pool = require('./models/db');

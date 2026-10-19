@@ -1,3 +1,4 @@
+import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -42,9 +43,6 @@ function Painel() {
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    buscarSolicitacoes()
-  }, [])
 
   useEffect(() => {
     if (dataSelecionada) {
@@ -58,19 +56,23 @@ function Painel() {
     }
   }, [dataSelecionada])
 
-  const buscarSolicitacoes = async () => {
+  const buscarSolicitacoes = async (signal) => {
     try {
       const resposta =
-        await api.get('/solicitacoes/minhas')
+        await api.get('/solicitacoes/minhas', { signal })
+
+      if (signal?.aborted) return
 
       setSolicitacoes(resposta.data)
     } catch (err) {
+      if (signal?.aborted) return
       console.error(
         'Erro ao buscar solicitações:',
         err
       )
 
-      navigate('/')
+      if ([401, 403].includes(err.response?.status)) navigate('/')
+      return { erro: err }
     }
   }
 
@@ -138,7 +140,7 @@ function Painel() {
     return `${ano}-${mesFormatado}-${diaFormatado}`
   }
 
-  const retiradasPorData = useMemo(() => {
+  const retiradasPorData = (() => {
     const agrupadas = {}
 
     retiradas.forEach(
@@ -170,7 +172,11 @@ function Painel() {
     )
 
     return agrupadas
-  }, [solicitacoes])
+  })()
+
+  const retiradasSelecionadas = dataSelecionada
+    ? retiradasPorData[dataSelecionada.chave] || []
+    : []
 
   const diasCalendario = useMemo(() => {
     const primeiroDia =
@@ -357,8 +363,11 @@ function Painel() {
       )
     )
 
+  const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarSolicitacoes(signal)]))
+
   return (
     <LayoutSistema
+      carregamento={carregamento}
       titulo="Painel do Produtor"
       subtitulo="Acompanhe suas ofertas e retiradas."
       paginaAtiva="painel"
@@ -687,7 +696,7 @@ function Painel() {
 
               <div style={listaRetiradas}>
 
-                {dataSelecionada.retiradas.map(
+                {retiradasSelecionadas.map(
                   (solicitacao) => (
                     <div
                       key={solicitacao.id}
