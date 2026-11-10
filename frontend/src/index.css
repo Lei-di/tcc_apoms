@@ -906,7 +906,17 @@ tr:last-child td {
   }
 
   .sidebar-rodape {
-    display: none;
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .sidebar-sair {
+    width: auto;
+    min-width: auto;
+    padding: 10px 16px;
+    color: white;
   }
 
   .main-content {

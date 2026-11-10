@@ -485,20 +485,11 @@ const responderContraoferta =
         resposta ===
         'aceitar'
       ) {
-        const quantidadeFinal = solicitacao.quantidade_contraoferta
-        const precoFinal = solicitacao.preco_contraoferta
-        const quantidadeNumero = separarQuantidade(quantidadeFinal).valor
-        const precoNumero = Number(String(precoFinal))
+        const quantidadeFinal =
+          solicitacao.quantidade_contraoferta
 
-        if (
-          !Number.isFinite(quantidadeNumero) || quantidadeNumero <= 0 ||
-          !Number.isFinite(precoNumero) || precoNumero <= 0
-        ) {
-          await cliente.query('ROLLBACK')
-          return res.status(409).json({
-            mensagem: 'A contraoferta está com quantidade ou preço inválidos. Solicite a correção ao administrador.'
-          })
-        }
+        const precoFinal =
+          solicitacao.preco_contraoferta
 
         await cliente.query(
           `UPDATE solicitacoes
@@ -771,8 +762,22 @@ const avaliarSolicitacao =
           })
         }
 
-        const quantidadeNumero = Number(String(quantidade_contraoferta).replace(',', '.'))
-        const precoProposto = Number(String(preco_contraoferta))
+        const quantidadeNumero =
+          Number(
+            String(
+              quantidade_contraoferta
+            ).replace(
+              ',',
+              '.'
+            )
+          )
+
+        const precoProposto =
+          Number(
+            String(
+              preco_contraoferta
+            )
+          )
 
         if (
           !Number.isFinite(
