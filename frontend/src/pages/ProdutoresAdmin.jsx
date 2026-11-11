@@ -8,6 +8,21 @@ function ProdutoresAdmin() {
   const [produtorSelecionado, setProdutorSelecionado] = useState(null)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [mensagem, setMensagem] = useState('')
+  const [pesquisa, setPesquisa] = useState('')
+  const [statusFiltro, setStatusFiltro] = useState('todos')
+
+  const normalizarNome = texto => String(texto ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+  const termo = normalizarNome(pesquisa.trim())
+  const cpfPesquisado = pesquisa.replace(/\D/g, '')
+  const pesquisaCpf = /^[\d.\s-]+$/.test(pesquisa.trim()) && cpfPesquisado.length > 0
+  const produtoresFiltrados = produtores.filter(produtor => {
+    const correspondePesquisa = !termo || normalizarNome(produtor.nome).includes(termo) ||
+      (pesquisaCpf && String(produtor.cpf).replace(/\D/g, '').includes(cpfPesquisado))
+    const correspondeStatus = statusFiltro === 'todos' ||
+      (statusFiltro === 'ativo' ? produtor.ativo === true : produtor.ativo === false)
+    return correspondePesquisa && correspondeStatus
+  })
 
   const [novoProdutor, setNovoProdutor] = useState({
     cpf: '',
@@ -228,6 +243,12 @@ function ProdutoresAdmin() {
     }
   }
 
+  const mascararCpf = (cpf) => {
+    const digitos = String(cpf ?? '').replace(/\D/g, '')
+    if (digitos.length !== 11) return '***.***.***-**'
+    return `***.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-**`
+  }
+
   const formatarCpf = (cpf) => {
     if (
       !cpf ||
@@ -409,6 +430,40 @@ function ProdutoresAdmin() {
           }
 
           /* Painel da lista */
+
+          .produtores-admin-filtros {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 16px;
+            margin-bottom: 16px;
+          }
+
+          .produtores-admin-filtros label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 180px;
+            font-size: 14px;
+            color: #3f4e42;
+          }
+
+          .produtores-admin-filtros label:first-child {
+            flex-grow: 3;
+          }
+
+          .produtores-admin-filtros input,
+          .produtores-admin-filtros select {
+            width: 100%;
+            min-height: 42px;
+            margin: 0;
+            padding: 9px 12px;
+            border: 1px solid #91ad95;
+            border-radius: 6px;
+            background: white;
+            color: #3f4e42;
+            font: inherit;
+          }
 
           .produtores-admin-lista {
             flex: none;
@@ -963,6 +1018,31 @@ function ProdutoresAdmin() {
           </div>
         )}
 
+        <div className="produtores-admin-filtros">
+          <label htmlFor="pesquisa-produtor">
+            Pesquisar produtor
+            <input
+              id="pesquisa-produtor"
+              type="search"
+              placeholder="Digite o nome ou CPF"
+              value={pesquisa}
+              onChange={event => setPesquisa(event.target.value)}
+            />
+          </label>
+          <label htmlFor="status-produtor">
+            Status
+            <select
+              id="status-produtor"
+              value={statusFiltro}
+              onChange={event => setStatusFiltro(event.target.value)}
+            >
+              <option value="todos">Todos</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+          </label>
+        </div>
+
         <div className="produtores-admin-lista">
 
           {produtores.length === 0 ? (
@@ -976,6 +1056,11 @@ function ProdutoresAdmin() {
                 Ainda não existem produtores cadastrados.
               </p>
 
+            </div>
+          ) : produtoresFiltrados.length === 0 ? (
+            <div className="estado-vazio" role="status">
+              <h3>Nenhum produtor encontrado</h3>
+              <p>Altere a pesquisa ou o filtro de status para encontrar outros produtores.</p>
             </div>
           ) : (
             <div className="table-responsive produtores-admin-scroll">
@@ -1004,7 +1089,7 @@ function ProdutoresAdmin() {
 
                 <tbody>
 
-                  {produtores.map(
+                  {produtoresFiltrados.map(
                     (produtor) => (
                       <tr
                         key={
@@ -1023,7 +1108,7 @@ function ProdutoresAdmin() {
                       >
 
                         <td>
-                          {formatarCpf(
+                          {mascararCpf(
                             produtor.cpf
                           )}
                         </td>
