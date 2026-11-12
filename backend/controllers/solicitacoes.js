@@ -503,7 +503,7 @@ const responderContraoferta =
         )
 
         await cliente.query(
-          `INSERT INTO produtos
+          `INSERT INTO ofertas_aprovadas
           (
             cpf_produtor,
             nome_produto,
@@ -899,7 +899,7 @@ const avaliarSolicitacao =
           'aprovado'
         ) {
           await cliente.query(
-            `INSERT INTO produtos
+            `INSERT INTO ofertas_aprovadas
             (
               cpf_produtor,
               nome_produto,

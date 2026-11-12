@@ -9,6 +9,7 @@ function ProdutosAdmin() {
   const [editando, setEditando] = useState(null)
   const [mensagem, setMensagem] = useState('')
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [salvando, setSalvando] = useState(false)
 
 
   const buscarProdutos = async (signal) => {
@@ -36,14 +37,17 @@ function ProdutosAdmin() {
 
   const salvarProduto = async (e) => {
     e.preventDefault()
+    if (salvando) return
 
     const nome =
       nomeProduto.trim()
 
     if (!nome) {
+      setMensagem('Informe o nome do produto.')
       return
     }
 
+    setSalvando(true)
     try {
       if (editando) {
         await api.put(
@@ -53,9 +57,7 @@ function ProdutosAdmin() {
           }
         )
 
-        setMensagem(
-          'Produto atualizado com sucesso!'
-        )
+        setMensagem('')
       } else {
         await api.post(
           '/produtos/disponiveis',
@@ -64,13 +66,11 @@ function ProdutosAdmin() {
           }
         )
 
-        setMensagem(
-          'Produto cadastrado com sucesso!'
-        )
+        setMensagem('')
       }
 
       limparFormulario()
-      buscarProdutos()
+      await buscarProdutos()
     } catch (err) {
       if (
         err.response?.status === 409
@@ -83,6 +83,8 @@ function ProdutosAdmin() {
           'Erro ao salvar produto.'
         )
       }
+    } finally {
+      setSalvando(false)
     }
   }
 
@@ -98,7 +100,7 @@ function ProdutosAdmin() {
     )
 
     setMostrarFormulario(
-      true
+      false
     )
 
     setMensagem('')
@@ -121,9 +123,7 @@ function ProdutosAdmin() {
         `/produtos/disponiveis/${id}`
       )
 
-      setMensagem(
-        'Produto removido com sucesso!'
-      )
+      setMensagem('')
 
       buscarProdutos()
     } catch (err) {
@@ -495,9 +495,12 @@ function ProdutosAdmin() {
             className="btn-principal"
             type="button"
             onClick={() => {
+              if (salvando) return
               if (mostrarFormulario) {
                 limparFormulario()
               } else {
+                setEditando(null)
+                setNomeProduto('')
                 setMostrarFormulario(true)
                 setMensagem('')
               }
@@ -520,13 +523,7 @@ function ProdutosAdmin() {
 
         {mensagem && (
           <p
-            className={`mensagem-pagina produtos-admin-mensagem ${
-              mensagem.includes(
-                'sucesso'
-              )
-                ? 'sucesso'
-                : 'erro'
-            }`}
+            className="mensagem-pagina produtos-admin-mensagem erro"
           >
             {mensagem}
           </p>
@@ -638,11 +635,26 @@ function ProdutosAdmin() {
 
                         <td>
 
-                          <strong className="produto-nome">
+                          {editando === produto.id ? (
+                            <input
+                              type="text"
+                              aria-label={`Nome do produto ${produto.nome}`}
+                              value={nomeProduto}
+                              onChange={event => setNomeProduto(event.target.value)}
+                              onKeyDown={event => {
+                                if (event.key === 'Enter') salvarProduto(event)
+                                if (event.key === 'Escape' && !salvando) limparFormulario()
+                              }}
+                              disabled={salvando}
+                              autoFocus
+                              required
+                              style={{ width: '100%', minWidth: 0, margin: 0, padding: '8px 12px', border: '1px solid #91ad95', borderRadius: '6px', font: 'inherit' }}
+                            />
+                          ) : <strong className="produto-nome">
                             {
                               produto.nome
                             }
-                          </strong>
+                          </strong>}
 
                         </td>
 
@@ -653,25 +665,23 @@ function ProdutosAdmin() {
                             <button
                               className="btn-editar"
                               type="button"
-                              onClick={() =>
-                                iniciarEdicao(
-                                  produto
-                                )
-                              }
+                              disabled={salvando}
+                              onClick={event => editando === produto.id
+                                ? salvarProduto(event)
+                                : iniciarEdicao(produto)}
                             >
-                              Editar
+                              {editando === produto.id ? (salvando ? 'Salvando…' : 'Salvar') : 'Editar'}
                             </button>
 
                             <button
                               className="btn-excluir"
                               type="button"
+                              disabled={salvando}
                               onClick={() =>
-                                excluirProduto(
-                                  produto.id
-                                )
+                                editando === produto.id ? limparFormulario() : excluirProduto(produto.id)
                               }
                             >
-                              Excluir
+                              {editando === produto.id ? 'Cancelar' : 'Excluir'}
                             </button>
 
                           </div>

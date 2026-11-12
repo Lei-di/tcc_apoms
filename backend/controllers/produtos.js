@@ -17,7 +17,7 @@ const listarProdutos = async (
     const resultado =
       await pool.query(
         `SELECT *
-         FROM produtos
+         FROM ofertas_aprovadas
          WHERE cpf_produtor = $1`,
         [
           req.produtor.cpf
@@ -54,7 +54,7 @@ const cadastrarProduto = async (
   try {
     const resultado =
       await pool.query(
-        `INSERT INTO produtos
+        `INSERT INTO ofertas_aprovadas
         (
           cpf_produtor,
           nome_produto,
@@ -104,7 +104,7 @@ const deletarProduto = async (
   try {
     const resultado =
       await pool.query(
-        `DELETE FROM produtos
+        `DELETE FROM ofertas_aprovadas
          WHERE id = $1
            AND cpf_produtor = $2
          RETURNING *`,

@@ -65,7 +65,7 @@ test('aceitação usa exatamente os valores da contraoferta', async () => {
     body: { versao: '42', resposta: 'aceitar' },
   }, res)
   assert.equal(res.codigo, 200)
-  const insercao = banco.chamadas.find(item => item.sql.includes('INSERT INTO produtos'))
+  const insercao = banco.chamadas.find(item => item.sql.includes('INSERT INTO ofertas_aprovadas'))
   assert.equal(insercao.parametros[2], '8 kg')
   assert.equal(insercao.parametros[4], '4')
   assert.equal(banco.chamadas.some(item => item.sql === 'COMMIT'), true)
@@ -151,7 +151,7 @@ test('aprovação com versão atual confirma a transação e cria um produto', a
     params: { id: 1 }, body: { versao: '42', status: 'aprovado' },
   }, res)
   assert.equal(res.codigo, 200)
-  assert.equal(chamadas.filter(sql => sql.includes('INSERT INTO produtos')).length, 1)
+  assert.equal(chamadas.filter(sql => sql.includes('INSERT INTO ofertas_aprovadas')).length, 1)
   assert.equal(chamadas.includes('COMMIT'), true)
   assert.equal(chamadas.includes('ROLLBACK'), false)
 })
