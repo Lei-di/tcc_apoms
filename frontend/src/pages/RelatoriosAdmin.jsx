@@ -1,4 +1,3 @@
-import PrecoNegociacao from '../components/PrecoNegociacao'
 import { listarNomesProdutosUnicos, normalizarNomeProduto } from '../utils/nomesProdutos'
 import { calcularValores } from '../utils/valoresOferta'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
@@ -1717,7 +1716,11 @@ function RelatoriosAdmin() {
                         </th>
 
                         <th>
-                          Preço por unidade / total
+                          Preço por unidade
+                        </th>
+
+                        <th>
+                          Valor total
                         </th>
 
                         <th>
@@ -1784,7 +1787,11 @@ function RelatoriosAdmin() {
                             </td>
 
                             <td className="produto-preco">
-                              <PrecoNegociacao quantidade={solicitacao.quantidade} preco={solicitacao.preco} />
+                              {formatarPreco(solicitacao.preco)}
+                            </td>
+
+                            <td className="produto-preco" style={{ whiteSpace: 'nowrap' }}>
+                              {formatarPreco(calcularValores(solicitacao.quantidade, solicitacao.preco).total)}
                             </td>
 
                             <td>
