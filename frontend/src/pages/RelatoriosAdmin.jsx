@@ -1,4 +1,5 @@
 import PrecoNegociacao from '../components/PrecoNegociacao'
+import { listarNomesProdutosUnicos, normalizarNomeProduto } from '../utils/nomesProdutos'
 import { calcularValores } from '../utils/valoresOferta'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState } from 'react'
@@ -70,21 +71,8 @@ function RelatoriosAdmin() {
     setPesquisaRealizada(false)
   }
 
-  const produtos = [
-    ...new Set(
-      solicitacoes
-        .map(
-          (solicitacao) =>
-            solicitacao.nome_produto
-        )
-        .filter(Boolean)
-    )
-  ].sort(
-    (a, b) =>
-      a.localeCompare(
-        b,
-        'pt-BR'
-      )
+  const produtos = listarNomesProdutosUnicos(
+    solicitacoes.map((solicitacao) => solicitacao.nome_produto)
   )
 
   const produtores = [
@@ -301,8 +289,8 @@ function RelatoriosAdmin() {
 
         if (
           filtrosAplicados.produto &&
-          solicitacao.nome_produto !==
-            filtrosAplicados.produto
+          normalizarNomeProduto(solicitacao.nome_produto) !==
+            normalizarNomeProduto(filtrosAplicados.produto)
         ) {
           return false
         }
@@ -438,8 +426,8 @@ function RelatoriosAdmin() {
 
         if (
           filtrosAplicados.produto &&
-          solicitacao.nome_produto !==
-            filtrosAplicados.produto
+          normalizarNomeProduto(solicitacao.nome_produto) !==
+            normalizarNomeProduto(filtrosAplicados.produto)
         ) {
           return false
         }

@@ -1,4 +1,5 @@
 import IconeStatus from '../components/IconeStatus'
+import { listarNomesProdutosUnicos, normalizarNomeProduto } from '../utils/nomesProdutos'
 import HistoricoNegociacao from '../components/HistoricoNegociacao'
 import CampoValorTotal from '../components/CampoValorTotal'
 import { calcularValores } from '../utils/valoresOferta'
@@ -51,6 +52,7 @@ function PainelAdmin() {
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroProduto, setFiltroProduto] = useState('')
   const [filtroProdutor, setFiltroProdutor] = useState('')
+  const [filtroNucleo, setFiltroNucleo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
   const [filtroPeriodo, setFiltroPeriodo] = useState('')
 
@@ -61,6 +63,7 @@ function PainelAdmin() {
     tipo: '',
     produto: '',
     produtor: '',
+    nucleo: '',
     status: '',
     periodo: ''
   })
@@ -664,21 +667,8 @@ function PainelAdmin() {
         )
       : solicitacoesUnificadas
 
-  const produtosFiltro = [
-    ...new Set(
-      solicitacoesPorTipoSelecionado
-        .map(
-          (solicitacao) =>
-            nomeProdutoExibicao(solicitacao)
-        )
-        .filter(Boolean)
-    )
-  ].sort(
-    (a, b) =>
-      a.localeCompare(
-        b,
-        'pt-BR'
-      )
+  const produtosFiltro = listarNomesProdutosUnicos(
+    solicitacoesPorTipoSelecionado.map(nomeProdutoExibicao)
   )
 
   const produtoresFiltro = [
@@ -697,6 +687,14 @@ function PainelAdmin() {
         'pt-BR'
       )
   )
+
+  const nucleosFiltro = [
+    ...new Set(
+      solicitacoesUnificadas
+        .map((solicitacao) => solicitacao.nucleo_produtivo?.trim())
+        .filter(Boolean)
+    )
+  ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   const estaNoPeriodo = (
     data,
@@ -840,13 +838,17 @@ function PainelAdmin() {
 
         const correspondeProduto =
           filtrosAplicados.produto === '' ||
-          nomeProdutoExibicao(solicitacao) ===
-          filtrosAplicados.produto
+          normalizarNomeProduto(nomeProdutoExibicao(solicitacao)) ===
+          normalizarNomeProduto(filtrosAplicados.produto)
 
         const correspondeProdutor =
           filtrosAplicados.produtor === '' ||
           solicitacao.nome_produtor ===
           filtrosAplicados.produtor
+
+        const correspondeNucleo =
+          filtrosAplicados.nucleo === '' ||
+          solicitacao.nucleo_produtivo?.trim() === filtrosAplicados.nucleo
 
         const correspondeStatus =
           filtrosAplicados.status === '' ||
@@ -863,6 +865,7 @@ function PainelAdmin() {
           correspondeTipo &&
           correspondeProduto &&
           correspondeProdutor &&
+          correspondeNucleo &&
           correspondeStatus &&
           correspondePeriodo
         )
@@ -890,6 +893,7 @@ function PainelAdmin() {
       tipo: filtroTipo,
       produto: filtroProduto,
       produtor: filtroProdutor,
+      nucleo: filtroNucleo,
       status: filtroStatus,
       periodo: filtroPeriodo
     })
@@ -899,6 +903,7 @@ function PainelAdmin() {
     setFiltroTipo('')
     setFiltroProduto('')
     setFiltroProdutor('')
+    setFiltroNucleo('')
     setFiltroStatus('')
     setFiltroPeriodo('')
 
@@ -906,6 +911,7 @@ function PainelAdmin() {
       tipo: '',
       produto: '',
       produtor: '',
+      nucleo: '',
       status: '',
       periodo: ''
     })
@@ -915,11 +921,13 @@ function PainelAdmin() {
     filtroTipo ||
     filtroProduto ||
     filtroProdutor ||
+    filtroNucleo ||
     filtroStatus ||
     filtroPeriodo ||
     filtrosAplicados.tipo ||
     filtrosAplicados.produto ||
     filtrosAplicados.produtor ||
+    filtrosAplicados.nucleo ||
     filtrosAplicados.status ||
     filtrosAplicados.periodo
 
@@ -1064,7 +1072,7 @@ function PainelAdmin() {
             display: grid;
 
             grid-template-columns:
-              repeat(5, minmax(0, 1fr));
+              repeat(6, minmax(0, 1fr));
 
             gap: 13px;
 
@@ -1507,28 +1515,11 @@ function PainelAdmin() {
 
                 <div>
 
-                  <span style={tipoDetalhe}>
-                    {formatarTipo(
-                      solicitacaoDetalhe.tipo_solicitacao
-                    )}
-                  </span>
-
                   <h3 style={modalTituloDetalhe}>
-                    {nomeProdutoExibicao(
-                      solicitacaoDetalhe
-                    )}
-                  </h3>
-
-                  <p style={modalDescricao}>
-                    Solicitação enviada por{' '}
-                    <strong>
-                      {
-                        solicitacaoDetalhe.nome_produtor
-                      }
-                    </strong>
-                  </p>
-
-                </div>
+                    {solicitacaoDetalhe.tipo_solicitacao === 'inclusao'
+                      ? 'Solicitação de inclusão'
+                      : 'Oferta'}
+                  </h3>                </div>
 
                 <span
                   className={`status-badge ${classeStatus(
@@ -1561,6 +1552,15 @@ function PainelAdmin() {
                         }
                       </strong>
 
+                    </div>
+
+                    <div style={blocoDetalhe}>
+                      <span style={rotuloDetalhe}>
+                        Núcleo produtivo
+                      </span>
+                      <strong style={valorDetalhe}>
+                        {solicitacaoDetalhe.nucleo_produtivo?.trim() || 'Não informado'}
+                      </strong>
                     </div>
 
                     <div style={blocoDetalhe}>
@@ -1904,6 +1904,15 @@ function PainelAdmin() {
                         }
                       </strong>
 
+                    </div>
+
+                    <div style={blocoDetalhe}>
+                      <span style={rotuloDetalhe}>
+                        Núcleo produtivo
+                      </span>
+                      <strong style={valorDetalhe}>
+                        {solicitacaoDetalhe.nucleo_produtivo?.trim() || 'Não informado'}
+                      </strong>
                     </div>
 
                     <div style={blocoDetalhe}>
@@ -2251,6 +2260,25 @@ function PainelAdmin() {
 
               <div>
 
+                <label style={labelFiltro}>
+                  Núcleo produtivo
+                </label>
+
+                <select
+                  value={filtroNucleo}
+                  onChange={(e) => setFiltroNucleo(e.target.value)}
+                  style={campoFiltro}
+                >
+                  <option value="">Todos</option>
+                  {nucleosFiltro.map((nucleo) => (
+                    <option key={nucleo} value={nucleo}>
+                      {nucleo}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label style={labelFiltro}>
                   Status
                 </label>
@@ -2892,21 +2920,7 @@ const modalTituloDetalhe = {
   fontSize: '21px'
 }
 
-const modalDescricao = {
-  marginTop: '6px',
 
-  color: '#7b8580',
-
-  fontSize: '13px'
-}
-
-const tipoDetalhe = {
-  color: '#617168',
-
-  fontSize: '12px',
-
-  fontWeight: '600'
-}
 
 const gradeDetalhes = {
   display: 'grid',

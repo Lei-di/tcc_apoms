@@ -536,7 +536,8 @@ const listarSolicitacoesProdutosAdmin =
         await pool.query(
           `SELECT
              s.*, s.xmin::text AS versao,
-             p.nome AS nome_produtor
+             p.nome AS nome_produtor,
+             p.cidade AS nucleo_produtivo
            FROM solicitacao_insercao s
            JOIN produtores p
              ON p.cpf = s.cpf_produtor
