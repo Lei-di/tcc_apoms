@@ -2,6 +2,7 @@ import IconeStatus from '../components/IconeStatus'
 import PrecoNegociacao from '../components/PrecoNegociacao'
 import HistoricoNegociacao from '../components/HistoricoNegociacao'
 import CampoValorTotal from '../components/CampoValorTotal'
+import { calcularValores } from '../utils/valoresOferta'
 import { dataHoje, erroDataOferta } from '../utils/dataOferta'
 import useValorAtual from '../hooks/useValorAtual'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
@@ -11,6 +12,9 @@ import api from '../services/api'
 import LayoutSistema from '../LayoutSistema'
 
 function Solicitacoes() {
+  const formatarMoeda = (valor) => valor === null
+    ? 'Não informado'
+    : valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
   const [solicitacoes, setSolicitacoes] = useState([])
   const [solicitacoesProdutos, setSolicitacoesProdutos] = useState([])
   const [listaProdutos, setListaProdutos] = useState([])
@@ -1000,14 +1004,15 @@ function Solicitacoes() {
           .historico-item {
             display: grid;
             grid-template-columns:
-              minmax(220px, 1.35fr)
-              minmax(145px, 0.75fr)
-              minmax(115px, 0.65fr)
-              minmax(105px, 0.65fr)
-              minmax(145px, 0.8fr)
-              minmax(100px, auto);
+              minmax(0, 1.2fr)
+              minmax(0, 1fr)
+              minmax(0, 0.7fr)
+              minmax(0, 0.9fr)
+              minmax(0, 0.7fr)
+              minmax(0, 0.9fr)
+              max-content;
             align-items: center;
-            gap: 18px;
+            gap: 12px;
             min-height: 82px;
             padding: 14px 20px;
             background: #ffffff;
@@ -1018,6 +1023,11 @@ function Solicitacoes() {
 
           .historico-item:hover {
             background: #f8fbf8;
+          }
+
+          .historico-item > * {
+            min-width: 0;
+            overflow-wrap: anywhere;
           }
 
           .historico-item:last-child {
@@ -1043,13 +1053,14 @@ function Solicitacoes() {
           @media (max-width: 1150px) {
             .historico-item {
               grid-template-columns:
-                minmax(200px, 1.2fr)
-                minmax(135px, 0.7fr)
-                minmax(105px, 0.6fr)
-                minmax(100px, 0.6fr)
-                minmax(135px, 0.75fr)
-                auto;
-              gap: 13px;
+                minmax(0, 1.2fr)
+                minmax(0, 1fr)
+                minmax(0, 0.7fr)
+                minmax(0, 0.9fr)
+                minmax(0, 0.7fr)
+                minmax(0, 0.9fr)
+                max-content;
+              gap: 10px;
             }
           }
 
@@ -1158,29 +1169,29 @@ function Solicitacoes() {
               <div style={cabecalhoDetalhe}>
 
                 <div>
-                  <span style={tipoDetalhe}>
-                    {formatarTipo(
-                      solicitacaoDetalhe.tipo_solicitacao
-                    )}
-                  </span>
-
                   <h3 style={modalTituloDetalhe}>
-                    {nomeProdutoExibicao(
-                      solicitacaoDetalhe
-                    )}
+                    {solicitacaoDetalhe.tipo_solicitacao === 'inclusao'
+                      ? 'Solicitação de inclusão'
+                      : 'Oferta'}
                   </h3>
                 </div>
 
-                <span
-                  className={`status-badge ${classeStatus(
-                    solicitacaoDetalhe.status
-                  )}`}
-                >
-                  <IconeStatus status={solicitacaoDetalhe.status} />
-                  {formatarStatusSolicitacao(
-                    solicitacaoDetalhe
-                  )}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span
+                    className={`status-badge ${classeStatus(solicitacaoDetalhe.status)}`}
+                  >
+                    <IconeStatus status={solicitacaoDetalhe.status} />
+                    {formatarStatusSolicitacao(solicitacaoDetalhe)}
+                  </span>
+                  <button
+                    type="button"
+                    style={botaoFecharModal}
+                    onClick={fecharDetalhe}
+                    aria-label="Fechar detalhes da solicitação"
+                  >
+                    ×
+                  </button>
+                </div>
 
               </div>
 
@@ -1242,18 +1253,6 @@ function Solicitacoes() {
                     <strong style={valorDetalhe}>
                       {formatarData(
                         solicitacaoDetalhe.data_solicitacao
-                      )}
-                    </strong>
-                  </div>
-
-                  <div style={blocoDetalhe}>
-                    <span style={rotuloDetalhe}>
-                      Status
-                    </span>
-
-                    <strong style={valorDetalhe}>
-                      {formatarStatusOferta(
-                        solicitacaoDetalhe.status
                       )}
                     </strong>
                   </div>
@@ -1323,18 +1322,6 @@ function Solicitacoes() {
                     <strong style={valorDetalhe}>
                       {formatarData(
                         solicitacaoDetalhe.data_avaliacao
-                      )}
-                    </strong>
-                  </div>
-
-                  <div style={blocoDetalhe}>
-                    <span style={rotuloDetalhe}>
-                      Status
-                    </span>
-
-                    <strong style={valorDetalhe}>
-                      {formatarStatusProduto(
-                        solicitacaoDetalhe.status
                       )}
                     </strong>
                   </div>
@@ -1498,8 +1485,6 @@ function Solicitacoes() {
 
               </div>
 
-              <HistoricoNegociacao solicitacao={contraofertaSelecionada} />
-
               <div
                 className="acoes-form"
                 style={{
@@ -1542,6 +1527,8 @@ function Solicitacoes() {
                 </button>
 
               </div>
+
+              <HistoricoNegociacao solicitacao={contraofertaSelecionada} />
 
             </div>
 
@@ -1947,12 +1934,12 @@ function Solicitacoes() {
                     </strong>
 
                     <span style={detalheOferta}>
-                      Proposta:{' '}
+                      Quantidade:{' '}
                       {
                         solicitacao.quantidade_contraoferta
                       }
-                      {' • '}
-                      <PrecoNegociacao quantidade={solicitacao.quantidade_contraoferta} preco={solicitacao.preco_contraoferta} />
+                      <br />
+                      <PrecoNegociacao quantidade={solicitacao.quantidade_contraoferta} preco={solicitacao.preco_contraoferta} rotuloPorUnidade />
                     </span>
 
                     <button
@@ -2275,9 +2262,25 @@ function Solicitacoes() {
                           </span>
 
                           <strong style={valorLista}>
-                            <PrecoNegociacao quantidade={quantidadeOfertaExibicao(solicitacao)} preco={precoOfertaExibicao( solicitacao )} />
+                            {formatarMoeda(calcularValores(
+                              quantidadeOfertaExibicao(solicitacao),
+                              precoOfertaExibicao(solicitacao)
+                            ).preco)}
                           </strong>
 
+                        </div>
+
+                        <div
+                          className="historico-informacao"
+                          style={informacaoLista}
+                        >
+                          <span style={rotuloLista}>Valor total</span>
+                          <strong style={valorLista}>
+                            {formatarMoeda(calcularValores(
+                              quantidadeOfertaExibicao(solicitacao),
+                              precoOfertaExibicao(solicitacao)
+                            ).total)}
+                          </strong>
                         </div>
 
                         <div
@@ -2315,6 +2318,8 @@ function Solicitacoes() {
                           </strong>
 
                         </div>
+
+                        <div />
 
                         <div />
 
@@ -2684,12 +2689,6 @@ const modalDescricao = {
   marginTop: '6px',
   color: '#7b8580',
   fontSize: '13px'
-}
-
-const tipoDetalhe = {
-  color: '#617168',
-  fontSize: '12px',
-  fontWeight: '600'
 }
 
 const gradeDetalhes = {
