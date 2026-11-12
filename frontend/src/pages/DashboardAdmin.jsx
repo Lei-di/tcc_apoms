@@ -924,6 +924,21 @@ function DashboardAdmin() {
 
                       </div>
 
+                      <div style={{ ...detalhesRetirada, marginTop: '14px', overflowWrap: 'anywhere' }}>
+                        <div>
+                          <span style={rotuloDetalhe}>Endereço de retirada</span>
+                          <strong style={valorDetalhe}>
+                            {solicitacao.endereco_retirada?.trim() || 'Endereço não informado'}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={rotuloDetalhe}>Cidade / núcleo produtivo</span>
+                          <strong style={valorDetalhe}>
+                            {solicitacao.nucleo_produtivo?.trim() || 'Cidade não informada'}
+                          </strong>
+                        </div>
+                      </div>
+
                       {solicitacao.observacao_produtor && (
                         <div style={observacaoRetirada}>
 

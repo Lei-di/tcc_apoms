@@ -107,10 +107,13 @@ const listarSolicitacoesProdutor =
     try {
       const resultado =
         await pool.query(
-          `SELECT *, xmin::text AS versao
-           FROM solicitacoes
-           WHERE cpf_produtor = $1
-           ORDER BY data_solicitacao DESC`,
+          `SELECT s.*, s.xmin::text AS versao,
+                  p.endereco AS endereco_retirada,
+                  p.cidade AS nucleo_produtivo
+           FROM solicitacoes s
+           JOIN produtores p ON p.cpf = s.cpf_produtor
+           WHERE s.cpf_produtor = $1
+           ORDER BY s.data_solicitacao DESC`,
           [
             req.produtor.cpf
           ]
@@ -636,7 +639,8 @@ const listarTodasSolicitacoes =
           `SELECT
              s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor,
-             p.cidade AS nucleo_produtivo
+             p.cidade AS nucleo_produtivo,
+             p.endereco AS endereco_retirada
            FROM solicitacoes s
            JOIN produtores p
              ON s.cpf_produtor = p.cpf
