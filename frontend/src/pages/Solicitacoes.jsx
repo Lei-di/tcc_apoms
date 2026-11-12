@@ -1,3 +1,5 @@
+import HistoricoNegociacao from '../components/HistoricoNegociacao'
+import ResumoValores from '../components/ResumoValores'
 import { dataHoje, erroDataOferta } from '../utils/dataOferta'
 import useValorAtual from '../hooks/useValorAtual'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
@@ -1227,7 +1229,7 @@ function Solicitacoes() {
 
                   <div style={blocoDetalhe}>
                     <span style={rotuloDetalhe}>
-                      Valor
+                      Valor por unidade
                     </span>
 
                     <strong style={valorDetalhe}>
@@ -1301,46 +1303,9 @@ function Solicitacoes() {
                     </p>
                   </div>
 
-                  {(solicitacaoDetalhe.quantidade_contraoferta ||
-                    solicitacaoDetalhe.preco_contraoferta) && (
-                    <div style={contraofertaDetalhe}>
 
-                      <h4 style={tituloContraofertaDetalhe}>
-                        Contraoferta da APOMS
-                      </h4>
 
-                      <div style={gradeContraofertaDetalhe}>
-
-                        <div>
-                          <span style={rotuloDetalhe}>
-                            Quantidade proposta
-                          </span>
-
-                          <strong style={valorDetalhe}>
-                            {
-                              solicitacaoDetalhe.quantidade_contraoferta ||
-                              '-'
-                            }
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span style={rotuloDetalhe}>
-                            Valor proposto
-                          </span>
-
-                          <strong style={valorDetalhe}>
-                            {formatarPreco(
-                              solicitacaoDetalhe.preco_contraoferta
-                            )}
-                          </strong>
-                        </div>
-
-                      </div>
-
-                    </div>
-                  )}
-
+                  <HistoricoNegociacao solicitacao={solicitacaoDetalhe} />
                 </div>
               ) : (
                 <div style={gradeDetalhes}>
@@ -1520,7 +1485,7 @@ function Solicitacoes() {
 
                 <div className="campo">
                   <label>
-                    Preço original
+                    Preço original por unidade
                   </label>
 
                   <div style={campoInformacao}>
@@ -1532,7 +1497,7 @@ function Solicitacoes() {
 
                 <div className="campo">
                   <label>
-                    Preço proposto
+                    Preço proposto por unidade
                   </label>
 
                   <div style={campoDestaque}>
@@ -1555,6 +1520,8 @@ function Solicitacoes() {
                 </div>
 
               </div>
+
+              <HistoricoNegociacao solicitacao={contraofertaSelecionada} />
 
               <div
                 className="acoes-form"
@@ -1790,7 +1757,7 @@ function Solicitacoes() {
 
                 <div className="campo">
                   <label>
-                    Preço (R$)
+                    Preço por {form.unidade || 'unidade de medida'} (R$)
                   </label>
 
                   <input
@@ -1809,6 +1776,7 @@ function Solicitacoes() {
                     min="0.01"
                     required
                   />
+                    <ResumoValores quantidade={`${form.quantidade} ${form.unidade}`} preco={form.preco} />
                 </div>
 
                 <div className="campo campo-grande">
@@ -2327,7 +2295,7 @@ function Solicitacoes() {
                         >
 
                           <span style={rotuloLista}>
-                            Valor
+                            Valor por unidade
                           </span>
 
                           <strong style={valorLista}>
@@ -2792,27 +2760,8 @@ const textoDetalhe = {
   lineHeight: '1.5'
 }
 
-const contraofertaDetalhe = {
-  gridColumn: '1 / -1',
-  padding: '15px',
-  background: '#faf9f4',
-  border:
-    '1px solid #e8e2ce',
-  borderRadius: '8px'
-}
 
-const tituloContraofertaDetalhe = {
-  margin: '0 0 13px',
-  color: '#4c514d',
-  fontSize: '14px'
-}
 
-const gradeContraofertaDetalhe = {
-  display: 'grid',
-  gridTemplateColumns:
-    'repeat(2, minmax(0, 1fr))',
-  gap: '15px'
-}
 
 const acoesDetalhe = {
   display: 'flex',

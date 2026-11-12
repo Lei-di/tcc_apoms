@@ -1,3 +1,6 @@
+import HistoricoNegociacao from '../components/HistoricoNegociacao'
+import ResumoValores from '../components/ResumoValores'
+import { calcularValores } from '../utils/valoresOferta'
 import useValorAtual from '../hooks/useValorAtual'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useEffect, useState } from 'react'
@@ -1586,10 +1589,10 @@ function PainelAdmin() {
 
                     </div>
 
-                    <div style={blocoDetalhe}>
-
+                    <div style={{ ...blocoDetalhe, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '16px' }}>
+                      <div>
                       <span style={rotuloDetalhe}>
-                        Preço
+                        Preço por unidade
                       </span>
 
                       <strong style={valorDetalhe}>
@@ -1599,6 +1602,23 @@ function PainelAdmin() {
                           )
                         )}
                       </strong>
+
+                      </div>
+                      <div>
+                      <span style={rotuloDetalhe}>
+                        Valor total
+                      </span>
+
+                      <strong style={valorDetalhe}>
+                        {calcularValores(
+                          quantidadeExibicao(solicitacaoDetalhe),
+                          precoExibicao(solicitacaoDetalhe)
+                        ).total === null ? 'Não informado' : formatarPreco(calcularValores(
+                          quantidadeExibicao(solicitacaoDetalhe),
+                          precoExibicao(solicitacaoDetalhe)
+                        ).total)}
+                      </strong>
+                      </div>
 
                     </div>
 
@@ -1645,51 +1665,11 @@ function PainelAdmin() {
 
                     </div>
 
-                    {(solicitacaoDetalhe.quantidade_contraoferta ||
-                      solicitacaoDetalhe.preco_contraoferta) && (
-                      <div style={contraofertaDetalhe}>
-
-                        <h4 style={tituloContraofertaDetalhe}>
-                          Contraoferta
-                        </h4>
-
-                        <div style={gradeContraoferta}>
-
-                          <div>
-
-                            <span style={rotuloDetalhe}>
-                              Quantidade proposta
-                            </span>
-
-                            <strong style={valorDetalhe}>
-                              {
-                                solicitacaoDetalhe.quantidade_contraoferta ||
-                                '-'
-                              }
-                            </strong>
-
-                          </div>
-
-                          <div>
-
-                            <span style={rotuloDetalhe}>
-                              Preço proposto
-                            </span>
-
-                            <strong style={valorDetalhe}>
-                              {formatarPreco(
-                                solicitacaoDetalhe.preco_contraoferta
-                              )}
-                            </strong>
-
-                          </div>
-
-                        </div>
-
-                      </div>
-                    )}
+  
 
                   </div>
+
+                  <HistoricoNegociacao solicitacao={solicitacaoDetalhe} />
 
                   {solicitacaoDetalhe.status === 'pendente' &&
                     statusAvaliacao && (
@@ -1739,7 +1719,7 @@ function PainelAdmin() {
                             <div className="campo">
 
                               <label>
-                                Preço proposto (R$)
+                                Preço por {unidadeContraoferta || 'unidade de medida'} (R$)
                               </label>
 
                               <input
@@ -1755,6 +1735,7 @@ function PainelAdmin() {
                                   )
                                 }
                               />
+                              <ResumoValores quantidade={`${quantidadeContraoferta} ${unidadeContraoferta}`} preco={precoContraoferta} />
 
                             </div>
 
@@ -2976,35 +2957,8 @@ const textoDetalhe = {
   lineHeight: '1.5'
 }
 
-const contraofertaDetalhe = {
-  gridColumn: '1 / -1',
 
-  padding: '15px',
 
-  background: '#faf9f4',
-
-  border:
-    '1px solid #e8e2ce',
-
-  borderRadius: '8px'
-}
-
-const tituloContraofertaDetalhe = {
-  margin: '0 0 13px',
-
-  color: '#4c514d',
-
-  fontSize: '14px'
-}
-
-const gradeContraoferta = {
-  display: 'grid',
-
-  gridTemplateColumns:
-    'repeat(2, minmax(0, 1fr))',
-
-  gap: '15px'
-}
 
 const acoesDetalhe = {
   display: 'flex',

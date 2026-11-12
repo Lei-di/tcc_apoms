@@ -1,3 +1,4 @@
+import ResumoValores from '../components/ResumoValores'
 import { dataHoje, erroDataOferta } from '../utils/dataOferta'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState, useEffect } from 'react'
@@ -615,7 +616,7 @@ function CadastroProduto() {
 
             <div className="campo">
               <label>
-                Preço (R$)
+                Preço por {unidade || 'unidade de medida'} (R$)
               </label>
 
               <input
@@ -631,6 +632,7 @@ function CadastroProduto() {
                 min="0.01"
                 required
               />
+                <ResumoValores quantidade={`${quantidade} ${unidade}`} preco={preco} />
             </div>
 
             <div className="campo campo-grande">
