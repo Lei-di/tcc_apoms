@@ -286,8 +286,7 @@ function PrimeiroAcesso() {
           </h1>
 
           <p>
-            Crie sua senha para ativar sua conta e acessar
-            o sistema de gestão da APOMS.
+            Crie sua senha para ativar sua conta e acessar o sistema
           </p>
 
         </section>
@@ -299,10 +298,6 @@ function PrimeiroAcesso() {
             <div className="primeiro-header">
               <h2>Ativar minha conta</h2>
 
-              <p>
-                Informe o CPF previamente cadastrado pela APOMS
-                e defina sua senha de acesso.
-              </p>
             </div>
 
             {!ativado ? (
