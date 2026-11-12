@@ -1,3 +1,4 @@
+import PrecoNegociacao from '../components/PrecoNegociacao'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import {
   useEffect,
@@ -361,26 +362,6 @@ function DashboardAdmin() {
     return `${dia}/${mes}/${ano}`
   }
 
-  const formatarPreco = (
-    preco
-  ) => {
-    if (
-      preco === null ||
-      preco === undefined
-    ) {
-      return '-'
-    }
-
-    return Number(
-      preco
-    ).toLocaleString(
-      'pt-BR',
-      {
-        style: 'currency',
-        currency: 'BRL'
-      }
-    )
-  }
 
   const quantidadeFinal = (
     solicitacao
@@ -936,11 +917,7 @@ function DashboardAdmin() {
                           </span>
 
                           <strong style={valorDetalhe}>
-                            {formatarPreco(
-                              precoFinal(
-                                solicitacao
-                              )
-                            )}
+                            <PrecoNegociacao quantidade={quantidadeFinal(solicitacao)} preco={precoFinal( solicitacao )} />
                           </strong>
 
                         </div>

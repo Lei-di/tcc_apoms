@@ -1,5 +1,6 @@
+import IconeStatus from '../components/IconeStatus'
 import HistoricoNegociacao from '../components/HistoricoNegociacao'
-import ResumoValores from '../components/ResumoValores'
+import CampoValorTotal from '../components/CampoValorTotal'
 import { calcularValores } from '../utils/valoresOferta'
 import useValorAtual from '../hooks/useValorAtual'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
@@ -1534,6 +1535,7 @@ function PainelAdmin() {
                     solicitacaoDetalhe.status
                   )}`}
                 >
+                  <IconeStatus status={solicitacaoDetalhe.status} />
                   {formatarStatus(
                     solicitacaoDetalhe.status
                   )}
@@ -1716,7 +1718,8 @@ function PainelAdmin() {
 
                             </div>
 
-                            <div className="campo">
+                            <div className="campos-preco-total">
+<div className="campo">
 
                               <label>
                                 Preço por {unidadeContraoferta || 'unidade de medida'} (R$)
@@ -1735,9 +1738,10 @@ function PainelAdmin() {
                                   )
                                 }
                               />
-                              <ResumoValores quantidade={`${quantidadeContraoferta} ${unidadeContraoferta}`} preco={precoContraoferta} />
 
                             </div>
+<CampoValorTotal quantidade={`${quantidadeContraoferta} ${unidadeContraoferta}`} preco={precoContraoferta} />
+</div>
 
                           </div>
                         )}
@@ -2474,6 +2478,7 @@ function PainelAdmin() {
                           solicitacao.status
                         )}`}
                       >
+                  <IconeStatus status={solicitacao.status} />
                         {formatarStatus(
                           solicitacao.status
                         )}

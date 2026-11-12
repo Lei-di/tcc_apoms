@@ -1,5 +1,7 @@
+import IconeStatus from '../components/IconeStatus'
+import PrecoNegociacao from '../components/PrecoNegociacao'
 import HistoricoNegociacao from '../components/HistoricoNegociacao'
-import ResumoValores from '../components/ResumoValores'
+import CampoValorTotal from '../components/CampoValorTotal'
 import { dataHoje, erroDataOferta } from '../utils/dataOferta'
 import useValorAtual from '../hooks/useValorAtual'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
@@ -600,24 +602,6 @@ function Solicitacoes() {
     )
   }
 
-  const formatarPreco = (preco) => {
-    if (
-      preco === null ||
-      preco === undefined
-    ) {
-      return '-'
-    }
-
-    return Number(
-      preco
-    ).toLocaleString(
-      'pt-BR',
-      {
-        style: 'currency',
-        currency: 'BRL'
-      }
-    )
-  }
 
   const formatarStatusOferta = (
     status
@@ -1192,6 +1176,7 @@ function Solicitacoes() {
                     solicitacaoDetalhe.status
                   )}`}
                 >
+                  <IconeStatus status={solicitacaoDetalhe.status} />
                   {formatarStatusSolicitacao(
                     solicitacaoDetalhe
                   )}
@@ -1233,11 +1218,7 @@ function Solicitacoes() {
                     </span>
 
                     <strong style={valorDetalhe}>
-                      {formatarPreco(
-                        precoOfertaExibicao(
-                          solicitacaoDetalhe
-                        )
-                      )}
+                      <PrecoNegociacao quantidade={quantidadeOfertaExibicao(solicitacaoDetalhe)} preco={precoOfertaExibicao( solicitacaoDetalhe )} />
                     </strong>
                   </div>
 
@@ -1489,9 +1470,7 @@ function Solicitacoes() {
                   </label>
 
                   <div style={campoInformacao}>
-                    {formatarPreco(
-                      contraofertaSelecionada.preco
-                    )}
+                    <PrecoNegociacao quantidade={contraofertaSelecionada.quantidade} preco={contraofertaSelecionada.preco} />
                   </div>
                 </div>
 
@@ -1501,9 +1480,7 @@ function Solicitacoes() {
                   </label>
 
                   <div style={campoDestaque}>
-                    {formatarPreco(
-                      contraofertaSelecionada.preco_contraoferta
-                    )}
+                    <PrecoNegociacao quantidade={contraofertaSelecionada.quantidade_contraoferta} preco={contraofertaSelecionada.preco_contraoferta} />
                   </div>
                 </div>
 
@@ -1755,7 +1732,8 @@ function Solicitacoes() {
                   />
                 </div>
 
-                <div className="campo">
+                <div className="campos-preco-total">
+<div className="campo">
                   <label>
                     Preço por {form.unidade || 'unidade de medida'} (R$)
                   </label>
@@ -1776,8 +1754,9 @@ function Solicitacoes() {
                     min="0.01"
                     required
                   />
-                    <ResumoValores quantidade={`${form.quantidade} ${form.unidade}`} preco={form.preco} />
                 </div>
+<CampoValorTotal quantidade={`${form.quantidade} ${form.unidade}`} preco={form.preco} />
+</div>
 
                 <div className="campo campo-grande">
                   <label>
@@ -1880,9 +1859,7 @@ function Solicitacoes() {
                             solicitacao.quantidade
                           }
                           {' • '}
-                          {formatarPreco(
-                            solicitacao.preco
-                          )}
+                          <PrecoNegociacao quantidade={solicitacao.quantidade} preco={solicitacao.preco} />
                         </span>
 
                         <div
@@ -1975,9 +1952,7 @@ function Solicitacoes() {
                         solicitacao.quantidade_contraoferta
                       }
                       {' • '}
-                      {formatarPreco(
-                        solicitacao.preco_contraoferta
-                      )}
+                      <PrecoNegociacao quantidade={solicitacao.quantidade_contraoferta} preco={solicitacao.preco_contraoferta} />
                     </span>
 
                     <button
@@ -2262,6 +2237,7 @@ function Solicitacoes() {
                           solicitacao.status
                         )}`}
                       >
+                  <IconeStatus status={solicitacao.status} />
                         {formatarStatusSolicitacao(
                           solicitacao
                         )}
@@ -2299,11 +2275,7 @@ function Solicitacoes() {
                           </span>
 
                           <strong style={valorLista}>
-                            {formatarPreco(
-                              precoOfertaExibicao(
-                                solicitacao
-                              )
-                            )}
+                            <PrecoNegociacao quantidade={quantidadeOfertaExibicao(solicitacao)} preco={precoOfertaExibicao( solicitacao )} />
                           </strong>
 
                         </div>

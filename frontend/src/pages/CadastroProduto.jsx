@@ -1,4 +1,4 @@
-import ResumoValores from '../components/ResumoValores'
+import CampoValorTotal from '../components/CampoValorTotal'
 import { dataHoje, erroDataOferta } from '../utils/dataOferta'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState, useEffect } from 'react'
@@ -207,6 +207,7 @@ function CadastroProduto() {
     }
 
   const carregamento = useAtualizacaoAutomatica(signal => Promise.all([buscarListaProdutos(signal)]))
+
 
   return (
     <LayoutSistema
@@ -614,12 +615,14 @@ function CadastroProduto() {
               />
             </div>
 
+            <div className="campos-preco-total">
             <div className="campo">
-              <label>
+              <label htmlFor="preco-oferta">
                 Preço por {unidade || 'unidade de medida'} (R$)
               </label>
 
               <input
+                id="preco-oferta"
                 type="number"
                 placeholder="Ex: 3.50"
                 value={preco}
@@ -632,7 +635,8 @@ function CadastroProduto() {
                 min="0.01"
                 required
               />
-                <ResumoValores quantidade={`${quantidade} ${unidade}`} preco={preco} />
+            </div>
+            <CampoValorTotal quantidade={`${quantidade} ${unidade}`} preco={preco} />
             </div>
 
             <div className="campo campo-grande">

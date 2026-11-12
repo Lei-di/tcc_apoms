@@ -57,6 +57,19 @@ function bancoContraoferta(campos = {}) {
   }
 }
 
+test('recusa encerra a contraoferta sem criar uma oferta aprovada', async () => {
+  const banco = bancoContraoferta()
+  const res = resposta()
+  await carregar('solicitacoes', banco).responderContraoferta({
+    params: { id: 1 }, produtor: { cpf: '123' },
+    body: { versao: '42', resposta: 'recusar' },
+  }, res)
+  assert.equal(res.codigo, 200)
+  assert.equal(banco.chamadas.some(item => item.sql.includes("status = 'contraoferta_recusada'") && item.sql.includes('data_resposta_contraoferta = NOW()')), true)
+  assert.equal(banco.chamadas.some(item => item.sql.includes('INSERT INTO ofertas_aprovadas')), false)
+  assert.equal(banco.chamadas.some(item => item.sql === 'COMMIT'), true)
+})
+
 test('aceitação usa exatamente os valores da contraoferta', async () => {
   const banco = bancoContraoferta()
   const res = resposta()

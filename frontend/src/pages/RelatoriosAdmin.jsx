@@ -1,3 +1,5 @@
+import PrecoNegociacao from '../components/PrecoNegociacao'
+import { calcularValores } from '../utils/valoresOferta'
 import useAtualizacaoAutomatica from '../hooks/useAtualizacaoAutomatica'
 import { useState } from 'react'
 import api from '../services/api'
@@ -710,7 +712,8 @@ function RelatoriosAdmin() {
         'Produto',
         'Quantidade',
         'Disponibilidade',
-        'Preço',
+        'Preço por unidade',
+        'Valor total',
         'Status',
         'Data de envio',
         'Observação',
@@ -731,6 +734,7 @@ function RelatoriosAdmin() {
             formatarPreco(
               solicitacao.preco
             ),
+            calcularValores(solicitacao.quantidade, solicitacao.preco).total ?? 'Não informado',
             formatarStatus(
               solicitacao.status
             ),
@@ -1725,7 +1729,7 @@ function RelatoriosAdmin() {
                         </th>
 
                         <th>
-                          Preço
+                          Preço por unidade / total
                         </th>
 
                         <th>
@@ -1792,9 +1796,7 @@ function RelatoriosAdmin() {
                             </td>
 
                             <td className="produto-preco">
-                              {formatarPreco(
-                                solicitacao.preco
-                              )}
+                              <PrecoNegociacao quantidade={solicitacao.quantidade} preco={solicitacao.preco} />
                             </td>
 
                             <td>

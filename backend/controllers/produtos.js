@@ -409,7 +409,7 @@ const criarSolicitacaoProduto =
       const solicitacaoPendente =
         await pool.query(
           `SELECT id
-           FROM solicitacoes_produtos
+           FROM solicitacao_insercao
            WHERE LOWER(TRIM(nome_produto)) =
                  LOWER(TRIM($1))
              AND status = 'pendente'`,
@@ -430,7 +430,7 @@ const criarSolicitacaoProduto =
 
       const resultado =
         await pool.query(
-          `INSERT INTO solicitacoes_produtos
+          `INSERT INTO solicitacao_insercao
           (
             cpf_produtor,
             nome_produto,
@@ -505,7 +505,7 @@ const listarMinhasSolicitacoesProdutos =
       const resultado =
         await pool.query(
           `SELECT *, xmin::text AS versao
-           FROM solicitacoes_produtos
+           FROM solicitacao_insercao
            WHERE cpf_produtor = $1
            ORDER BY data_solicitacao DESC`,
           [
@@ -537,7 +537,7 @@ const listarSolicitacoesProdutosAdmin =
           `SELECT
              s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor
-           FROM solicitacoes_produtos s
+           FROM solicitacao_insercao s
            JOIN produtores p
              ON p.cpf = s.cpf_produtor
            ORDER BY
@@ -615,7 +615,7 @@ const avaliarSolicitacaoProduto =
           `SELECT
              s.*, s.xmin::text AS versao,
              p.nome AS nome_produtor
-           FROM solicitacoes_produtos s
+           FROM solicitacao_insercao s
            JOIN produtores p
              ON p.cpf = s.cpf_produtor
            WHERE s.id = $1
@@ -692,7 +692,7 @@ const avaliarSolicitacaoProduto =
 
         const atualizado =
           await cliente.query(
-            `UPDATE solicitacoes_produtos
+            `UPDATE solicitacao_insercao
              SET
                status = 'aprovado',
                retorno_admin = $1,
@@ -749,7 +749,7 @@ const avaliarSolicitacaoProduto =
 
       const atualizado =
         await cliente.query(
-          `UPDATE solicitacoes_produtos
+          `UPDATE solicitacao_insercao
            SET
              status = 'rejeitado',
              retorno_admin = $1,

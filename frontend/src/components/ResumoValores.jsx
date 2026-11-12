@@ -7,7 +7,7 @@ export default function ResumoValores({ quantidade, preco }) {
   return (
     <dl className="resumo-negociacao">
       <div><dt>Quantidade</dt><dd>{quantidade || 'Não informada'}</dd></div>
-      <div><dt>Preço por {valores.unidade}</dt><dd>{moeda(valores.preco)} / {valores.unidade}</dd></div>
+      <div><dt>Preço por {valores.unidade}</dt><dd>{moeda(valores.preco)}</dd></div>
       <div><dt>Valor total</dt><dd>{moeda(valores.total)}</dd></div>
     </dl>
   )

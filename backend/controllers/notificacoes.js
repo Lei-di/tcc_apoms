@@ -173,7 +173,7 @@ const listarNotificacoes = async (
 
                AND EXISTS (
                  SELECT 1
-                 FROM solicitacoes_produtos sp
+                 FROM solicitacao_insercao sp
                  WHERE
                    n.link =
                      '/admin?tipo=inclusao&id='
